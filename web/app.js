@@ -4,10 +4,15 @@
    ?demo uses a seeded simulator fallback. Live and demo share one paint path.
    ========================================================================= */
 
-import { paintTerrain, paintHelix, paintGauges } from './field.js';
+import { paintTerrain, paintHelix, paintGauges, morphPal } from './field.js';
 import { paintBackdrop, paintScatter, paintCables, paintScopeStrip, layerFlags } from './layers.js';
 
 const $ = (s, r = document) => r.querySelector(s);
+const SIGIL =
+  '<svg class="sigil" viewBox="0 0 32 32" aria-hidden="true">'
+  + '<path class="s-dim" d="M6 10.5A13.5 13.5 0 0 1 26 10.5" fill="none" stroke-width="1.5" stroke-linecap="round" opacity=".55"/>'
+  + '<path class="s-acc" d="M9.5 14.5A9 9 0 0 1 22.5 14.5" fill="none" stroke-width="2" stroke-linecap="round"/>'
+  + '<circle class="s-fill" cx="16" cy="19" r="3"/></svg>';
 const SKINS = {
   aether:   { title: 'Aether Grid | Aether',    accent: '#8f7bff' },
   hexlab:   { title: 'Aether Grid | Hex-Lab',   accent: '#00e0e0' },
@@ -30,6 +35,12 @@ function currentSkin() {
 }
 function setSkin(name) {
   if (!Object.prototype.hasOwnProperty.call(SKINS, name)) name = 'aether';
+  const cs = getComputedStyle(document.documentElement);
+  morphPal({
+    acc: cs.getPropertyValue('--acc').trim(),
+    dat: cs.getPropertyValue('--dat').trim(),
+    col: cs.getPropertyValue('--col').trim(),
+  }, REDUCED ? 0 : 320);
   document.documentElement.dataset.skin = name;
   try { localStorage.setItem('aether.skin', name); } catch {}
   document.title = SKINS[name].title;
@@ -292,17 +303,34 @@ function cableEngines() {
       lastAgeS: lr && lr.t ? Math.max(0, Math.round(Date.now() / 1000 - lr.t)) : null };
   });
 }
-function pill(label, val, s) {
-  return '<span class="pill" data-s="' + s + '"><span class="dot"></span>' + label + ' · ' + val + '</span>';
-}
+
 function tempSeverity(t) {
   if (t == null || !isFinite(t)) return 'warn';
   if (t >= 85) return 'crit';
   if (t >= 70) return 'warn';
   return 'live';
 }
+function diff(container, keys, make, update) {
+  const reg = container.__keys || (container.__keys = new Map());
+  const seen = new Set();
+  for (const k of keys) seen.add(k.key);
+  for (const [k, n] of reg) if (!seen.has(k)) { n.remove(); reg.delete(k); }
+  for (const k of keys) {
+    let n = reg.get(k.key);
+    if (!n) { n = make(k.key); reg.set(k.key, n); container.appendChild(n); }
+    update(n, k.datum);
+  }
+}
+function makeBrand() {
+  const el = document.createElement('span');
+  el.className = 'brand';
+  el.innerHTML = SIGIL + 'AETHER GRID <small>field monitor</small>';
+  return el;
+}
 function renderPills() {
   const bar = $('#pills');
+  if (!bar) return;
+  if (!bar.__brand) bar.__brand = bar.insertBefore(makeBrand(), bar.firstChild);
   const up = state.engines.filter(e => e.up).length;
   const modeS = state.mode === 'live' ? 'live' : state.mode === 'demo' ? 'live' : state.mode === 'offline' ? 'crit' : 'warn';
   const q = state.kpi.queue || 0;
@@ -312,17 +340,31 @@ function renderPills() {
   const feedVal = state.feed + (stale ? ' · stale' : '');
   const tp = state.gpu ? state.gpu.temp : null;
   const tpVal = tp != null && isFinite(tp) ? Math.round(tp) + 'C' + (state.mode === 'demo' ? ' sim' : '') : '—';
-  bar.innerHTML = '<span class="brand">' + SIGIL + 'AETHER GRID <small>field monitor</small></span>'
-    + pill('mode', state.mode, modeS)
-    + pill('feed', feedVal, feedS)
-    + pill('engines', up + '/' + state.engines.length, up ? 'ok' : 'crit')
-    + pill('tps', Math.round(state.kpi.tps || 0), 'live')
-    + pill('temp', tpVal, tempSeverity(tp))
-    + pill('queue', Math.round(q), q >= 10 ? 'crit' : q >= 4 ? 'warn' : 'ok')
-    + pill('vram', (state.kpi.vram != null ? state.kpi.vram.toFixed(1) : '—') + 'G', 'live')
-    + pill('nodes', (state.router.nodes || []).length, 'live')
-    + pill('mtp-acc', state.reasoning && state.reasoning.mtp_accept_pct != null ? state.reasoning.mtp_accept_pct.toFixed(1) + '%' : '—', 'live')
-    + pill('think', state.reasoning && state.reasoning.thinking_tokens != null ? fmtBig(state.reasoning.thinking_tokens) : '—', 'live');
+  const items = [
+    { key: 'mode', datum: { s: modeS, v: state.mode } },
+    { key: 'feed', datum: { s: feedS, v: feedVal } },
+    { key: 'engines', datum: { s: up ? 'ok' : 'crit', v: up + '/' + state.engines.length } },
+    { key: 'tps', datum: { s: 'live', v: Math.round(state.kpi.tps || 0) } },
+    { key: 'temp', datum: { s: tempSeverity(tp), v: tpVal } },
+    { key: 'queue', datum: { s: q >= 10 ? 'crit' : q >= 4 ? 'warn' : 'ok', v: Math.round(q) } },
+    { key: 'vram', datum: { s: 'live', v: (state.kpi.vram != null ? state.kpi.vram.toFixed(1) : '—') + 'G' } },
+    { key: 'nodes', datum: { s: 'live', v: (state.router.nodes || []).length } },
+    { key: 'mtp-acc', datum: { s: 'live', v: state.reasoning && state.reasoning.mtp_accept_pct != null ? state.reasoning.mtp_accept_pct.toFixed(1) + '%' : '—' } },
+    { key: 'think', datum: { s: 'live', v: state.reasoning && state.reasoning.thinking_tokens != null ? fmtBig(state.reasoning.thinking_tokens) : '—' } },
+  ];
+  diff(bar, items, key => {
+    const el = document.createElement('span');
+    el.className = 'pill';
+    el.__label = key;
+    const dot = document.createElement('span');
+    dot.className = 'dot';
+    el.appendChild(dot);
+    el.appendChild(document.createTextNode(key + ' · '));
+    return el;
+  }, (el, d) => {
+    el.dataset.s = d.s;
+    el.lastChild.nodeValue = el.__label + ' · ' + d.v;
+  });
 }
 const KPI_FMT = {
   tps: v => Math.round(v), rpm: v => Math.round(v), queue: v => Math.round(v),
@@ -331,11 +373,28 @@ const KPI_FMT = {
 };
 const KPI_PRIMARY = { tps: 1, queue: 1, vram: 1, p95: 1 };
 function renderKpis() {
-  $('#kpis').innerHTML = KPI_KEYS.map(k => {
-    const v = state.kpi[k];
-    const cls = KPI_PRIMARY[k] ? 'kpi primary' : 'kpi';
-    return '<div class="' + cls + '"><div class="k">' + k + '</div><div class="v">' + (v != null && isFinite(v) ? KPI_FMT[k](v) : '—') + '</div></div>';
-  }).join('');
+  const box = $('#kpis');
+  if (!box) return;
+  const items = KPI_KEYS.map((k, i) => ({ key: k, datum: { i, k, v: state.kpi[k] } }));
+  diff(box, items, k => {
+    const d = document.createElement('div');
+    d.className = 'kpi';
+    const kk = document.createElement('div'); kk.className = 'k'; kk.textContent = k;
+    const v = document.createElement('div'); v.className = 'v';
+    d.appendChild(kk); d.appendChild(v);
+    return d;
+  }, (el, d) => {
+    el.classList.toggle('primary', !!KPI_PRIMARY[d.k]);
+    const tv = el.querySelector('.v');
+    const str = d.v != null && isFinite(d.v) ? KPI_FMT[d.k](d.v) : '—';
+    if (tv.textContent !== str) {
+      tv.textContent = str;
+      el.classList.remove('bump');
+      void el.offsetWidth;
+      el.classList.add('bump');
+      el.addEventListener('animationend', () => el.classList.remove('bump'), { once: true });
+    }
+  });
 }
 function wellClass(f, i) {
   if (f >= 0.85) return 'slot well-alert' + (i === 5 ? ' hl' : '');
@@ -346,67 +405,218 @@ function wellClass(f, i) {
 function renderCohort() {
   const box = $('#cohort');
   if (!box) return;
-  const rows = state.sessions.slice(0, 32);
-  const TOTAL = 32;
-  if (!rows.length) { box.innerHTML = '<div class="slot well-off"><div>EMPTY</div></div>'; return; }
-  let html = rows.map((s, i) => {
-    const f = s.window ? Math.min(1, (s.used || 0) / s.window) : 0;
-    const id = String(s.id || ('W' + (i + 1))).slice(0, 8).toUpperCase();
-    return '<div class="' + wellClass(f, i) + '" title="' + id + ' ' + (s.used || 0) + '/' + (s.window || '?') + '"><div>' + id + '</div>'
-      + '<div class="bar"><i style="width:' + (f * 100).toFixed(1) + '%"></i></div></div>';
-  }).join('');
-  for (let i = rows.length; i < TOTAL; i++) html += '<div class="slot well-off"><div>—</div></div>';
-  box.innerHTML = html;
   const cm = $('#cohort-meta');
+  const rows = state.sessions.slice(0, 32);
+  if (!rows.length) {
+    box.__keys = null;
+    if (!box.__empty) {
+      box.__empty = document.createElement('div');
+      box.__empty.className = 'slot well-off';
+      box.__empty.innerHTML = '<div>EMPTY</div>';
+      box.__meta = document.createElement('div');
+      box.__meta.className = 'meta-strip';
+      box.innerHTML = '';
+      box.appendChild(box.__empty);
+      box.appendChild(box.__meta);
+      box.__meta.textContent = 'EMPTY';
+    }
+    return;
+  }
+  if (box.__empty) {
+    box.__empty.remove();
+    box.__meta.remove();
+    box.__empty = null;
+    box.__meta = null;
+  }
+  const items = [];
+  for (let i = 0; i < 32; i++) {
+    const s = rows[i];
+    const f = s && s.window ? Math.min(1, (s.used || 0) / s.window) : 0;
+    const id = s ? String(s.id || ('W' + (i + 1))).slice(0, 8).toUpperCase() : '—';
+    items.push({ key: i, datum: { i, s, f, id } });
+  }
+  diff(box, items, i => {
+    const d = document.createElement('div');
+    d.className = 'slot';
+    d.appendChild(document.createElement('div'));
+    const bar = document.createElement('div');
+    bar.className = 'bar';
+    const bi = document.createElement('i');
+    bar.appendChild(bi);
+    d.appendChild(bar);
+    return d;
+  }, (el, d) => {
+    el.className = wellClass(d.f, d.i);
+    el.title = d.s ? d.id + ' ' + (d.s.used || 0) + '/' + (d.s.window || '?') : '';
+    el.firstChild.textContent = d.id;
+    el.querySelector('.bar i').style.width = (d.f * 100).toFixed(1) + '%';
+  });
   if (cm) {
     const hot = rows.filter(s => s.window && (s.used || 0) / s.window >= 0.85).length;
-    cm.innerHTML = '<span>PLATE 03 · <span class="m-cool">B5 FLAGGED</span></span><span>N ' + rows.length + ' · HOT ' + hot + '</span>';
+    if (!cm.__built) {
+      cm.__built = true;
+      cm.innerHTML = '<span>PLATE 03 · <span class="m-cool">B5 FLAGGED</span></span><span></span>';
+    }
+    if (cm.children[1]) cm.children[1].textContent = 'N ' + rows.length + ' · HOT ' + hot;
   }
 }
 function esc(s) { return String(s == null ? '' : s).replace(/&/g, '&amp;').replace(/</g, '&lt;').slice(0, 90); }
 function renderLogs() {
+  const renderLogList = (el, lines) => {
+    if (!el) return;
+    el.__seen = el.__seen || new Set();
+    const items = lines.map(ln => {
+      const fresh = !el.__seen.has(ln.key);
+      el.__seen.add(ln.key);
+      return { key: ln.key, datum: { cls: ln.cls, text: ln.text, fresh } };
+    });
+    diff(el, items, key => {
+      const li = document.createElement('li');
+      li.className = lines.find(x => x.key === key).cls || '';
+      return li;
+    }, (li, d) => {
+      if (d.cls !== li.className) li.className = d.cls;
+      if (d.text !== li.textContent) li.textContent = d.text;
+      if (d.fresh) { li.classList.add('flash'); li.addEventListener('animationend', () => li.classList.remove('flash'), { once: true }); }
+    });
+  };
   const ev = $('#events');
-  if (ev) ev.innerHTML = state.events.slice(0, 18).map(e => '<li class="' + esc(e.level || '') + '">' + esc(e.t ? new Date(e.t * 1000).toLocaleTimeString() : '--:--:--') + ' · ' + esc(e.msg || '') + '</li>').join('');
+  if (ev) {
+    const lines = state.events.slice(0, 18).map(e => ({
+      key: (e.t || 0) + '|' + (e.level || '') + '|' + (e.msg || ''),
+      cls: esc(e.level || ''),
+      text: (e.t ? new Date(e.t * 1000).toLocaleTimeString() : '--:--:--') + ' · ' + esc(e.msg || ''),
+    }));
+    renderLogList(ev, lines);
+  }
   const rq = $('#requests');
-  if (rq) rq.innerHTML = state.requests.slice(0, 12).map(r => '<li>' + esc(r.id || '?') + ' · ' + esc(r.model || '') + ' · ' + Math.round(r.decode_tps || r.tps || 0) + ' tok/s</li>').join('');
+  if (rq) {
+    const lines = state.requests.slice(0, 12).map(r => ({
+      key: r.id || ('r' + Math.round(r.t || 0)),
+      cls: '',
+      text: esc(r.id || '?') + ' · ' + esc(r.model || '') + ' · ' + Math.round(r.decode_tps || r.tps || 0) + ' tok/s',
+    }));
+    renderLogList(rq, lines);
+  }
   const foot = $('#foot');
-  if (foot) foot.innerHTML = '<span><span class="ft-acc">MEN_FHW</span> · MODE ' + esc(state.mode) + ' · FEED ' + esc(state.feed) + '</span><span class="ft-right">12A · ' + esc(new Date().toLocaleTimeString()) + '</span>';
+  if (foot) {
+    if (!foot.__built) {
+      foot.__built = true;
+      const l = document.createElement('span');
+      const acc = document.createElement('span'); acc.className = 'ft-acc'; acc.textContent = 'MEN_FHW';
+      l.appendChild(acc);
+      foot.__mid = document.createTextNode('');
+      l.appendChild(foot.__mid);
+      const r = document.createElement('span'); r.className = 'ft-right';
+      foot.appendChild(l); foot.appendChild(r);
+    }
+    if (foot.__mid) foot.__mid.nodeValue = ' · MODE ' + esc(state.mode) + ' · FEED ' + esc(state.feed);
+    if (foot.children[1]) foot.children[1].textContent = '12A · ' + esc(new Date().toLocaleTimeString());
+  }
   renderChrome();
 }
-function tcCell(k, v, cls) { return '<div class="tc-cell' + (cls ? ' ' + cls : '') + '"><span class="tc-k">' + k + '</span><span class="tc-v">' + v + '</span></div>'; }
+
 function renderChrome() {
   const tc = $('#timecode');
   if (tc) {
+    if (!tc.__built) {
+      tc.__built = true;
+      ['TC', 'TPS', 'QUE', 'TMP', 'VRAM', 'MTP', 'ENG', 'FEED'].forEach((k, i) => {
+        const d = document.createElement('div');
+        d.className = 'tc-cell';
+        d.__cls = i === 2 ? 'data' : i === 4 ? 'cool' : i === 7 ? 'data' : '';
+        d.dataset.k = k;
+        const ksp = document.createElement('span'); ksp.className = 'tc-k'; ksp.textContent = k;
+        const v = document.createElement('span'); v.className = 'tc-v';
+        d.appendChild(ksp); d.appendChild(v);
+        tc.appendChild(d);
+      });
+    }
     const t = new Date();
     const pad2 = n => String(n).padStart(2, '0');
     const code = pad2(t.getHours()) + ':' + pad2(t.getMinutes()) + ':' + pad2(t.getSeconds());
     const tp = state.gpu ? state.gpu.temp : null;
     const tpS = tp != null && isFinite(tp) ? Math.round(tp) + 'C' : '—';
-    const tpCls = tp != null && isFinite(tp) && tp >= 85 ? 'cool' : tp != null && isFinite(tp) && tp >= 70 ? 'data' : '';
-    tc.innerHTML = tcCell('TC', code) + tcCell('TPS', Math.round(state.kpi.tps || 0)) + tcCell('QUE', Math.round(state.kpi.queue || 0), 'data') + tcCell('TMP', tpS, tpCls) + tcCell('VRAM', state.kpi.vram != null ? state.kpi.vram.toFixed(1) + 'G' : '—', 'cool') + tcCell('MTP', state.reasoning && state.reasoning.mtp_accept_pct != null ? state.reasoning.mtp_accept_pct.toFixed(1) + '%' : '—') + tcCell('ENG', state.engines.filter(e => e.up).length + '/' + state.engines.length) + tcCell('FEED', state.feed, 'data');
+    const vals = {
+      TC: code,
+      TPS: String(Math.round(state.kpi.tps || 0)),
+      QUE: String(Math.round(state.kpi.queue || 0)),
+      TMP: tpS,
+      VRAM: state.kpi.vram != null ? state.kpi.vram.toFixed(1) + 'G' : '—',
+      MTP: state.reasoning && state.reasoning.mtp_accept_pct != null ? state.reasoning.mtp_accept_pct.toFixed(1) + '%' : '—',
+      ENG: state.engines.filter(e => e.up).length + '/' + state.engines.length,
+      FEED: state.feed,
+    };
+    for (const cell of tc.children) {
+      const k = cell.dataset.k;
+      let cls = 'tc-cell' + (cell.__cls ? ' ' + cell.__cls : '');
+      if (k === 'TMP' && tp != null && isFinite(tp)) cls += tp >= 85 ? ' cool' : tp >= 70 ? ' data' : '';
+      cell.className = cls;
+      cell.querySelector('.tc-v').textContent = vals[k];
+    }
   }
   const db = $('#databand');
   if (db) {
-    const cells = KPI_KEYS.map((k, i) => {
-      const v = state.kpi[k];
-      const cls = i % 4 === 2 ? 'data' : i % 4 === 3 ? 'cool' : '';
-      return '<div class="db-cell' + (cls ? ' ' + cls : '') + '"><span class="db-k">' + k + '</span><span class="db-v">' + (v != null && isFinite(v) ? KPI_FMT[k](v) : '—') + '</span></div>';
-    });
-    while (cells.length < 14) cells.push('<div class="db-cell"><span class="db-k">AUX' + cells.length + '</span><span class="db-v">—</span></div>');
-    db.innerHTML = cells.slice(0, 14).join('');
+    if (!db.__built) {
+      db.__built = true;
+      const keys = KPI_KEYS.concat(Array.from({ length: 4 }, (_, j) => 'AUX' + (10 + j)));
+      keys.forEach((k, i) => {
+        const cls = i < KPI_KEYS.length ? (i % 4 === 2 ? 'data' : i % 4 === 3 ? 'cool' : '') : '';
+        const d = document.createElement('div');
+        d.className = 'db-cell' + (cls ? ' ' + cls : '');
+        const kk = document.createElement('span'); kk.className = 'db-k'; kk.textContent = k;
+        const v = document.createElement('span'); v.className = 'db-v';
+        d.appendChild(kk); d.appendChild(v);
+        db.appendChild(d);
+      });
+    }
+    const cells = db.children;
+    for (let i = 0; i < cells.length; i++) {
+      const k = KPI_KEYS[i];
+      const v = k ? state.kpi[k] : null;
+      cells[i].querySelector('.db-v').textContent = (k && v != null && isFinite(v)) ? KPI_FMT[k](v) : '—';
+    }
   }
   const km = $('#kpi-meta');
-  if (km) km.innerHTML = '<span>PEAK <span class="m-acc">' + Math.round(Math.max(1, ...((state.kpiHist.tps || [0]).slice(-120)))) + '</span> TPS</span><span>μ ' + (state.kpi.tps != null ? Math.round(state.kpi.tps) : '—') + ' · σ LOAD</span>';
+  if (km) {
+    if (!km.__built) {
+      km.__built = true;
+      km.innerHTML = '<span>PEAK <span class="m-acc"></span> TPS</span><span></span>';
+    }
+    const p = km.children[0];
+    if (p) p.querySelector('.m-acc').textContent = String(Math.round(Math.max(1, ...((state.kpiHist.tps || [0]).slice(-120)))));
+    if (km.children[1]) km.children[1].textContent = 'μ ' + (state.kpi.tps != null ? Math.round(state.kpi.tps) : '—') + ' · σ LOAD';
+  }
   const tm = $('#terrain-meta');
-  if (tm) tm.innerHTML = '<span>88 FS CC · <span class="m-acc">TERRAIN</span></span><span>ALM 01</span>';
+  if (tm) {
+    if (!tm.__built) {
+      tm.__built = true;
+      tm.innerHTML = '<span>88 FS CC · <span class="m-acc">TERRAIN</span></span><span>ALM 01</span>';
+    }
+  }
   const hm = $('#helix-meta');
-  if (hm) hm.innerHTML = '<span>ACC <span class="m-data">' + (state.reasoning && state.reasoning.mtp_accept_pct != null ? state.reasoning.mtp_accept_pct.toFixed(1) + '%' : '—') + '</span></span><span>THINK ' + (state.reasoning && state.reasoning.thinking_tokens != null ? fmtBig(state.reasoning.thinking_tokens) : '—') + '</span>';
+  if (hm) {
+    if (!hm.__built) {
+      hm.__built = true;
+      hm.innerHTML = '<span>ACC <span class="m-data"></span></span><span></span>';
+    }
+    const a = hm.children[0];
+    if (a) a.querySelector('.m-data').textContent = state.reasoning && state.reasoning.mtp_accept_pct != null ? state.reasoning.mtp_accept_pct.toFixed(1) + '%' : '—';
+    if (hm.children[1]) hm.children[1].textContent = 'THINK ' + (state.reasoning && state.reasoning.thinking_tokens != null ? fmtBig(state.reasoning.thinking_tokens) : '—');
+  }
   const gm = $('#gauge-meta');
   if (gm) {
+    if (!gm.__built) {
+      gm.__built = true;
+      gm.innerHTML = '<span>GPU <span class="m-cool"></span></span><span></span>';
+    }
     const u = state.gpu ? state.gpu.util : null, tp = state.gpu ? state.gpu.temp : null;
-    const tCls = tp != null && isFinite(tp) && tp >= 85 ? 'm-cool' : tp != null && isFinite(tp) && tp >= 70 ? 'm-data' : 'm-acc';
-    const sim = state.mode === 'demo' ? ' SIM' : '';
-    gm.innerHTML = '<span>GPU <span class="m-cool">' + (u != null ? Math.round(u) + '%' : '—') + '</span></span><span>TMP <span class="' + tCls + '">' + (tp != null ? Math.round(tp) + 'C' : '—') + '</span>' + sim + '</span>';
+    const g1 = gm.children[0], g2 = gm.children[1];
+    if (g1) g1.querySelector('.m-cool').textContent = (u != null ? Math.round(u) + '%' : '—');
+    if (g2) {
+      const tCls = tp != null && isFinite(tp) && tp >= 85 ? 'm-cool' : tp != null && isFinite(tp) && tp >= 70 ? 'm-data' : 'm-acc';
+      g2.innerHTML = 'TMP <span class="' + tCls + '">' + (tp != null ? Math.round(tp) + 'C' : '—') + '</span>' + (state.mode === 'demo' ? ' SIM' : '');
+    }
   }
 }
 function renderText() { renderPills(); renderKpis(); renderCohort(); renderLogs(); }
@@ -477,3 +687,4 @@ bindSkinSwitcher();
 bindLayerToggles();
 renderText();
 requestAnimationFrame(frame);
+console.log('motion=ok' + (REDUCED ? ' reduced' : ''));
