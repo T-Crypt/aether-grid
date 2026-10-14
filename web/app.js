@@ -413,6 +413,10 @@ function renderText() { renderPills(); renderKpis(); renderCohort(); renderLogs(
 
 /* --- layer toggles -------------------------------------------------------- */
 function bindSkinSwitcher() {
+  document.querySelectorAll('[data-skin-btn]').forEach(b => {
+    const sk = SKINS[b.dataset.skinBtn];
+    if (sk) b.style.setProperty('--skin-accent', sk.accent);
+  });
   setSkin(currentSkin());
   document.querySelectorAll('[data-skin-btn]').forEach(b =>
     b.addEventListener('click', () => setSkin(b.dataset.skinBtn)));

@@ -401,3 +401,11 @@ footer.foot .ft-right { color: var(--p-text); letter-spacing: 0.24em; }
 @media (prefers-reduced-motion: reduce) {
   .scanlines, .grain { display: none; }
 }
+
+
+.skin-rail { display:flex; flex-wrap:wrap; gap:6px; align-items:center; padding:10px 14px; border-bottom:1px solid var(--p-rule2); background:rgb(var(--bgg) / 0.6); }
+.skin-rail button { display:inline-flex; align-items:center; gap:8px; padding:4px 8px; border:none; background:transparent; color:var(--p-dim); font:inherit; font-size:11px; letter-spacing:0.08em; text-transform:uppercase; cursor:pointer; }
+.skin-rail button .skin-accent { display:inline-block; width:16px; height:2px; background:var(--skin-accent, var(--p-accent)); }
+.skin-rail button[aria-pressed="true"] { color:var(--p-text); background:rgb(var(--acc) / 0.08); }
+.skin-rail button:hover { color:var(--p-text); }
+@media (max-width: 1100px) { .skin-rail { padding:8px 10px; gap:4px; } }
