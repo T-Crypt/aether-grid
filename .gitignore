@@ -1,0 +1,7 @@
+__pycache__/
+*.pyc
+.speculum.db
+*.db
+.ome/
+.router/
+node_modules/

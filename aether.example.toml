@@ -1,0 +1,90 @@
+# Speculum example config — copy to speculum.toml (repo root or
+# ~/.config/speculum/speculum.toml) and edit. The file is optional:
+# with none, Speculum probes localhost and shows what it finds.
+
+[server]
+host = "127.0.0.1"
+port = 8792
+
+[discovery]
+enabled = true              # probe the default ports on localhost
+# Extra hosts to probe on the same port list — for a collector running away
+# from the GPU box (a Proxmox LXC, say). Localhost is always probed and is
+# tried first, so a local engine always wins its own port. Claims are keyed on
+# host:port, so a remote 8080 stays discoverable while a local 8080 is taken.
+# targets = ["10.0.0.41", "gpu-box.lan"]
+# Extra ports to probe on localhost and every target, for an engine running on
+# a non-default port. Each new port is tried with every adapter, openai last.
+# ports = [8081, 9091]
+
+# The built-in threads (llama-swap, and the NInfer backend that follows its
+# /running proxy) are not discovery. Move them off their stock ports with a
+# `port`, a `host`, or a full `url`.
+# [llama_swap]
+# port = 9091                # default http://127.0.0.1:9090
+#
+# [strata]
+# url = "http://127.0.0.1:8090"   # default http://127.0.0.1:8080
+
+[history]
+retention_days = 30         # 30, 60, 90 or 0 to turn history off
+
+# Any number of engines, on any host. Type names the adapter; the URL
+# may point anywhere (the collector is just an HTTP client). `port` and
+# `host` stand in for a full url, so an engine off its stock port is a
+# one-line change.
+
+[[engine]]
+name = "ollama-desk"
+type = "ollama"
+url  = "http://10.0.0.41:11434"
+
+# llama.cpp on a custom port: no URL needed, host defaults to 127.0.0.1.
+# [[engine]]
+# name = "llama.cpp"
+# type = "llamacpp"
+# port = 8081
+
+# llama-swap, NInfer and Strata are already watched by the built-in
+# threads; adding them here again is not needed (phase 1b folds those
+# threads into adapters).
+
+[[engine]]
+name = "my-engine"
+type = "custom"
+url  = "http://127.0.0.1:7000"
+health  = "/health"
+models  = "/v1/models"
+metrics = "/metrics"        # Prometheus text
+[engine.map]                # schema field = metric name in the engine's /metrics
+output_tokens = "myengine_generated_tokens_total"
+prompt_tokens = "myengine_prompt_tokens_total"
+queue         = "myengine_requests_waiting"
+
+# Apps you start now and then: `optional = true` keeps a card that says "not running" and raises
+# no alert while they are down.
+#
+# [[engine]]
+# name     = "LM Studio"
+# type     = "lmstudio"
+# url      = "http://127.0.0.1:1234"
+# optional = true
+#
+# Unsloth Studio (`unsloth studio`, default port 8888). /api/health needs no key; listing its models
+# does: make an API key in Studio's settings and put it in UNSLOTH_STUDIO_AUTH_TOKEN (the default).
+#
+# [[engine]]
+# name        = "Unsloth"
+# type        = "unsloth"
+# url         = "http://127.0.0.1:8888"
+# optional    = true
+# api_key_env = "UNSLOTH_STUDIO_AUTH_TOKEN"
+
+# Secrets stay out of this file: name the environment variable that
+# holds the bearer token and Speculum sends it as Authorization.
+#
+# [[engine]]
+# name = "paywalled"
+# type = "openai"
+# url  = "https://api.example.com/v1"
+# api_key_env = "MY_ENGINE_KEY"
