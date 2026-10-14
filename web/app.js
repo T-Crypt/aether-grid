@@ -4,7 +4,7 @@
    ?demo uses a seeded simulator fallback. Live and demo share one paint path.
    ========================================================================= */
 
-import { paintTerrain, paintHelix, paintGauges } from './field.js';
+import { paintTerrain, paintHelix, paintGauges, morphPal } from './field.js';
 import { paintBackdrop, paintScatter, paintCables, paintScopeStrip, layerFlags } from './layers.js';
 
 const $ = (s, r = document) => r.querySelector(s);
@@ -35,6 +35,12 @@ function currentSkin() {
 }
 function setSkin(name) {
   if (!Object.prototype.hasOwnProperty.call(SKINS, name)) name = 'aether';
+  const cs = getComputedStyle(document.documentElement);
+  morphPal({
+    acc: cs.getPropertyValue('--acc').trim(),
+    dat: cs.getPropertyValue('--dat').trim(),
+    col: cs.getPropertyValue('--col').trim(),
+  }, REDUCED ? 0 : 320);
   document.documentElement.dataset.skin = name;
   try { localStorage.setItem('aether.skin', name); } catch {}
   document.title = SKINS[name].title;

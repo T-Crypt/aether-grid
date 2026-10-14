@@ -13,7 +13,43 @@ export function fit(c) {
 /* Skin palette: brand hues come from CSS vars so each skin repaints the
    canvases. Refreshed about once a second; severity hues stay absolute. */
 let palCache = null, palN = 0;
+let morph = null;
+function parseTriple(str) {
+  if (!str) return null;
+  const p = String(str).trim().split(/[\s,]+/).map(x => parseInt(x, 10));
+  if (p.length < 3) return null;
+  const t = [p[0], p[1], p[2]];
+  for (let i = 0; i < 3; i++) if (!isFinite(t[i])) return null;
+  return t;
+}
+export function morphPal(from, duration) {
+  const parsed = { acc: parseTriple(from.acc), dat: parseTriple(from.dat), col: parseTriple(from.col) };
+  morph = duration > 0 ? { from: parsed, t0: performance.now(), dur: duration } : null;
+  palCache = null;
+}
 export function pal() {
+  if (morph) {
+    const now = performance.now();
+    const k = morph.dur ? Math.min(1, (now - morph.t0) / morph.dur) : 1;
+    const g = n => getComputedStyle(document.documentElement).getPropertyValue(n).trim();
+    const to = { acc: parseTriple(g('--acc')), dat: parseTriple(g('--dat')), col: parseTriple(g('--col')) };
+    const rgba = (t, a) => 'rgb(' + (t || '0 224 224') + ' / ' + a + ')';
+    const mix = (f, t) => {
+      if (f && t) return k >= 1 ? t.join(' ') : f.map((c, i) => Math.round(c + (t[i] - c) * k)).join(' ');
+      return t ? t.join(' ') : null;
+    };
+    palCache = {
+      accent: g('--p-accent') || '#8f7bff', data: g('--p-data') || '#6fe7ad',
+      cool: g('--p-cool') || '#ff5c8a', mint: g('--ser-3') || '#6fe7ad',
+      text: g('--p-text') || '#dce6ff', dim: g('--p-dim') || '#647294',
+      panel: g('--p-panel') || '#0c1226', bg: g('--p-bg') || '#060a14',
+      acc: a => rgba(mix(morph.from.acc, to.acc), a),
+      dat: a => rgba(mix(morph.from.dat, to.dat), a),
+      col: a => rgba(mix(morph.from.col, to.col), a),
+    };
+    if (k >= 1) morph = null;
+    return palCache;
+  }
   if (palCache && (palN++ % 60)) return palCache;
   const g = n => getComputedStyle(document.documentElement).getPropertyValue(n).trim();
   const acc = g('--acc'), dat = g('--dat'), col = g('--col');

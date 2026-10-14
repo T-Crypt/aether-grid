@@ -460,3 +460,10 @@ footer.foot { animation: rise var(--dur-3) var(--ease) both; animation-delay: ca
 .toggles label { transition: opacity, background-color, border-color, color 160ms; }
 .tc-v, .db-v { transition: color 240ms; }
 .log li.flash { animation: flash var(--dur-2) var(--ease); }
+
+/* ---- motion: skin-switch crossfade (U4) ---- */
+body { transition: background-color var(--morph) var(--ease-inout); }
+.panel { transition: background-color, border-color var(--morph); }
+.br::before, .br::after { transition: background-color, box-shadow var(--morph); }
+.panel h2, .br-id, .kpi .k, .db-k, .tc-k, .layer-row h3 { transition: color var(--morph); }
+.skin-rail button .skin-accent { transition: background-color var(--morph); }
