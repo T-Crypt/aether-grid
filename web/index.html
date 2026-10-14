@@ -19,6 +19,18 @@ addEventListener('unhandledrejection',function(e){var r=e.reason;show('rejection
     <section class="panel span-12" aria-label="Key metrics"><h2>Key metrics</h2><div class="kpis" id="kpis"></div></section>
     <section class="panel span-7" aria-label="Brainwave terrain"><h2>Brainwave terrain</h2><canvas class="field" id="terrain" height="220"></canvas></section>
     <section class="panel span-5" aria-label="Helix reasoning"><h2>Helix reasoning</h2><canvas class="field" id="helix" height="220"></canvas></section>
+    <section class="panel span-12" aria-label="Field layers"><h2>Field layers</h2>
+      <div style="display:flex;gap:1.25rem;flex-wrap:wrap;margin-bottom:.5rem;font-size:.85em">
+        <label><input type="checkbox" id="tgl-declination" checked> declination</label>
+        <label><input type="checkbox" id="tgl-scope" checked> scope-omega</label>
+        <label><input type="checkbox" id="tgl-loom" checked> loom-9</label>
+        <label><input type="checkbox" id="tgl-safehouse" checked> safehouse</label>
+      </div>
+      <h3>Declination · backdrop</h3><canvas class="field" id="backdrop" height="160"></canvas>
+      <h3>Scope-omega · scatter</h3><canvas class="field" id="scatter" height="160"></canvas>
+      <h3>Loom-9 · cables</h3><canvas class="field" id="cables" height="160"></canvas>
+      <h3>Safehouse · scope</h3><canvas class="field" id="scope" height="160"></canvas>
+    </section>
     <section class="panel span-12" aria-label="Cohort KV slots"><h2>Cohort grid · KV slots</h2><div class="cohort" id="cohort"></div></section>
     <section class="panel span-8" aria-label="Events"><h2>Events</h2><ul class="log" id="events"></ul></section>
     <section class="panel span-4" aria-label="Requests"><h2>Requests</h2><ul class="log" id="requests"></ul></section>

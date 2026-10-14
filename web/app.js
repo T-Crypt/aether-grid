@@ -5,6 +5,7 @@
    ========================================================================= */
 
 import { paintTerrain, paintHelix } from './field.js';
+import { paintBackdrop, paintScatter, paintCables, paintScopeStrip, layerFlags } from './layers.js';
 
 const $ = (s, r = document) => r.querySelector(s);
 const DEMO = new URLSearchParams(location.search).has('demo');
@@ -262,6 +263,26 @@ function renderLogs() {
 }
 function renderText() { renderPills(); renderKpis(); renderCohort(); renderLogs(); }
 
+/* --- layer toggles -------------------------------------------------------- */
+function bindLayerToggles() {
+  const map = [
+    ['tgl-declination', 'declination', 'backdrop'],
+    ['tgl-scope', 'scopeOmega', 'scatter'],
+    ['tgl-loom', 'loom9', 'cables'],
+    ['tgl-safehouse', 'safehouse', 'scope'],
+  ];
+  for (const [tglId, flag, canvasId] of map) {
+    const box = document.getElementById(tglId);
+    if (!box) continue;
+    box.checked = layerFlags[flag];
+    box.addEventListener('change', () => {
+      layerFlags[flag] = box.checked;
+      const c = document.getElementById(canvasId);
+      if (c) c.style.display = box.checked ? '' : 'none';
+    });
+  }
+}
+
 /* --- main loop: single rAF drives both canvases; DOM at ~2 Hz -------------- */
 const terrainEl = () => $('#terrain');
 const helixEl = () => $('#helix');
@@ -272,10 +293,15 @@ function frame(now) {
   paintTerrain(terrainEl(), hist, now);
   const maxTps = Math.max(1, ...(hist.slice(-60)));
   paintHelix(helixEl(), (state.kpi.tps || 0) / Math.max(maxTps, state.kpi.tps || 1), state.sessions, now);
+  if (layerFlags.declination) paintBackdrop($('#backdrop'), state.kpiHist.tps, now);
+  if (layerFlags.scopeOmega) paintScatter($('#scatter'), state.kpiHist, state.alerts, state.events, now);
+  if (layerFlags.loom9) paintCables($('#cables'), state.engines, state.requests, now);
+  if (layerFlags.safehouse) paintScopeStrip($('#scope'), state.sessions, now);
   if (now - lastDom > 500) { lastDom = now; renderText(); }
   requestAnimationFrame(frame);
 }
 
 if (DEMO) initDemo(); else bootLive();
+bindLayerToggles();
 renderText();
 requestAnimationFrame(frame);
