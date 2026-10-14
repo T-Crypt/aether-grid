@@ -451,22 +451,22 @@ footer.foot { animation: rise var(--dur-3) var(--ease) both; animation-delay: ca
 .panel h2, .bp-rlabel { animation: drop var(--dur-3) var(--ease) both; animation-delay: calc(var(--stagger) * var(--pi, 3) + 180ms); }
 
 /* ---- motion: component settle transitions (U3) ---- */
-.pill { transition: color, background-color, border-color 220ms var(--ease-inout); }
+.pill { transition: color 220ms var(--ease-inout), background-color 220ms var(--ease-inout), border-color 220ms var(--ease-inout); }
 .pill .dot { transition: background-color 220ms var(--ease-inout); }
-.kpi .v { transition: color, font-size 220ms; }
+.kpi .v { transition: color 220ms, font-size 220ms; }
 .kpi .v.bump { animation: bump 320ms var(--ease); }
-.slot { transition: background-color, border-color, box-shadow 240ms; }
+.slot { transition: background-color 240ms, border-color 240ms, box-shadow 240ms; }
 .slot .bar i { transition: width 420ms var(--ease); }
-.skin-rail button { transition: color, background-color, box-shadow 160ms; }
+.skin-rail button { transition: color 160ms, background-color 160ms, box-shadow 160ms; }
 .skin-rail button[aria-pressed="true"] { box-shadow: 0 0 10px rgb(var(--acc) / .35); }
-.toggles label { transition: opacity, background-color, border-color, color 160ms; }
+.toggles label { transition: opacity 160ms, background-color 160ms, border-color 160ms, color 160ms; }
 .tc-v, .db-v { transition: color 240ms; }
 .log li.flash { animation: flash var(--dur-2) var(--ease); }
 
 /* ---- motion: skin-switch crossfade (U4) ---- */
 body { transition: background-color var(--morph) var(--ease-inout); }
-.panel { transition: background-color, border-color var(--morph); }
-.br::before, .br::after { transition: background-color, box-shadow var(--morph); }
+.panel { transition: background-color var(--morph) var(--ease-inout), border-color var(--morph) var(--ease-inout); }
+.br::before, .br::after { transition: background-color var(--morph) var(--ease-inout), box-shadow var(--morph) var(--ease-inout); }
 .panel h2, .br-id, .kpi .k, .db-k, .tc-k, .layer-row h3 { transition: color var(--morph); }
 .skin-rail button .skin-accent { transition: background-color var(--morph); }
 
