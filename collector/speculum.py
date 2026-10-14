@@ -153,7 +153,7 @@ def http_get_text(url, timeout=PROBE_SLOW):
 def parse_num(s, default=None):
     if s is None:
         return default
-    s = str(s)
+    s = str(s).replace(",", "")
     m = re.match(r"^([\d.]+)\s*([kKmM])?$", s.strip())
     if not m:
         return default
@@ -565,6 +565,8 @@ def parse_metrics(text):
 
 # NInfer upstream log stream: per-request done lines, WARN/ERROR, latch detect
 REQ_RE = re.compile(r"req#(\d+) done \|")
+STARTED_RE = re.compile(r"req#(\d+) started")
+ACTIVE_TTL_S = 600.0     # a start with no done inside this is stale, not active
 NUM_FIELDS = {
     "prompt": r"prompt ([\d,]+)",
     "output": r"output ([\d,]+)",
@@ -572,9 +574,9 @@ NUM_FIELDS = {
     "ttft": r"TTFT ([\d.]+ ?(ms|s|m|h)?)",
     "total": r"total ([\d.]+ ?(ms|s|m|h)?)",
     "queue": r"queue ([\d.]+ ?(ms|s|m|h)?)",
-    "prefill": r"prefill ([\d.]+k?) tok/s",
-    "decode": r"decode ([\d.]+k?) tok/s",
-    "mtp_acc": r"mtp accepted (\d+)/(\d+)",
+    "prefill": r"prefill ([\d,.]+k?) tok/s",
+    "decode": r"decode ([\d,.]+k?) tok/s",
+    "mtp_acc": r"mtp accepted ([\d,]+)/([\d,]+)",
     "thinking": r"thinking (\d+)/",
 }
 
@@ -598,17 +600,36 @@ def parse_dur(s):
 LOG_TS_RE = re.compile(r"^(\d{4}-\d\d-\d\d \d\d:\d\d:\d\d)\.(\d+)")
 
 
+def engine_active(e):
+    """True while a request started after the last completion: the only
+    in-flight signal a done-line stream offers. TTL-capped so a crash
+    mid-generation cannot stick the card ACTIVE forever."""
+    st = e.get("req_start_t") or 0
+    dn = e.get("req_done_t") or 0
+    return bool(st > dn and now() - st < ACTIVE_TTL_S)
+
+
+def _log_ts(line):
+    """Epoch seconds from an NInfer log timestamp prefix, else now."""
+    lt = LOG_TS_RE.match(line)
+    if not lt:
+        return now()
+    try:
+        return time.mktime(time.strptime(lt.group(1), "%Y-%m-%d %H:%M:%S")) + float("0." + lt.group(2))
+    except ValueError:
+        return now()
+
+
 def log_line(line, e):
+    m = STARTED_RE.search(line)
+    if m and e is not None and e.get("origin") == "ninfer":
+        with lock:
+            e["req_start_t"] = _log_ts(line)
+        return
     m = REQ_RE.search(line)
     if m and e is not None and e.get("origin") == "ninfer":
         rid = int(m.group(1))
-        lt = LOG_TS_RE.match(line)
-        t = now()
-        if lt:
-            try:
-                t = time.mktime(time.strptime(lt.group(1), "%Y-%m-%d %H:%M:%S")) + float("0." + lt.group(2))
-            except ValueError:
-                pass
+        t = _log_ts(line)
         # req# restarts at 1 on every NInfer load, so the log timestamp is part of the id
         rec = {"id": "req#%d@%d" % (rid, int(t)), "t": t, "model": e.get("label"),
                "origin": "ninfer", "prompt": None, "cache": None, "fresh": None,
@@ -641,6 +662,9 @@ def log_line(line, e):
             rec["fresh"] = max(0, rec["prompt"] - rec["cache"])
             if rec["prompt"]:
                 rec["cache_pct"] = round(100.0 * rec["cache"] / rec["prompt"], 1)
+        with lock:
+            if e is not None:
+                e["req_done_t"] = rec["t"]
         ok = add_request(rec)
         if ok:
             lvl = "ok" if (rec.get("cache_pct") or 0) and rec["cache_pct"] >= 90 else "info"
@@ -1140,6 +1164,7 @@ def snapshot():
                 "rates": e.get("rates"), "mtp": e.get("mtp"),
                 "window": e.get("window"), "sessions": e.get("sessions", []),
                 "service_unavailable": e.get("service_unavailable", 0),
+                "active": engine_active(e),
                 "counters": e.get("counters"), "reason": e.get("reason"),
                 "idle_vram": e.get("idle_vram"),
                 "hist": list(S.eng_hist.get(k, ()))[-HIST_SECONDS:],
@@ -1184,6 +1209,7 @@ def tick():
             "engines": {k: {
                 "up": e.get("up"), "latched": bool(e.get("latched")),
                 "queue": e.get("queue"), "rates": e.get("rates"),
+                "active": engine_active(e),
                 "mtp": e.get("mtp"), "sessions": e.get("sessions", []),
                 "counters": e.get("counters"), "reason": e.get("reason"),
                 "idle_vram": e.get("idle_vram"),
@@ -1615,10 +1641,30 @@ def ninfer_backend():
 
 
 def drop_ninfer():
-    """NInfer has a card only while ninfer-serve answers /metrics (operator, 2026-10-03)."""
+    """NInfer has a card only while a backend is live (operator, 2026-10-03)."""
     with lock:
         S.engines.pop("ninfer", None)
         S.eng_hist.pop("ninfer", None)
+
+
+LOG_RATE_WINDOW_S = 60.0
+
+
+def ninfer_log_rates(model, window_s=LOG_RATE_WINDOW_S):
+    """Live decode rate from completed-request log lines, for backends with
+    no /metrics (NInfer v3 answers 404 there): output tokens per wall
+    second over the trailing window, plus the freshest prefill figure.
+    0.0 while the backend is up but quiet."""
+    t = now()
+    with lock:
+        reqs = [r for r in S.requests
+                if r.get("model") == model and (r.get("t") or 0) >= t - window_s]
+    if not reqs:
+        return {"decode_tps": 0.0, "prefill_tps": None}
+    out = sum(r.get("output") or 0 for r in reqs)
+    pres = [r.get("prefill_tps") for r in reqs if r.get("prefill_tps") is not None]
+    return {"decode_tps": round(out / window_s, 1),
+            "prefill_tps": pres[0] if pres else None}
 
 
 def ninfer_backend_poll():
@@ -1662,6 +1708,20 @@ def ninfer_backend_poll():
             if dd_s > 0:
                 rates["decode_tps"] = round(dd / dd_s, 1)
             rates["gen_tps_inst"] = round(dd / dt, 1)
+            if not any(k.startswith("llamacpp:") for k in counters):
+                rates = None            # no token counters here: fall through to the log stream
+        if rates is None:
+            # NInfer v3 serves no /metrics: trailing live rate from its
+            # completed-request log lines instead of a dead 0.
+            rates = ninfer_log_rates(model)
+        try:                            # backend model card carries the context window
+            info = json.loads(http_get_text(backend + "/v1/models", timeout=PROBE_FAST))
+            ids = [m.get("max_model_len") for m in info.get("data", [])
+                   if isinstance(m, dict) and m.get("max_model_len")]
+            if ids:
+                window = max(ids)
+        except Exception:
+            pass
         ses = []
         for s in slots:
             if isinstance(s, dict):
@@ -1674,15 +1734,10 @@ def ninfer_backend_poll():
                     "processing": bool(s.get("is_processing")),
                     "retained": s.get("retained"),
                 })
-        if counters is None:              # not serving metrics (yet): no card, not a "down" one
-            drop_ninfer()
-            prev = prev_t = None
-            time.sleep(2.0)
-            continue
         e = S.engine("ninfer", model, "ninfer", window)
         with lock:
             e["backend"] = backend
-            if counters is not None:
+            if counters:
                 e["up"] = True
                 e["counters"] = counters
                 e["queue"] = int(counters.get("llamacpp:requests_processing", 0)

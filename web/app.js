@@ -92,6 +92,7 @@ function applyTick(d) {
     let e = state.engines.find(x => x.key === key);
     if (!e) { e = { key, label: key, origin: key, sessions: [] }; state.engines.push(e); state.engHist[key] = []; }
     Object.assign(e, { up: t.up ?? e.up, queue: t.queue ?? e.queue, rates: t.rates ?? e.rates, mtp: t.mtp ?? e.mtp });
+    if (t.active !== undefined) e.active = t.active;
     if (t.sessions) e.sessions = t.sessions;
     if (t.rate != null) pushHist(state.engHist[e.key], t.rate);
   }
@@ -249,7 +250,11 @@ function cableEngines() {
   if (!nodes.length) return state.engines;
   return nodes.slice(0, 8).map(n => {
     const e = state.engines.find(x => (x.label || x.key) === n.label) || {};
-    return { key: n.label, label: n.label, up: n.up !== false && e.up !== false, rates: e.rates || { decode_tps: 0 }, backend: n.backend || null };
+    const lr = state.requests.find(r => (r.model || '') === n.label && r.decode_tps != null);
+    return { key: n.label, label: n.label, up: n.up !== false && e.up !== false, rates: e.rates || { decode_tps: 0 }, backend: n.backend || null,
+      active: e.active === true,
+      lastTps: lr ? lr.decode_tps : null,
+      lastAgeS: lr && lr.t ? Math.max(0, Math.round(Date.now() / 1000 - lr.t)) : null };
   });
 }
 function pill(label, val, s) {

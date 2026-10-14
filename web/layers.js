@@ -244,8 +244,8 @@ export function paintCables(canvas, engines, requests, now) {
       ctx.beginPath();
       ctx.arc(lx - 16, y1, 10 + Math.sin(now / 500 + i * 1.7) * 1.2, 0, Math.PI * 2);
       ctx.strokeStyle = col;
-      ctx.globalAlpha = 0.35;
-      ctx.lineWidth = 1;
+      ctx.globalAlpha = e.active ? 0.9 : 0.35;
+      ctx.lineWidth = e.active ? 2 : 1;
       ctx.stroke();
       ctx.globalAlpha = 1;
     }
@@ -263,7 +263,12 @@ export function paintCables(canvas, engines, requests, now) {
     ctx.fillText(String(e.label || e.key || 'engine').slice(0, 16), 4, Math.max(10, y1 - 12));
     ctx.fillStyle = down ? '#3a4a5a' : '#5a8488';
     ctx.font = '8px monospace';
-    ctx.fillText(down ? 'DOWN' : Math.round(rate) + ' t/s' + (hits ? ' · ' + hits + ' req' : ''), lx - 34, Math.min(h - 4, y1 + 20));
+    const fresh = !down && e.lastTps != null && e.lastAgeS != null && e.lastAgeS < 120;
+    const age = e.lastAgeS != null && e.lastAgeS >= 60 ? Math.round(e.lastAgeS / 60) + 'm' : (e.lastAgeS || 0) + 's';
+    ctx.fillText(down ? 'DOWN' : Math.round(rate) + ' t/s'
+      + (e.active ? ' \u00b7 ACTIVE' : '')
+      + (fresh ? ' · \u2193' + Math.round(e.lastTps) + ' ' + age + ' ago' : '')
+      + (hits ? ' · ' + hits + ' req' : ''), lx - 34, Math.min(h - 4, y1 + 20));
     const dst = String(e.backend || e.label || e.key || '').split('/').pop().slice(-14);
     if (dst) {
       ctx.fillStyle = '#5a8488';
