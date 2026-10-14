@@ -1,0 +1,54 @@
+# Aether-grid compose: GPU collector + static web UI.
+#
+# One host port:  http://<host>:8792   (nginx serves web/, /api/* proxies
+# to the collector). The collector itself is not published; reach it
+# directly with `docker compose exec collector wget -qO- /api/snapshot`
+# or add a "8792:8792"-style ports entry if you need LAN-direct access.
+
+services:
+  collector:
+    build:
+      context: ..
+      dockerfile: docker/Dockerfile.collector
+    image: aether-collector:local
+    container_name: aether-collector
+    restart: unless-stopped
+    command: ["python3", "collector/speculum.py"]
+    environment:
+      # History DB lands at /data/speculum/speculum.db (XDG_DATA_HOME).
+      XDG_DATA_HOME: /data
+      PYTHONUNBUFFERED: "1"
+    volumes:
+      # History DB (SQLite) survives `compose down` and collector restarts.
+      - speculum-data:/data
+      # Config: copy aether.example.toml -> speculum.toml and edit.
+      # Read-only; absent file = probe localhost defaults, still serves.
+      - ../speculum.toml:/app/speculum.toml:ro
+    expose:
+      - "8792"
+    # NVIDIA passthrough: needs the NVIDIA container toolkit on the host.
+    # No CUDA install in the image; the collector only shells out to
+    # nvidia-smi, which the toolkit injects from the host driver.
+    deploy:
+      resources:
+        reservations:
+          devices:
+            - driver: nvidia
+              count: all
+              capabilities: [gpu, utility]
+
+  web:
+    build:
+      context: ..
+      dockerfile: docker/Dockerfile.web
+    image: aether-web:local
+    container_name: aether-web
+    restart: unless-stopped
+    depends_on:
+      - collector
+    ports:
+      - "8792:80"
+
+volumes:
+  speculum-data:
+    name: aether-speculum-data
