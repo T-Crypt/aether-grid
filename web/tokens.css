@@ -409,3 +409,41 @@ footer.foot .ft-right { color: var(--p-text); letter-spacing: 0.24em; }
 .skin-rail button[aria-pressed="true"] { color:var(--p-text); background:rgb(var(--acc) / 0.08); }
 .skin-rail button:hover { color:var(--p-text); }
 @media (max-width: 1100px) { .skin-rail { padding:8px 10px; gap:4px; } }
+
+/* ---- motion: skin-agnostic token scale + choreographed entrances (U2) ---- */
+:root {
+  --dur-1: 120ms;
+  --dur-2: 260ms;
+  --dur-3: 640ms;
+  --morph: 320ms;
+  --stagger: 60ms;
+  --ease: cubic-bezier(.22, 1, .36, 1);
+  --ease-inout: cubic-bezier(.45, 0, .55, 1);
+}
+@keyframes rise {
+  from { opacity: 0; transform: translateY(14px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+@keyframes draw-x { from { width: 0; } to { width: 22px; } }
+@keyframes draw-y { from { height: 0; } to { height: 22px; } }
+@keyframes drop { from { transform: translateY(-10px); opacity: 0; } to { transform: translateY(0); opacity: 1; } }
+@keyframes bump { 0%, 100% { transform: scale(1); } 50% { transform: scale(1.06); } }
+@keyframes flash { from { transform: translateX(-6px); opacity: 0; } to { transform: translateX(0); opacity: 1; } }
+
+.skin-rail { animation: rise var(--dur-3) var(--ease) both; }
+header.pills { animation: rise var(--dur-3) var(--ease) both; animation-delay: calc(var(--stagger) * 1); }
+.timecode-bar { animation: rise var(--dur-3) var(--ease) both; animation-delay: calc(var(--stagger) * 2); }
+main.deck > section.panel { animation: rise var(--dur-3) var(--ease) both; }
+main.deck > section.panel:nth-child(1) { animation-delay: calc(var(--stagger) * 3); --pi: 3; }
+main.deck > section.panel:nth-child(2) { animation-delay: calc(var(--stagger) * 4); --pi: 4; }
+main.deck > section.panel:nth-child(3) { animation-delay: calc(var(--stagger) * 5); --pi: 5; }
+main.deck > section.panel:nth-child(4) { animation-delay: calc(var(--stagger) * 6); --pi: 6; }
+main.deck > section.panel:nth-child(5) { animation-delay: calc(var(--stagger) * 7); --pi: 7; }
+main.deck > section.panel:nth-child(6) { animation-delay: calc(var(--stagger) * 8); --pi: 8; }
+main.deck > section.panel:nth-child(7) { animation-delay: calc(var(--stagger) * 9); --pi: 9; }
+.data-band { animation: rise var(--dur-3) var(--ease) both; animation-delay: calc(var(--stagger) * 10); }
+footer.foot { animation: rise var(--dur-3) var(--ease) both; animation-delay: calc(var(--stagger) * 11); }
+
+.panel .br::before { animation: draw-x var(--dur-2) var(--ease) both; animation-delay: calc(var(--stagger) * var(--pi, 3) + 120ms); }
+.panel .br::after { animation: draw-y var(--dur-2) var(--ease) both; animation-delay: calc(var(--stagger) * var(--pi, 3) + 120ms); }
+.panel h2, .bp-rlabel { animation: drop var(--dur-3) var(--ease) both; animation-delay: calc(var(--stagger) * var(--pi, 3) + 180ms); }
