@@ -329,7 +329,7 @@ canvas.short { height: 150px; }
 .sigil .s-fill { fill: var(--p-accent); }
 .toggles input { accent-color: var(--p-accent); }
 
-ul.log { margin: 8px 0 0; padding: 0; list-style: none; font-size: 8.5px; letter-spacing: 0.04em; max-height: 190px; overflow: auto; }
+ul.log { margin: 8px 0 0; padding: 0; list-style: none; font-size: 8.5px; letter-spacing: 0.04em; max-height: 190px; overflow: auto; scroll-behavior: smooth; }
 ul.log li {
   padding: 2px 5px; border-bottom: none; border-left: 1px solid rgb(var(--acc) / 0.30);
   margin-bottom: 2px; background: rgb(var(--acc) / 0.03);
@@ -400,6 +400,9 @@ footer.foot .ft-right { color: var(--p-text); letter-spacing: 0.24em; }
 }
 @media (prefers-reduced-motion: reduce) {
   .scanlines, .grain { display: none; }
+  *, *::before, *::after { animation: none !important; transition: none !important; }
+  main.deck > section.panel, .skin-rail, header.pills, .timecode-bar, .data-band, footer.foot { opacity: 1; transform: none; }
+  ul.log { scroll-behavior: auto; }
 }
 
 
@@ -467,3 +470,6 @@ body { transition: background-color var(--morph) var(--ease-inout); }
 .br::before, .br::after { transition: background-color, box-shadow var(--morph); }
 .panel h2, .br-id, .kpi .k, .db-k, .tc-k, .layer-row h3 { transition: color var(--morph); }
 .skin-rail button .skin-accent { transition: background-color var(--morph); }
+
+/* ---- motion: focus-visible (U5) ---- */
+.skin-rail button:focus-visible { outline: 1px solid var(--p-accent); outline-offset: 2px; }
