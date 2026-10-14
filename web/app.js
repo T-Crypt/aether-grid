@@ -8,27 +8,41 @@ import { paintTerrain, paintHelix, paintGauges } from './field.js';
 import { paintBackdrop, paintScatter, paintCables, paintScopeStrip, layerFlags } from './layers.js';
 
 const $ = (s, r = document) => r.querySelector(s);
-const SKINS = { aether: 'Aether Grid | Aether', hexlab: 'Aether Grid | Hex-Lab' };
-const FAVICONS = {
-  aether: "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Cpath d='M4 25H28' stroke='%23647294' stroke-width='1.5' stroke-linecap='round'/%3E%3Cpath d='M6 10.5A13.5 13.5 0 0 1 26 10.5' fill='none' stroke='%238f7bff' stroke-width='1.5' stroke-linecap='round' opacity='.55'/%3E%3Cpath d='M9.5 14.5A9 9 0 0 1 22.5 14.5' fill='none' stroke='%238f7bff' stroke-width='2' stroke-linecap='round'/%3E%3Ccircle cx='16' cy='19' r='3' fill='%238f7bff'/%3E%3C/svg%3E",
-  hexlab: "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Cpolygon points='16,2 28,9 28,23 16,30 4,23 4,9' fill='none' stroke='%2300e0e0' stroke-width='2'/%3E%3Ccircle cx='16' cy='16' r='4' fill='%2300e0e0'/%3E%3C/svg%3E",
+const SKINS = {
+  aether:   { title: 'Aether Grid | Aether',    accent: '#8f7bff' },
+  hexlab:   { title: 'Aether Grid | Hex-Lab',   accent: '#00e0e0' },
+  braid:    { title: 'Aether Grid | The Braid', accent: '#b7f0e1' },
+  isodose:  { title: 'Aether Grid | IsoDose',   accent: '#ff5a4a' },
+  corvane:  { title: 'Aether Grid | Corvane',   accent: '#59c3ff' },
+  sounding: { title: 'Aether Grid | Sounding',  accent: '#ffb000' },
+  gullet:   { title: 'Aether Grid | Gullet',    accent: '#7cff6b' },
 };
-const SIGIL = '<svg class="sigil" viewBox="0 0 32 32" aria-hidden="true"><path class="s-dim" d="M4 25H28" stroke-width="1.5" stroke-linecap="round"/><path class="s-acc" d="M6 10.5A13.5 13.5 0 0 1 26 10.5" fill="none" stroke-width="1.5" stroke-linecap="round" opacity=".55"/><path class="s-acc" d="M9.5 14.5A9 9 0 0 1 22.5 14.5" fill="none" stroke-width="2" stroke-linecap="round"/><circle class="s-fill" cx="16" cy="19" r="3"/></svg>';
+const AETHER_FAVICON = "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Cpath d='M4 25H28' stroke='%23647294' stroke-width='1.5' stroke-linecap='round'/%3E%3Cpath d='M6 10.5A13.5 13.5 0 0 1 26 10.5' fill='none' stroke='%238f7bff' stroke-width='1.5' stroke-linecap='round' opacity='.55'/%3E%3Cpath d='M9.5 14.5A9 9 0 0 1 22.5 14.5' fill='none' stroke='%238f7bff' stroke-width='2' stroke-linecap='round'/%3E%3Ccircle cx='16' cy='19' r='3' fill='%238f7bff'/%3E%3C/svg%3E";
+const HEXLAB_FAVICON = "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Cpolygon points='16,2 28,9 28,23 16,30 4,23 4,9' fill='none' stroke='%2300e0e0' stroke-width='2'/%3E%3Ccircle cx='16' cy='16' r='4' fill='%2300e0e0'/%3E%3C/svg%3E";
+const FAVICONS = Object.fromEntries(Object.keys(SKINS).map(k => {
+  if (k === 'aether') return [k, AETHER_FAVICON];
+  if (k === 'hexlab') return [k, HEXLAB_FAVICON];
+  return [k, AETHER_FAVICON.replaceAll('%238f7bff', '%23' + SKINS[k].accent.slice(1))];
+}));
 function currentSkin() {
   const s = document.documentElement.dataset.skin;
-  return s === 'hexlab' ? 'hexlab' : 'aether';
+  return Object.prototype.hasOwnProperty.call(SKINS, s) ? s : 'aether';
 }
 function setSkin(name) {
-  if (name !== 'hexlab') name = 'aether';
+  if (!Object.prototype.hasOwnProperty.call(SKINS, name)) name = 'aether';
   document.documentElement.dataset.skin = name;
   try { localStorage.setItem('aether.skin', name); } catch {}
-  document.title = SKINS[name];
+  document.title = SKINS[name].title;
   const fav = document.getElementById('favicon');
   if (fav) fav.href = FAVICONS[name];
   document.querySelectorAll('[data-skin-btn]').forEach(b =>
     b.setAttribute('aria-pressed', String(b.dataset.skinBtn === name)));
+  try {
+    const url = new URL(location.href);
+    url.searchParams.set('skin', name);
+    history.replaceState(null, '', url.toString());
+  } catch {}
 }
-
 const DEMO = new URLSearchParams(location.search).has('demo');
 const API = ''; // same-origin absolute paths below (/api/...) work from /web/
 
@@ -399,6 +413,10 @@ function renderText() { renderPills(); renderKpis(); renderCohort(); renderLogs(
 
 /* --- layer toggles -------------------------------------------------------- */
 function bindSkinSwitcher() {
+  document.querySelectorAll('[data-skin-btn]').forEach(b => {
+    const sk = SKINS[b.dataset.skinBtn];
+    if (sk) b.style.setProperty('--skin-accent', sk.accent);
+  });
   setSkin(currentSkin());
   document.querySelectorAll('[data-skin-btn]').forEach(b =>
     b.addEventListener('click', () => setSkin(b.dataset.skinBtn)));
