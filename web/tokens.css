@@ -447,3 +447,16 @@ footer.foot { animation: rise var(--dur-3) var(--ease) both; animation-delay: ca
 .panel .br::before { animation: draw-x var(--dur-2) var(--ease) both; animation-delay: calc(var(--stagger) * var(--pi, 3) + 120ms); }
 .panel .br::after { animation: draw-y var(--dur-2) var(--ease) both; animation-delay: calc(var(--stagger) * var(--pi, 3) + 120ms); }
 .panel h2, .bp-rlabel { animation: drop var(--dur-3) var(--ease) both; animation-delay: calc(var(--stagger) * var(--pi, 3) + 180ms); }
+
+/* ---- motion: component settle transitions (U3) ---- */
+.pill { transition: color, background-color, border-color 220ms var(--ease-inout); }
+.pill .dot { transition: background-color 220ms var(--ease-inout); }
+.kpi .v { transition: color, font-size 220ms; }
+.kpi .v.bump { animation: bump 320ms var(--ease); }
+.slot { transition: background-color, border-color, box-shadow 240ms; }
+.slot .bar i { transition: width 420ms var(--ease); }
+.skin-rail button { transition: color, background-color, box-shadow 160ms; }
+.skin-rail button[aria-pressed="true"] { box-shadow: 0 0 10px rgb(var(--acc) / .35); }
+.toggles label { transition: opacity, background-color, border-color, color 160ms; }
+.tc-v, .db-v { transition: color 240ms; }
+.log li.flash { animation: flash var(--dur-2) var(--ease); }
