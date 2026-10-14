@@ -29,8 +29,12 @@ export function morphPal(from, duration) {
 }
 export function pal() {
   if (morph) {
+    /* Snapshot the live morph: the closures below are stored on palCache and may
+       run after the window ends, so they must not read the module binding once
+       it has been cleared. */
+    const m = morph;
     const now = performance.now();
-    const k = morph.dur ? Math.min(1, (now - morph.t0) / morph.dur) : 1;
+    const k = m.dur ? Math.min(1, (now - m.t0) / m.dur) : 1;
     const g = n => getComputedStyle(document.documentElement).getPropertyValue(n).trim();
     const to = { acc: parseTriple(g('--acc')), dat: parseTriple(g('--dat')), col: parseTriple(g('--col')) };
     const rgba = (t, a) => 'rgb(' + (t || '0 224 224') + ' / ' + a + ')';
@@ -43,9 +47,9 @@ export function pal() {
       cool: g('--p-cool') || '#ff5c8a', mint: g('--ser-3') || '#6fe7ad',
       text: g('--p-text') || '#dce6ff', dim: g('--p-dim') || '#647294',
       panel: g('--p-panel') || '#0c1226', bg: g('--p-bg') || '#060a14',
-      acc: a => rgba(mix(morph.from.acc, to.acc), a),
-      dat: a => rgba(mix(morph.from.dat, to.dat), a),
-      col: a => rgba(mix(morph.from.col, to.col), a),
+      acc: a => rgba(mix(m.from.acc, to.acc), a),
+      dat: a => rgba(mix(m.from.dat, to.dat), a),
+      col: a => rgba(mix(m.from.col, to.col), a),
     };
     if (k >= 1) morph = null;
     return palCache;
