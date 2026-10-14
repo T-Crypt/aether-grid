@@ -42,10 +42,14 @@ import urllib.request
 from http.server import BaseHTTPRequestHandler, ThreadingHTTPServer
 from pathlib import Path
 
-import config as spec_config
-import engines
-import history
-import hostinfo
+try:
+    import config as spec_config
+    import engines
+    import history
+    import hostinfo
+except ImportError:  # run as module: python -m collector.speculum
+    from collector import config as spec_config  # type: ignore
+    from collector import engines, history, hostinfo  # type: ignore
 
 ROOT = Path(__file__).resolve().parent.parent
 HOST = "127.0.0.1"
@@ -1513,6 +1517,9 @@ def main():
         sys.stdout = sys.stderr = open(os.devnull, "w")
     ap = argparse.ArgumentParser()
     ap.add_argument("--port", type=int, default=None)
+    ap.add_argument("--host", default=None,
+                    help="bind address (default: server.host or 127.0.0.1; "
+                         "use 0.0.0.0 behind the compose nginx proxy)")
     ap.add_argument("--config", default=None,
                     help="speculum.toml path (default: repo root, then "
                          "~/.config/speculum/speculum.toml)")
@@ -1527,7 +1534,7 @@ def main():
         PORT = args.port
     elif cfg.get("server", {}).get("port"):
         PORT = int(cfg["server"]["port"])
-    host = cfg.get("server", {}).get("host") or HOST
+    host = args.host or cfg.get("server", {}).get("host") or HOST
     # Built-in threads can be moved off their stock ports too. NInfer follows
     # llama-swap's /running proxy, so it needs no separate port.
     LLAMA_SWAP = endpoint_url(cfg.get("llama_swap"), "http://127.0.0.1:9090")

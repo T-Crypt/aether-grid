@@ -13,7 +13,9 @@ services:
     image: aether-collector:local
     container_name: aether-collector
     restart: unless-stopped
-    command: ["python3", "collector/speculum.py"]
+    # --host 0.0.0.0: nginx reaches the collector from another
+    # container, so a localhost bind would 502 every /api/* request.
+    command: ["python3", "collector/speculum.py", "--host", "0.0.0.0"]
     environment:
       # History DB lands at /data/speculum/speculum.db (XDG_DATA_HOME).
       XDG_DATA_HOME: /data

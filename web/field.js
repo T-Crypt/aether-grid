@@ -12,6 +12,7 @@ export function fit(c) {
 
 /* Brainwave terrain: layered ridgelines from a 1 Hz history series. */
 export function paintTerrain(canvas, series, t) {
+  if (!canvas) return;
   const { ctx, w, h } = fit(canvas);
   ctx.clearRect(0, 0, w, h);
   const layers = 4;
@@ -45,6 +46,7 @@ export function paintTerrain(canvas, series, t) {
 
 /* Helix reasoning: double-helix ladder; rung brightness follows load 0..1. */
 export function paintHelix(canvas, load, sessions, t) {
+  if (!canvas) return;
   const { ctx, w, h } = fit(canvas);
   ctx.clearRect(0, 0, w, h);
   const cx = w / 2, amp = Math.min(w * 0.30, 150);

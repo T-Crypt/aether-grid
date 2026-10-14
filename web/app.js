@@ -109,6 +109,7 @@ function pushEvent(ev) {
   const k = (ev.t || 0) + '|' + ev.level + '|' + (ev.msg || '');
   if (evSeen.has(k)) return;
   evSeen.add(k);
+  if (evSeen.size > 1000) evSeen.delete(evSeen.values().next().value);
   state.events.unshift(ev);
   if (state.events.length > 100) state.events.length = 100;
 }
@@ -138,7 +139,7 @@ function openSSE() {
     if (i >= candidates.length) { startPoll(); return; }
     try {
       const src = new EventSource(candidates[i]);
-      src.onopen = () => { es = src; state.feed = 'sse'; feed.lastTick = performance.now(); };
+      src.onopen = () => { es = src; state.feed = 'sse'; feed.lastTick = performance.now(); if (pollTimer) { clearInterval(pollTimer); pollTimer = null; } };
       src.addEventListener('tick', ev => { try { applyTick(JSON.parse(ev.data)); } catch {} });
       src.onerror = () => { try { src.close(); } catch {} if (es === src) es = null; tryOpen(i + 1); };
     } catch { tryOpen(i + 1); }
