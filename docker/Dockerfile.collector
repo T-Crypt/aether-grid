@@ -24,4 +24,4 @@ EXPOSE 8792
 # Config: mount your speculum.toml at /app/speculum.toml
 # (copy from aether.example.toml). Without it the collector probes
 # localhost defaults and still serves.
-CMD ["python3", "collector/speculum.py"]
+CMD ["python3", "collector/aether.py"]

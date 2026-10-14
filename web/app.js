@@ -19,6 +19,7 @@ const state = {
   engHist: {}, hostHist: { cpu: [], ram: [] },
   engines: [], strata: { up: null, models: [] },
   models: [], alerts: [], requests: [], events: [], sessions: [],
+  router: { nodes: [], runs: [] }, reasoning: null,
   t: 0,
 };
 const KPI_KEYS = ['tps', 'rpm', 'p95', 'ttft', 'tpot', 'vram', 'cache', 'reingest', 'mtp', 'queue'];
@@ -67,6 +68,8 @@ function applySnapshot(s) {
   for (const e of state.engines) state.engHist[e.key] = [...(e.hist || [])];
   state.strata = s.strata || { up: null, models: [] };
   state.models = s.models || [];
+  state.router = s.router || { nodes: [], runs: [] };
+  state.reasoning = s.reasoning || null;
   state.alerts = s.alerts || [];
   for (const r of s.requests || []) pushRequest(r);
   for (const ev of (s.events || []).slice(0, 100)) pushEvent(ev);
@@ -81,6 +84,8 @@ function applyTick(d) {
   for (const k of KPI_KEYS) { state.kpi[k] = d.kpi ? d.kpi[k] : state.kpi[k]; pushHist(state.kpiHist[k], d.kpi ? d.kpi[k] : null); }
   if (d.kpi && d.kpi.tps_models != null) state.kpi.tps_models = d.kpi.tps_models;
   state.strata.up = d.strata_up != null ? d.strata_up : state.strata.up;
+  if (d.router) state.router = d.router;
+  if (d.reasoning) state.reasoning = d.reasoning;
   state.alerts = d.alerts || state.alerts;
   if (d.engines) for (const key of Object.keys(d.engines)) {
     const t = d.engines[key];
@@ -184,6 +189,8 @@ function initDemo() {
   }
   state.engines = [demo.engine];
   state.engHist = { sim: [] };
+  state.router = { nodes: [{ id: 'run:sim-model', kind: 'model', label: 'sim-model', engine: 'llama', backend: '127.0.0.1:5803', up: true }], runs: [] };
+  state.reasoning = { t: 0, requests: 0, thinking_tokens: 0, thinking_lines: 0, mtp_acc: 0, mtp_tot: 0, mtp_accept_pct: null, ttft_wave: [], tpot_wave: [] };
   state.strata = { up: true, models: [] };
   state.mode = 'demo'; state.feed = 'sim';
   for (let i = 0; i < 300; i++) demoStep();
@@ -215,11 +222,36 @@ function demoStep() {
   for (const s of d.engine.sessions) s.used = Math.min(s.window, Math.max(256, s.used + Math.floor((R() - 0.45) * 900)));
   if (state.t % 5 === 0) pushRequest({ id: 'sim-' + (++d.reqId), t: Date.now() / 1000, model: 'sim-model', prompt: 1000, output: Math.floor(80 + R() * 400), decode_tps: Math.round(d.tps) });
   if (R() < 0.1) pushEvent({ t: Date.now() / 1000, level: R() < 0.7 ? 'ok' : 'warn', msg: 'sim tick · ' + Math.round(d.tps) + ' tok/s' });
+  const rs = state.reasoning;
+  rs.requests += 1;
+  rs.thinking_tokens += Math.floor(40 + R() * 320);
+  rs.thinking_lines += R() < 0.4 ? 1 : 0;
+  rs.mtp_acc += R() < 0.71 ? 1 : 0;
+  rs.mtp_tot += 1;
+  rs.mtp_accept_pct = round1(100 * rs.mtp_acc / rs.mtp_tot);
+  rs.t += 1;
+  pushHist(rs.ttft_wave, d.ttft, 300);
+  pushHist(rs.tpot_wave, d.tpot, 300);
   feed.lastTick = performance.now();
   refreshDerived();
 }
 
 /* --- render (DOM, throttled) ---------------------------------------------- */
+function round1(v) { return Math.round(v * 10) / 10; }
+function fmtBig(v) {
+  if (v == null || !isFinite(v)) return '—';
+  if (v >= 1000000) return (v / 1000000).toFixed(1) + 'M';
+  if (v >= 1000) return (v / 1000).toFixed(1) + 'k';
+  return String(Math.round(v));
+}
+function cableEngines() {
+  const nodes = (state.router.nodes || []).filter(n => n && n.kind === 'model');
+  if (!nodes.length) return state.engines;
+  return nodes.slice(0, 8).map(n => {
+    const e = state.engines.find(x => (x.label || x.key) === n.label) || {};
+    return { key: n.label, label: n.label, up: n.up !== false && e.up !== false, rates: e.rates || { decode_tps: 0 }, backend: n.backend || null };
+  });
+}
 function pill(label, val, s) {
   return '<span class="pill" data-s="' + s + '"><span class="dot"></span>' + label + ' ' + val + '</span>';
 }
@@ -234,7 +266,10 @@ function renderPills() {
     + pill('engines', up + '/' + state.engines.length, up ? 'ok' : 'crit')
     + pill('tps', Math.round(state.kpi.tps || 0), 'live')
     + pill('queue', Math.round(q), q >= 10 ? 'crit' : q >= 4 ? 'warn' : 'ok')
-    + pill('vram', (state.kpi.vram != null ? state.kpi.vram.toFixed(1) : '—') + 'G', 'live');
+    + pill('vram', (state.kpi.vram != null ? state.kpi.vram.toFixed(1) : '—') + 'G', 'live')
+    + pill('nodes', (state.router.nodes || []).length, 'live')
+    + pill('mtp-acc', state.reasoning && state.reasoning.mtp_accept_pct != null ? state.reasoning.mtp_accept_pct.toFixed(1) + '%' : '—', 'live')
+    + pill('think', state.reasoning && state.reasoning.thinking_tokens != null ? fmtBig(state.reasoning.thinking_tokens) : '—', 'live');
 }
 const KPI_FMT = {
   tps: v => Math.round(v), rpm: v => Math.round(v), queue: v => Math.round(v),
@@ -296,7 +331,7 @@ function frame(now) {
   paintHelix(helixEl(), (state.kpi.tps || 0) / Math.max(maxTps, state.kpi.tps || 1), state.sessions, now);
   if (layerFlags.declination) paintBackdrop($('#backdrop'), state.kpiHist.tps, now);
   if (layerFlags.scopeOmega) paintScatter($('#scatter'), state.kpiHist, state.alerts, state.events, now);
-  if (layerFlags.loom9) paintCables($('#cables'), state.engines, state.requests, now);
+  if (layerFlags.loom9) paintCables($('#cables'), cableEngines(), state.requests, now);
   if (layerFlags.safehouse) paintScopeStrip($('#scope'), state.sessions, now);
   if (now - lastDom > 500) { lastDom = now; renderText(); }
   requestAnimationFrame(frame);
