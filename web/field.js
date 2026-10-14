@@ -10,11 +10,30 @@ export function fit(c) {
   return { ctx, w, h };
 }
 
+/* Skin palette: brand hues come from CSS vars so each skin repaints the
+   canvases. Refreshed about once a second; severity hues stay absolute. */
+let palCache = null, palN = 0;
+export function pal() {
+  if (palCache && (palN++ % 60)) return palCache;
+  const g = n => getComputedStyle(document.documentElement).getPropertyValue(n).trim();
+  const acc = g('--acc'), dat = g('--dat'), col = g('--col');
+  const rgba = (t, a) => 'rgb(' + (t || '0 224 224') + ' / ' + a + ')';
+  palCache = {
+    accent: g('--p-accent') || '#8f7bff', data: g('--p-data') || '#6fe7ad',
+    cool: g('--p-cool') || '#ff5c8a', mint: g('--ser-3') || '#6fe7ad',
+    text: g('--p-text') || '#dce6ff', dim: g('--p-dim') || '#647294',
+    panel: g('--p-panel') || '#0c1226', bg: g('--p-bg') || '#060a14',
+    acc: a => rgba(acc, a), dat: a => rgba(dat, a), col: a => rgba(col, a),
+  };
+  return palCache;
+}
+
 /* Brainwave terrain: tilted wireframe mesh, z from history + slow phase.
    History drives elevation so live telemetry reads in the surface. */
 export function paintTerrain(canvas, series, t) {
   if (!canvas) return;
   const { ctx, w, h } = fit(canvas);
+  const P = pal();
   ctx.clearRect(0, 0, w, h);
   const data = (Array.isArray(series) && series.length ? series : [0]).slice(-240);
   const max = Math.max(1, ...data);
@@ -49,10 +68,10 @@ export function paintTerrain(canvas, series, t) {
     }
     const front = j === ROWS - 1;
     ctx.lineWidth = front ? 1.5 : 1;
-    ctx.strokeStyle = front ? 'rgba(0,224,224,0.95)' : 'rgba(0,224,224,0.42)';
+    ctx.strokeStyle = front ? P.acc(0.95) : P.acc(0.42);
     ctx.stroke();
   }
-  ctx.strokeStyle = 'rgba(0,224,224,0.30)';
+  ctx.strokeStyle = P.acc(0.30);
   for (let i = 0; i < COLS; i++) {
     ctx.beginPath();
     for (let j = 0; j < ROWS; j++) {
@@ -62,7 +81,7 @@ export function paintTerrain(canvas, series, t) {
     ctx.stroke();
   }
   const fx = pts[ROWS - 1][Math.floor(COLS * 0.62)];
-  ctx.fillStyle = '#f0dc50';
+  ctx.fillStyle = P.data;
   ctx.beginPath(); ctx.arc(fx[0], fx[1], 2.4, 0, Math.PI * 2); ctx.fill();
   ctx.fillStyle = 'rgba(216,240,240,0.55)';
   ctx.font = '8px monospace';
@@ -73,6 +92,7 @@ export function paintTerrain(canvas, series, t) {
 export function paintHelix(canvas, load, sessions, t) {
   if (!canvas) return;
   const { ctx, w, h } = fit(canvas);
+  const P = pal();
   ctx.clearRect(0, 0, w, h);
   const cx = w / 2, amp = Math.min(w * 0.30, 150);
   const rungs = Math.max(8, Math.min(22, (sessions && sessions.length) || 12));
@@ -84,16 +104,16 @@ export function paintHelix(canvas, load, sessions, t) {
     const x1 = cx + Math.sin(p) * amp, x2 = cx - Math.sin(p) * amp;
     const front = Math.cos(p) > 0;
     const glow = 0.25 + 0.75 * (0.35 + 0.65 * l) * (0.5 + 0.5 * Math.sin(p * 2));
-    ctx.strokeStyle = front ? 'rgba(255,64,192,' + glow.toFixed(2) + ')' : 'rgba(240,220,80,' + (glow * 0.8).toFixed(2) + ')';
+    ctx.strokeStyle = front ? P.col(glow.toFixed(2)) : P.dat((glow * 0.8).toFixed(2));
     ctx.lineWidth = front ? 1.6 : 1;
     ctx.beginPath(); ctx.moveTo(x1, y); ctx.lineTo(x2, y); ctx.stroke();
-    ctx.fillStyle = front ? '#ff40c0' : '#f0dc50';
+    ctx.fillStyle = front ? P.cool : P.data;
     ctx.globalAlpha = 0.9;
     ctx.beginPath(); ctx.arc(x1, y, 2, 0, Math.PI * 2); ctx.fill();
     ctx.beginPath(); ctx.arc(x2, y, 2, 0, Math.PI * 2); ctx.fill();
     ctx.globalAlpha = 1;
   }
-  const strands = [[0, '#ff40c0', 2.2], [Math.PI, '#f0dc50', 2.2]];
+  const strands = [[0, P.cool, 2.2], [Math.PI, P.data, 2.2]];
   for (const [s, col, lw] of strands) {
     ctx.beginPath();
     for (let i = 0; i <= 90; i++) {
@@ -107,7 +127,7 @@ export function paintHelix(canvas, load, sessions, t) {
   ctx.fillStyle = 'rgba(90,132,136,0.9)';
   ctx.font = '8px monospace';
   ctx.fillText('LD ' + (l * 100).toFixed(0) + '% · N ' + rungs, 8, 12);
-  ctx.fillStyle = 'rgba(240,220,80,0.85)';
+  ctx.fillStyle = P.dat(0.85);
   ctx.fillText('SHE_10N', w - 52, h - 8);
 }
 
@@ -115,10 +135,11 @@ export function paintHelix(canvas, load, sessions, t) {
 export function paintGauges(canvas, a, b, t) {
   if (!canvas) return;
   const { ctx, w, h } = fit(canvas);
+  const P = pal();
   ctx.clearRect(0, 0, w, h);
   const cells = [
-    { label: 'TMP', frac: b, col: '#ff40c0', unit: 'C', scale: 95 },
-    { label: 'PSI', frac: a, col: '#f0dc50', unit: '%', scale: 100 },
+    { label: 'TMP', frac: b, col: P.accent, unit: 'C', scale: 95 },
+    { label: 'PSI', frac: a, col: P.data, unit: '%', scale: 100 },
   ];
   const cw = w / 2;
   cells.forEach((g, idx) => {
@@ -126,7 +147,7 @@ export function paintGauges(canvas, a, b, t) {
     const R = Math.min(cw * 0.36, 52);
     const f = Math.max(0, Math.min(1, g.frac == null ? 0.4 : g.frac));
     const col = g.label === 'TMP'
-      ? (f * 95 >= 85 ? '#ff5c7a' : f * 95 >= 70 ? '#f0dc50' : '#00e0e0')
+      ? (f * 95 >= 85 ? '#ff5c7a' : f * 95 >= 70 ? '#f0dc50' : P.accent)
       : g.col;
     ctx.strokeStyle = 'rgba(216,240,240,0.25)';
     ctx.lineWidth = 1;

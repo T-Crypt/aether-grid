@@ -7,6 +7,16 @@ Layers sit on top of that base; each layer is fed by one or more
 Speculum panels from `/api/snapshot` (1 Hz `/api/stream` ticks carry
 the same fields incrementally).
 
+## Skins
+
+The chrome is AETHER GRID by default (ion-violet brand, sigil logo,
+tab title `Aether Grid | Aether`). HEX-LAB is one available skin:
+the previous cyan look, kept whole under `data-skin="hexlab"` with tab
+title `Aether Grid | Hex-Lab`. The SKIN switch in FIELD LAYERS flips
+`web/tokens.css` variables plus the canvas palette (`pal()` in
+`web/field.js`, severity hues stay absolute) and persists to
+`localStorage`.
+
 ## HEX-LAB base → snapshot panels
 
 | Base element (`web/index.html` id) | Snapshot panel | Fields used |

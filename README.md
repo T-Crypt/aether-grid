@@ -1,12 +1,12 @@
-# AETHER-GRID
+# Aether Grid
 
-Futuristic toy LLM brain-scan dashboard. Live metrics always on. UISpace visuals on top.
+Aether Grid watches local inference engines and shows their numbers live, with history. It covers GPU, host, llama-swap, NInfer, and Strata on one screen. Every source is optional. A missing source leaves its panels empty.
 
-Base is `speculum/collector` stdlib feed. Visual base is HEX-LAB. Layers are DECLINATION field backdrop, LOOM-9 router cables, SCOPE-OMEGA anomaly scatter, SAFEHOUSE reasoning scope.
+The feed is the speculum collector in `collector/` and uses only the standard library. The UI is static files in `web/` with no build step. The default skin is Aether. Hex-Lab stays selectable as a skin. Four layers sit on top of the base panels. They are Declination field backdrop, Loom-9 router cables, Scope-Omega anomaly scatter, and Safehouse reasoning scope.
 
 ## Layout
 
-- `collector/` vendored speculum feed plus router and reasoning adapters
+- `collector/` speculum feed plus router and reasoning adapters
 - `web/` static UI with no build
 - `docker/` slim images plus compose
 - `.router/` run folders for staged work
@@ -20,7 +20,7 @@ python3 collector/aether.py [--port 8792] [--config speculum.toml]
 # http://localhost:8792
 ```
 
-No backends needed for a first look — open `http://localhost:8792/?demo`
+No backends needed for a first look. Open `http://localhost:8792/?demo`
 for the seeded in-browser simulator (same UI, fake data, no polling).
 
 ## Docker

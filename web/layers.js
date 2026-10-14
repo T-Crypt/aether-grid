@@ -1,6 +1,6 @@
 /* layers.js — toggleable HEX-LAB field layers (Canvas 2D + rAF only, no deps). */
 
-import { fit } from './field.js';
+import { fit, pal } from './field.js';
 
 export const layerFlags = {
   declination: true,
@@ -30,16 +30,17 @@ function sd(a, m) {
 export function paintBackdrop(canvas, tpsHist, now) {
   if (!canvas) return;
   const { ctx, w, h } = fit(canvas);
+  const P = pal();
   ctx.clearRect(0, 0, w, h);
   const data = seriesOf(tpsHist);
   const m = mean(data) || 1;
   const mx = Math.max(m, ...data, 1);
   const g = ctx.createLinearGradient(0, 0, 0, h);
-  g.addColorStop(0, '#0a2632');
-  g.addColorStop(1, '#051820');
+  g.addColorStop(0, P.panel);
+  g.addColorStop(1, P.bg);
   ctx.fillStyle = g;
   ctx.fillRect(0, 0, w, h);
-  ctx.strokeStyle = 'rgba(0,224,224,0.10)';
+  ctx.strokeStyle = P.acc(0.10);
   ctx.lineWidth = 1;
   for (let gx = 0; gx < w; gx += 16) {
     ctx.beginPath(); ctx.moveTo(gx + 0.5, 0); ctx.lineTo(gx + 0.5, h); ctx.stroke();
@@ -56,34 +57,35 @@ export function paintBackdrop(canvas, tpsHist, now) {
         - v * h * 0.10;
       if (i === 0) ctx.moveTo(x, y); else ctx.lineTo(x, y);
     }
-    ctx.strokeStyle = b % 2 ? 'rgba(255,64,192,0.35)' : 'rgba(0,224,224,0.45)';
+    ctx.strokeStyle = b % 2 ? P.col(0.35) : P.acc(0.45);
     ctx.globalAlpha = 0.25 + 0.45 * f * (1 - b / (bands + 1));
     ctx.lineWidth = 1.1;
     ctx.stroke();
     ctx.globalAlpha = 1;
   }
-  ctx.fillStyle = 'rgba(0,224,224,0.8)';
+  ctx.fillStyle = P.acc(0.8);
   ctx.font = '8px monospace';
   ctx.fillText('DECL · μ ' + m.toFixed(0), 8, 12);
 }
 
-/* SCOPE-OMEGA — anomaly scatter in cyan/amber/pink/purple coding. */
-const SCATTER_KEYS = [
-  { k: 'queue', c: '#f0dc50' },
-  { k: 'vram', c: '#ff8a7a' },
-  { k: 'p95', c: '#c040e0' },
-  { k: 'ttft', c: '#00e0e0' },
-];
+/* SCOPE-OMEGA — anomaly scatter; queue/ttft follow the skin, severity stays absolute. */
 export function paintScatter(canvas, kpiHist, alerts, events, now) {
   if (!canvas) return;
   const { ctx, w, h } = fit(canvas);
+  const P = pal();
   ctx.clearRect(0, 0, w, h);
-  ctx.fillStyle = '#071b24';
+  ctx.fillStyle = P.bg;
   ctx.fillRect(0, 0, w, h);
+  const SCATTER_KEYS = [
+    { k: 'queue', c: P.data },
+    { k: 'vram', c: '#ff8a7a' },
+    { k: 'p95', c: '#c040e0' },
+    { k: 'ttft', c: P.accent },
+  ];
   const N = 60, pad = 14;
   const iw = w - pad * 2, ih = h - pad * 2 - 22;
   const top = pad + 10, bot = top + ih;
-  ctx.strokeStyle = 'rgba(0,224,224,0.12)';
+  ctx.strokeStyle = P.acc(0.12);
   ctx.lineWidth = 1;
   for (let r = 0; r <= 3; r++) {
     const y = top + (r / 3) * ih;
@@ -141,7 +143,7 @@ export function paintScatter(canvas, kpiHist, alerts, events, now) {
     ctx.fillRect(x, h - 6, 2, 4);
     ctx.globalAlpha = 1;
   });
-  ctx.fillStyle = 'rgba(0,224,224,0.8)';
+  ctx.fillStyle = P.acc(0.8);
   ctx.font = '8px monospace';
   ctx.fillText('Ω SCATTER', 8, h - 9);
 }
@@ -152,10 +154,11 @@ export function paintScatter(canvas, kpiHist, alerts, events, now) {
 export function paintCables(canvas, engines, requests, now) {
   if (!canvas) return;
   const { ctx, w, h } = fit(canvas);
+  const P = pal();
   ctx.clearRect(0, 0, w, h);
-  ctx.fillStyle = '#071b24';
+  ctx.fillStyle = P.bg;
   ctx.fillRect(0, 0, w, h);
-  ctx.strokeStyle = 'rgba(0,224,224,0.08)';
+  ctx.strokeStyle = P.acc(0.08);
   ctx.lineWidth = 1;
   for (let gx = 12; gx < w - 8; gx += 18) {
     ctx.beginPath(); ctx.moveTo(gx + 0.5, 8); ctx.lineTo(gx + 0.5, h - 8); ctx.stroke();
@@ -166,19 +169,19 @@ export function paintCables(canvas, engines, requests, now) {
   const lx = Math.max(84, Math.min(110, w * 0.16));
   const rx = w - Math.max(64, Math.min(96, w * 0.14));
   const mx = (lx + rx) / 2;
-  const cols = ['#00e0e0', '#ff40c0', '#6fe7ad', '#f0dc50'];
-  ctx.fillStyle = 'rgba(0,224,224,0.8)';
+  const cols = [P.accent, P.cool, P.mint, P.data];
+  ctx.fillStyle = P.acc(0.8);
   ctx.font = '8px monospace';
   ctx.fillText('LOOM-9 · ' + engs.length + ' CABLES', 8, 12);
   if (!engs.length) {
-    ctx.strokeStyle = 'rgba(0,224,224,0.25)';
+    ctx.strokeStyle = P.acc(0.25);
     ctx.setLineDash([6, 5]);
     ctx.strokeRect(lx, top, rx - lx, Math.max(20, bot - top));
     ctx.setLineDash([]);
-    ctx.fillStyle = 'rgba(0,224,224,0.7)';
+    ctx.fillStyle = P.acc(0.7);
     ctx.font = '11px monospace';
     ctx.fillText('loom-9 · no engines claimed', 12, top + 18);
-    ctx.fillStyle = '#5a8488';
+    ctx.fillStyle = P.dim;
     ctx.font = '8px monospace';
     ctx.fillText('EMPTY · WAITING FOR ROUTER NODES', 12, top + 32);
     return;
@@ -281,15 +284,16 @@ export function paintCables(canvas, engines, requests, now) {
 export function paintScopeStrip(canvas, sessions, now) {
   if (!canvas) return;
   const { ctx, w, h } = fit(canvas);
+  const P = pal();
   ctx.clearRect(0, 0, w, h);
-  ctx.fillStyle = '#08141b';
+  ctx.fillStyle = P.bg;
   ctx.fillRect(0, 0, w, h);
   ctx.strokeStyle = 'rgba(90,132,136,0.5)';
   ctx.lineWidth = 1;
   ctx.setLineDash([8, 5]);
   ctx.strokeRect(4.5, 4.5, w - 9, h - 9);
   ctx.setLineDash([]);
-  ctx.fillStyle = '#5a8488';
+  ctx.fillStyle = P.dim;
   ctx.font = '10px monospace';
   ctx.fillText('safehouse · scoped view', 12, 20);
   const rows = (Array.isArray(sessions) ? sessions : []).slice(0, 10);
@@ -304,7 +308,7 @@ export function paintScopeStrip(canvas, sessions, now) {
     const y = y0 + i * rh;
     const f = s.window ? Math.max(0, Math.min(1, (s.used || 0) / s.window)) : 0;
     const sway = 0.5 + 0.5 * Math.sin(now / 800 + i * 0.9);
-    ctx.strokeStyle = 'rgba(0,224,224,' + (0.25 + 0.35 * sway * f).toFixed(2) + ')';
+    ctx.strokeStyle = P.acc((0.25 + 0.35 * sway * f).toFixed(2));
     ctx.lineWidth = 1;
     ctx.beginPath();
     ctx.moveTo(12, y + rh / 2);
