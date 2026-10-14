@@ -4,7 +4,7 @@
    ?demo uses a seeded simulator fallback. Live and demo share one paint path.
    ========================================================================= */
 
-import { paintTerrain, paintHelix } from './field.js';
+import { paintTerrain, paintHelix, paintGauges } from './field.js';
 import { paintBackdrop, paintScatter, paintCables, paintScopeStrip, layerFlags } from './layers.js';
 
 const $ = (s, r = document) => r.querySelector(s);
@@ -253,18 +253,31 @@ function cableEngines() {
   });
 }
 function pill(label, val, s) {
-  return '<span class="pill" data-s="' + s + '"><span class="dot"></span>' + label + ' ' + val + '</span>';
+  return '<span class="pill" data-s="' + s + '"><span class="dot"></span>' + label + ' · ' + val + '</span>';
+}
+function tempSeverity(t) {
+  if (t == null || !isFinite(t)) return 'warn';
+  if (t >= 85) return 'crit';
+  if (t >= 70) return 'warn';
+  return 'live';
 }
 function renderPills() {
   const bar = $('#pills');
   const up = state.engines.filter(e => e.up).length;
   const modeS = state.mode === 'live' ? 'live' : state.mode === 'demo' ? 'live' : state.mode === 'offline' ? 'crit' : 'warn';
   const q = state.kpi.queue || 0;
+  const age = feed.lastTick ? performance.now() - feed.lastTick : 1e9;
+  const stale = age > 8000;
+  const feedS = (state.feed === 'sse' || state.feed === 'sim') && !stale ? 'live' : 'warn';
+  const feedVal = state.feed + (stale ? ' · stale' : '');
+  const tp = state.gpu ? state.gpu.temp : null;
+  const tpVal = tp != null && isFinite(tp) ? Math.round(tp) + 'C' + (state.mode === 'demo' ? ' sim' : '') : '—';
   bar.innerHTML = '<span class="brand">HEX-LAB <small>field monitor</small></span>'
     + pill('mode', state.mode, modeS)
-    + pill('feed', state.feed, state.feed === 'sse' || state.feed === 'sim' ? 'live' : 'warn')
+    + pill('feed', feedVal, feedS)
     + pill('engines', up + '/' + state.engines.length, up ? 'ok' : 'crit')
     + pill('tps', Math.round(state.kpi.tps || 0), 'live')
+    + pill('temp', tpVal, tempSeverity(tp))
     + pill('queue', Math.round(q), q >= 10 ? 'crit' : q >= 4 ? 'warn' : 'ok')
     + pill('vram', (state.kpi.vram != null ? state.kpi.vram.toFixed(1) : '—') + 'G', 'live')
     + pill('nodes', (state.router.nodes || []).length, 'live')
@@ -276,26 +289,85 @@ const KPI_FMT = {
   ttft: v => (v / 1000).toFixed(2) + 's', tpot: v => Math.round(v) + 'ms', p95: v => (v / 1000).toFixed(1) + 's',
   cache: v => v.toFixed(1) + '%', reingest: v => v.toFixed(1) + '%', mtp: v => v.toFixed(1) + '%', vram: v => v.toFixed(1) + 'G',
 };
+const KPI_PRIMARY = { tps: 1, queue: 1, vram: 1, p95: 1 };
 function renderKpis() {
   $('#kpis').innerHTML = KPI_KEYS.map(k => {
     const v = state.kpi[k];
-    return '<div class="kpi"><div class="k">' + k + '</div><div class="v">' + (v != null && isFinite(v) ? KPI_FMT[k](v) : '—') + '</div></div>';
+    const cls = KPI_PRIMARY[k] ? 'kpi primary' : 'kpi';
+    return '<div class="' + cls + '"><div class="k">' + k + '</div><div class="v">' + (v != null && isFinite(v) ? KPI_FMT[k](v) : '—') + '</div></div>';
   }).join('');
+}
+function wellClass(f, i) {
+  if (f >= 0.85) return 'slot well-alert' + (i === 5 ? ' hl' : '');
+  if (f >= 0.6) return 'slot well-warn';
+  if (f > 0.02) return 'slot well-ok';
+  return 'slot well-off';
 }
 function renderCohort() {
   const box = $('#cohort');
-  if (!state.sessions.length) { box.innerHTML = '<div class="slot"><div class="meta">no live slots</div></div>'; return; }
-  box.innerHTML = state.sessions.slice(0, 48).map(s => {
+  if (!box) return;
+  const rows = state.sessions.slice(0, 32);
+  const TOTAL = 32;
+  if (!rows.length) { box.innerHTML = '<div class="slot well-off"><div>EMPTY</div></div>'; return; }
+  let html = rows.map((s, i) => {
     const f = s.window ? Math.min(1, (s.used || 0) / s.window) : 0;
-    return '<div class="slot"><div>' + s.id + ' · ' + (s.engine || '') + '</div>'
-      + '<div class="bar"><i style="width:' + (f * 100).toFixed(1) + '%"></i></div>'
-      + '<div class="meta">' + (s.used || 0) + ' / ' + (s.window || '?') + ' · cached ' + (s.cached || 0) + '</div></div>';
+    const id = String(s.id || ('W' + (i + 1))).slice(0, 8).toUpperCase();
+    return '<div class="' + wellClass(f, i) + '" title="' + id + ' ' + (s.used || 0) + '/' + (s.window || '?') + '"><div>' + id + '</div>'
+      + '<div class="bar"><i style="width:' + (f * 100).toFixed(1) + '%"></i></div></div>';
   }).join('');
+  for (let i = rows.length; i < TOTAL; i++) html += '<div class="slot well-off"><div>—</div></div>';
+  box.innerHTML = html;
+  const cm = $('#cohort-meta');
+  if (cm) {
+    const hot = rows.filter(s => s.window && (s.used || 0) / s.window >= 0.85).length;
+    cm.innerHTML = '<span>PLATE 03 · <span class="m-cool">B5 FLAGGED</span></span><span>N ' + rows.length + ' · HOT ' + hot + '</span>';
+  }
 }
+function esc(s) { return String(s == null ? '' : s).replace(/&/g, '&amp;').replace(/</g, '&lt;').slice(0, 90); }
 function renderLogs() {
-  $('#events').innerHTML = state.events.slice(0, 30).map(e => '<li>[' + (e.level || '?') + '] ' + (e.msg || '') + '</li>').join('');
-  $('#requests').innerHTML = state.requests.slice(0, 30).map(r => '<li>' + (r.id || '?') + ' · ' + (r.model || '') + ' · ' + Math.round(r.decode_tps || r.tps || 0) + ' tok/s</li>').join('');
-  $('#foot').textContent = 'hex-lab · mode ' + state.mode + ' · feed ' + state.feed + ' · ' + new Date().toLocaleTimeString();
+  const ev = $('#events');
+  if (ev) ev.innerHTML = state.events.slice(0, 18).map(e => '<li class="' + esc(e.level || '') + '">' + esc(e.t ? new Date(e.t * 1000).toLocaleTimeString() : '--:--:--') + ' · ' + esc(e.msg || '') + '</li>').join('');
+  const rq = $('#requests');
+  if (rq) rq.innerHTML = state.requests.slice(0, 12).map(r => '<li>' + esc(r.id || '?') + ' · ' + esc(r.model || '') + ' · ' + Math.round(r.decode_tps || r.tps || 0) + ' tok/s</li>').join('');
+  const foot = $('#foot');
+  if (foot) foot.innerHTML = '<span><span class="ft-acc">MEN_FHW</span> · MODE ' + esc(state.mode) + ' · FEED ' + esc(state.feed) + '</span><span class="ft-right">12A · ' + esc(new Date().toLocaleTimeString()) + '</span>';
+  renderChrome();
+}
+function tcCell(k, v, cls) { return '<div class="tc-cell' + (cls ? ' ' + cls : '') + '"><span class="tc-k">' + k + '</span><span class="tc-v">' + v + '</span></div>'; }
+function renderChrome() {
+  const tc = $('#timecode');
+  if (tc) {
+    const t = new Date();
+    const pad2 = n => String(n).padStart(2, '0');
+    const code = pad2(t.getHours()) + ':' + pad2(t.getMinutes()) + ':' + pad2(t.getSeconds());
+    const tp = state.gpu ? state.gpu.temp : null;
+    const tpS = tp != null && isFinite(tp) ? Math.round(tp) + 'C' : '—';
+    const tpCls = tp != null && isFinite(tp) && tp >= 85 ? 'cool' : tp != null && isFinite(tp) && tp >= 70 ? 'data' : '';
+    tc.innerHTML = tcCell('TC', code) + tcCell('TPS', Math.round(state.kpi.tps || 0)) + tcCell('QUE', Math.round(state.kpi.queue || 0), 'data') + tcCell('TMP', tpS, tpCls) + tcCell('VRAM', state.kpi.vram != null ? state.kpi.vram.toFixed(1) + 'G' : '—', 'cool') + tcCell('MTP', state.reasoning && state.reasoning.mtp_accept_pct != null ? state.reasoning.mtp_accept_pct.toFixed(1) + '%' : '—') + tcCell('ENG', state.engines.filter(e => e.up).length + '/' + state.engines.length) + tcCell('FEED', state.feed, 'data');
+  }
+  const db = $('#databand');
+  if (db) {
+    const cells = KPI_KEYS.map((k, i) => {
+      const v = state.kpi[k];
+      const cls = i % 4 === 2 ? 'data' : i % 4 === 3 ? 'cool' : '';
+      return '<div class="db-cell' + (cls ? ' ' + cls : '') + '"><span class="db-k">' + k + '</span><span class="db-v">' + (v != null && isFinite(v) ? KPI_FMT[k](v) : '—') + '</span></div>';
+    });
+    while (cells.length < 14) cells.push('<div class="db-cell"><span class="db-k">AUX' + cells.length + '</span><span class="db-v">—</span></div>');
+    db.innerHTML = cells.slice(0, 14).join('');
+  }
+  const km = $('#kpi-meta');
+  if (km) km.innerHTML = '<span>PEAK <span class="m-acc">' + Math.round(Math.max(1, ...((state.kpiHist.tps || [0]).slice(-120)))) + '</span> TPS</span><span>μ ' + (state.kpi.tps != null ? Math.round(state.kpi.tps) : '—') + ' · σ LOAD</span>';
+  const tm = $('#terrain-meta');
+  if (tm) tm.innerHTML = '<span>88 FS CC · <span class="m-acc">TERRAIN</span></span><span>ALM 01</span>';
+  const hm = $('#helix-meta');
+  if (hm) hm.innerHTML = '<span>ACC <span class="m-data">' + (state.reasoning && state.reasoning.mtp_accept_pct != null ? state.reasoning.mtp_accept_pct.toFixed(1) + '%' : '—') + '</span></span><span>THINK ' + (state.reasoning && state.reasoning.thinking_tokens != null ? fmtBig(state.reasoning.thinking_tokens) : '—') + '</span>';
+  const gm = $('#gauge-meta');
+  if (gm) {
+    const u = state.gpu ? state.gpu.util : null, tp = state.gpu ? state.gpu.temp : null;
+    const tCls = tp != null && isFinite(tp) && tp >= 85 ? 'm-cool' : tp != null && isFinite(tp) && tp >= 70 ? 'm-data' : 'm-acc';
+    const sim = state.mode === 'demo' ? ' SIM' : '';
+    gm.innerHTML = '<span>GPU <span class="m-cool">' + (u != null ? Math.round(u) + '%' : '—') + '</span></span><span>TMP <span class="' + tCls + '">' + (tp != null ? Math.round(tp) + 'C' : '—') + '</span>' + sim + '</span>';
+  }
 }
 function renderText() { renderPills(); renderKpis(); renderCohort(); renderLogs(); }
 
@@ -314,27 +386,41 @@ function bindLayerToggles() {
     box.addEventListener('change', () => {
       layerFlags[flag] = box.checked;
       const c = document.getElementById(canvasId);
-      if (c) c.style.display = box.checked ? '' : 'none';
+      if (c) {
+        c.style.display = box.checked ? '' : 'none';
+        const row = c.closest('.layer-row');
+        if (row) row.style.opacity = box.checked ? '' : '0.35';
+      }
     });
   }
 }
 
-/* --- main loop: single rAF drives both canvases; DOM at ~2 Hz -------------- */
+/* --- main loop: single rAF drives all canvases; DOM at ~2 Hz --------------- */
+const REDUCED = matchMedia('(prefers-reduced-motion: reduce)').matches;
+let hidden = document.hidden;
+document.addEventListener('visibilitychange', () => { hidden = document.hidden; });
 const terrainEl = () => $('#terrain');
 const helixEl = () => $('#helix');
-let lastDom = 0, lastSim = 0;
+const gaugesEl = () => $('#gauges');
+let lastDom = 0, lastSim = 0, rafId = 0;
 function frame(now) {
-  if (state.mode === 'demo' && now - lastSim > 1000) { lastSim = now; demoStep(); }
-  const hist = state.kpiHist.tps && state.kpiHist.tps.length ? state.kpiHist.tps : state.engHist[Object.keys(state.engHist)[0]] || [0];
-  paintTerrain(terrainEl(), hist, now);
-  const maxTps = Math.max(1, ...(hist.slice(-60)));
-  paintHelix(helixEl(), (state.kpi.tps || 0) / Math.max(maxTps, state.kpi.tps || 1), state.sessions, now);
-  if (layerFlags.declination) paintBackdrop($('#backdrop'), state.kpiHist.tps, now);
-  if (layerFlags.scopeOmega) paintScatter($('#scatter'), state.kpiHist, state.alerts, state.events, now);
-  if (layerFlags.loom9) paintCables($('#cables'), cableEngines(), state.requests, now);
-  if (layerFlags.safehouse) paintScopeStrip($('#scope'), state.sessions, now);
-  if (now - lastDom > 500) { lastDom = now; renderText(); }
-  requestAnimationFrame(frame);
+  if (!hidden) {
+    if (state.mode === 'demo' && now - lastSim > 1000) { lastSim = now; demoStep(); }
+    const step = REDUCED ? Math.floor(now / 500) * 500 : now;
+    const hist = state.kpiHist.tps && state.kpiHist.tps.length ? state.kpiHist.tps : state.engHist[Object.keys(state.engHist)[0]] || [0];
+    paintTerrain(terrainEl(), hist, step);
+    const maxTps = Math.max(1, ...(hist.slice(-60)));
+    paintHelix(helixEl(), (state.kpi.tps || 0) / Math.max(maxTps, state.kpi.tps || 1), state.sessions, step);
+    const util = state.gpu && state.gpu.util != null ? state.gpu.util / 100 : (state.kpi.tps || 0) / Math.max(maxTps, 1);
+    const tmp = state.gpu && state.gpu.temp != null ? Math.min(1, state.gpu.temp / 95) : Math.min(1, (state.kpi.p95 || 300) / 900);
+    paintGauges(gaugesEl(), util, tmp, step);
+    if (layerFlags.declination) paintBackdrop($('#backdrop'), state.kpiHist.tps, step);
+    if (layerFlags.scopeOmega) paintScatter($('#scatter'), state.kpiHist, state.alerts, state.events, step);
+    if (layerFlags.loom9) paintCables($('#cables'), cableEngines(), state.requests, step);
+    if (layerFlags.safehouse) paintScopeStrip($('#scope'), state.sessions, step);
+    if (now - lastDom > 500) { lastDom = now; renderText(); }
+  }
+  rafId = requestAnimationFrame(frame);
 }
 
 if (DEMO) initDemo(); else bootLive();

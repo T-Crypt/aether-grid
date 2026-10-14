@@ -1,17 +1,12 @@
-/* layers.js — toggleable HEX-LAB field layers (Canvas 2D + rAF only, no deps).
-   Each painter owns one canvas; app.js calls them from the rAF loop when
-   the matching toggle in web/index.html is on. All inputs come from the
-   same /api/snapshot panels as the base visual (see docs/VISUAL-MAP.md).
-*/
+/* layers.js — toggleable HEX-LAB field layers (Canvas 2D + rAF only, no deps). */
 
 import { fit } from './field.js';
 
-/* Toggle flags shared with app.js (checkboxes flip these live). */
 export const layerFlags = {
-  declination: true, // DECLINATION field backdrop
-  scopeOmega: true,  // SCOPE-OMEGA anomaly scatter
-  loom9: true,       // LOOM-9 router cables
-  safehouse: true,   // SAFEHOUSE scoped helix view
+  declination: true,
+  scopeOmega: true,
+  loom9: true,
+  safehouse: true,
 };
 
 function seriesOf(v, cap = 240) {
@@ -31,9 +26,7 @@ function sd(a, m) {
   return Math.sqrt(s / (a.length - 1));
 }
 
-/* DECLINATION — ambient field wash from tps history (gpu/host baselines
-   feed the same brainwave-terrain panels; wash renders drift, not traces).
-   Falls back gracefully when history is empty (offline / no NVIDIA box). */
+/* DECLINATION — ambient drift wash in lab teal, brightness from tps level. */
 export function paintBackdrop(canvas, tpsHist, now) {
   if (!canvas) return;
   const { ctx, w, h } = fit(canvas);
@@ -41,14 +34,16 @@ export function paintBackdrop(canvas, tpsHist, now) {
   const data = seriesOf(tpsHist);
   const m = mean(data) || 1;
   const mx = Math.max(m, ...data, 1);
-
   const g = ctx.createLinearGradient(0, 0, 0, h);
-  g.addColorStop(0, '#0b1322');
-  g.addColorStop(1, '#0d1a2b');
+  g.addColorStop(0, '#0a2632');
+  g.addColorStop(1, '#051820');
   ctx.fillStyle = g;
   ctx.fillRect(0, 0, w, h);
-
-  // slow drift bands; brightness follows normalized tps level
+  ctx.strokeStyle = 'rgba(0,224,224,0.10)';
+  ctx.lineWidth = 1;
+  for (let gx = 0; gx < w; gx += 16) {
+    ctx.beginPath(); ctx.moveTo(gx + 0.5, 0); ctx.lineTo(gx + 0.5, h); ctx.stroke();
+  }
   const bands = 5;
   for (let b = 0; b < bands; b++) {
     const f = 0.25 + 0.75 * (m / mx);
@@ -61,33 +56,39 @@ export function paintBackdrop(canvas, tpsHist, now) {
         - v * h * 0.10;
       if (i === 0) ctx.moveTo(x, y); else ctx.lineTo(x, y);
     }
-    ctx.strokeStyle = b % 2 ? 'rgba(157,140,255,0.35)' : 'rgba(95,214,255,0.35)';
+    ctx.strokeStyle = b % 2 ? 'rgba(255,64,192,0.35)' : 'rgba(0,224,224,0.45)';
     ctx.globalAlpha = 0.25 + 0.45 * f * (1 - b / (bands + 1));
     ctx.lineWidth = 1.1;
     ctx.stroke();
     ctx.globalAlpha = 1;
   }
+  ctx.fillStyle = 'rgba(0,224,224,0.8)';
+  ctx.font = '8px monospace';
+  ctx.fillText('DECL · μ ' + m.toFixed(0), 8, 12);
 }
 
-/* SCOPE-OMEGA — anomaly scatter: KPI excursions (queue, vram, p95, ttft)
-   as dots over recent history, fired alerts as top-row diamonds, and
-   warn/err/alert events as bottom ticks. */
+/* SCOPE-OMEGA — anomaly scatter in cyan/amber/pink/purple coding. */
 const SCATTER_KEYS = [
-  { k: 'queue', c: '#f7c76a' },
+  { k: 'queue', c: '#f0dc50' },
   { k: 'vram', c: '#ff8a7a' },
-  { k: 'p95', c: '#9d8cff' },
-  { k: 'ttft', c: '#5fd6ff' },
+  { k: 'p95', c: '#c040e0' },
+  { k: 'ttft', c: '#00e0e0' },
 ];
 export function paintScatter(canvas, kpiHist, alerts, events, now) {
   if (!canvas) return;
   const { ctx, w, h } = fit(canvas);
   ctx.clearRect(0, 0, w, h);
-  ctx.fillStyle = '#0b1322';
+  ctx.fillStyle = '#071b24';
   ctx.fillRect(0, 0, w, h);
-
   const N = 60, pad = 14;
-  const iw = w - pad * 2, ih = h - pad * 2 - 22; // room for alert/event rails
+  const iw = w - pad * 2, ih = h - pad * 2 - 22;
   const top = pad + 10, bot = top + ih;
+  ctx.strokeStyle = 'rgba(0,224,224,0.12)';
+  ctx.lineWidth = 1;
+  for (let r = 0; r <= 3; r++) {
+    const y = top + (r / 3) * ih;
+    ctx.beginPath(); ctx.moveTo(pad, y + 0.5); ctx.lineTo(w - pad, y + 0.5); ctx.stroke();
+  }
   for (const { k, c } of SCATTER_KEYS) {
     const data = seriesOf(kpiHist ? kpiHist[k] : null, N);
     if (!data.length) continue;
@@ -101,13 +102,13 @@ export function paintScatter(canvas, kpiHist, alerts, events, now) {
       const y = bot - ((v - lo) / span) * ih;
       const pulse = hot ? 1 + 0.25 * Math.sin(now / 240 + i) : 0;
       ctx.beginPath();
-      ctx.arc(x, y, (hot ? 3.4 : 1.8) * pulse, 0, Math.PI * 2);
+      ctx.arc(x, y, (hot ? 3.4 : 2.1) * Math.max(pulse, 0.6), 0, Math.PI * 2);
       ctx.fillStyle = c;
-      ctx.globalAlpha = hot ? 0.95 : 0.45;
+      ctx.globalAlpha = hot ? 0.95 : 0.62;
       ctx.fill();
       if (hot) {
         ctx.beginPath();
-        ctx.arc(x, y, 6 * pulse, 0, Math.PI * 2);
+        ctx.arc(x, y, 6 * Math.max(pulse, 0.6), 0, Math.PI * 2);
         ctx.strokeStyle = c;
         ctx.globalAlpha = 0.6;
         ctx.lineWidth = 1;
@@ -115,9 +116,8 @@ export function paintScatter(canvas, kpiHist, alerts, events, now) {
       }
       ctx.globalAlpha = 1;
     });
+    ctx.globalAlpha = 1;
   }
-
-  // alerts rail: one diamond per fired alert (top)
   const al = Array.isArray(alerts) ? alerts.slice(0, 24) : [];
   al.forEach((a, i) => {
     const x = pad + (i / Math.max(al.length - 1, 1)) * iw;
@@ -126,109 +126,171 @@ export function paintScatter(canvas, kpiHist, alerts, events, now) {
     ctx.moveTo(x, y - r); ctx.lineTo(x + r, y); ctx.lineTo(x, y + r); ctx.lineTo(x - r, y);
     ctx.closePath();
     const s = String(a && a.severity ? a.severity : a || '');
-    ctx.fillStyle = /crit|err|vram|temp/i.test(s) ? '#ff8a7a' : '#f7c76a';
+    ctx.fillStyle = /crit|err|vram|temp/i.test(s) ? '#ff8a7a' : '#f0dc50';
     ctx.globalAlpha = 0.65 + 0.35 * Math.sin(now / 300 + i * 1.3);
     ctx.fill();
     ctx.globalAlpha = 1;
   });
-
-  // events rail: warn/err/alert ticks (bottom)
   const evs = (Array.isArray(events) ? events : [])
     .filter(e => e && /warn|err|alert/i.test(e.level || ''))
     .slice(0, 40);
   evs.forEach((e, i) => {
     const x = pad + (i / Math.max(evs.length - 1, 1)) * iw;
-    ctx.fillStyle = /err|alert/i.test(e.level || '') ? '#ff8a7a' : '#f7c76a';
+    ctx.fillStyle = /err|alert/i.test(e.level || '') ? '#ff40c0' : '#f0dc50';
     ctx.globalAlpha = 0.8;
     ctx.fillRect(x, h - 6, 2, 4);
     ctx.globalAlpha = 1;
   });
+  ctx.fillStyle = 'rgba(0,224,224,0.8)';
+  ctx.font = '8px monospace';
+  ctx.fillText('Ω SCATTER', 8, h - 9);
 }
 
-/* LOOM-9 — router cables: left router/engine nodes to a right cohort
-   grid. One cable per engine; thickness from decode rate, label from
-   engine/model name; recent requests pulse the matching cable. */
+/* LOOM-9 — router cables: source rail left, bundle spine mid, target rail right.
+   One lane record per engine keeps geometry stable across frames. Dots ride
+   the primary trace so live flow reads without extra particles. */
 export function paintCables(canvas, engines, requests, now) {
   if (!canvas) return;
   const { ctx, w, h } = fit(canvas);
   ctx.clearRect(0, 0, w, h);
-  ctx.fillStyle = '#0b1322';
+  ctx.fillStyle = '#071b24';
   ctx.fillRect(0, 0, w, h);
-
+  ctx.strokeStyle = 'rgba(0,224,224,0.08)';
+  ctx.lineWidth = 1;
+  for (let gx = 12; gx < w - 8; gx += 18) {
+    ctx.beginPath(); ctx.moveTo(gx + 0.5, 8); ctx.lineTo(gx + 0.5, h - 8); ctx.stroke();
+  }
   const engs = (Array.isArray(engines) ? engines : []).slice(0, 8);
-  const reqs = Array.isArray(requests) ? requests.slice(0, 12) : [];
+  const reqs = Array.isArray(requests) ? requests.slice(0, 24) : [];
+  const pad = 16, top = 24, bot = h - 22;
+  const lx = Math.max(84, Math.min(110, w * 0.16));
+  const rx = w - Math.max(64, Math.min(96, w * 0.14));
+  const mx = (lx + rx) / 2;
+  const cols = ['#00e0e0', '#ff40c0', '#6fe7ad', '#f0dc50'];
+  ctx.fillStyle = 'rgba(0,224,224,0.8)';
+  ctx.font = '8px monospace';
+  ctx.fillText('LOOM-9 · ' + engs.length + ' CABLES', 8, 12);
   if (!engs.length) {
-    ctx.fillStyle = '#5fd6ff';
-    ctx.globalAlpha = 0.7;
-    ctx.font = '12px monospace';
-    ctx.fillText('loom-9 · no engines claimed', 12, 20);
-    ctx.globalAlpha = 1;
+    ctx.strokeStyle = 'rgba(0,224,224,0.25)';
+    ctx.setLineDash([6, 5]);
+    ctx.strokeRect(lx, top, rx - lx, Math.max(20, bot - top));
+    ctx.setLineDash([]);
+    ctx.fillStyle = 'rgba(0,224,224,0.7)';
+    ctx.font = '11px monospace';
+    ctx.fillText('loom-9 · no engines claimed', 12, top + 18);
+    ctx.fillStyle = '#5a8488';
+    ctx.font = '8px monospace';
+    ctx.fillText('EMPTY · WAITING FOR ROUTER NODES', 12, top + 32);
     return;
   }
-  const lx = 90, rx = w - 70;
   const maxRate = Math.max(1, ...engs.map(e => (e.rates && e.rates.decode_tps) || e.rate || 0));
-  const cols = ['#5fd6ff', '#9d8cff', '#6fe7ad', '#f7c76a'];
+  ctx.strokeStyle = 'rgba(216,240,240,0.22)';
+  ctx.lineWidth = 1;
+  [lx, mx, rx].forEach(x => {
+    ctx.beginPath(); ctx.moveTo(x + 0.5, top - 6); ctx.lineTo(x + 0.5, bot + 6); ctx.stroke();
+  });
+  ctx.fillStyle = '#5a8488';
+  ctx.font = '8px monospace';
+  ctx.fillText('SRC', lx - 10, top - 9);
+  ctx.fillText('BUNDLE', mx - 20, top - 9);
+  ctx.fillText('DST', rx - 6, top - 9);
+  const laneY = i => top + (engs.length < 2 ? 0.5 : i / (engs.length - 1)) * (bot - top);
   engs.forEach((e, i) => {
-    const y1 = 18 + (i / Math.max(engs.length - 1, 1)) * (h - 36);
+    const col = cols[i % cols.length];
     const rate = (e.rates && e.rates.decode_tps) || e.rate || 0;
-    const thick = 1 + 4 * (rate / maxRate);
+    const frac = rate / maxRate;
+    const down = e.up === false;
+    const y1 = laneY(i);
     const hits = reqs.filter(r => (r.model || r.engine || '') === (e.label || e.key)).length;
-    // grid slots on the right: 3 per engine
-    for (let sIdx = 0; sIdx < 3; sIdx++) {
-      const y2 = Math.min(h - 12, Math.max(12, y1 + (sIdx - 1) * 12));
-      const mx = (lx + rx) / 2;
+    const lanes = engs.length < 3 ? 3 : 2;
+    const spread = Math.min(26, (bot - top) / Math.max(engs.length * 2, 4));
+    for (let s = 0; s < lanes; s++) {
+      const primary = s === 0;
+      const off = (s - (lanes - 1) / 2) * spread * 0.9;
+      const y2 = Math.min(bot, Math.max(top, y1 + off));
+      const by = y1 + off * 0.35;
       ctx.beginPath();
       ctx.moveTo(lx, y1);
-      ctx.bezierCurveTo(mx, y1, mx, y2, rx, y2);
-      ctx.strokeStyle = cols[i % cols.length];
-      ctx.globalAlpha = e.up === false ? 0.15 : 0.35 + 0.4 * (rate / maxRate);
-      ctx.lineWidth = thick * (sIdx === 1 ? 1 : 0.5);
-      ctx.setLineDash(sIdx === 1 && hits ? [6, 4] : []);
-      ctx.lineDashOffset = -now / 60;
+      ctx.bezierCurveTo((lx + mx) / 2, y1, (lx + mx) / 2, by, mx, by);
+      ctx.bezierCurveTo((mx + rx) / 2, by, (mx + rx) / 2, y2, rx, y2);
+      ctx.strokeStyle = col;
+      ctx.globalAlpha = down ? 0.12 : primary ? 0.55 + 0.4 * frac : 0.22 + 0.18 * frac;
+      ctx.lineWidth = primary ? 1.4 + 2.4 * frac : 1;
+      ctx.setLineDash(!primary && hits ? [5, 5] : []);
+      ctx.lineDashOffset = -now / 70;
       ctx.stroke();
       ctx.setLineDash([]);
       ctx.globalAlpha = 1;
-      ctx.fillStyle = cols[i % cols.length];
-      ctx.fillRect(rx - 3, y2 - 3, 14, 6);
+      if (primary) {
+        ctx.fillStyle = col;
+        ctx.globalAlpha = down ? 0.4 : 0.9;
+        ctx.fillRect(rx - 2, y2 - 4, 12, 8);
+        ctx.globalAlpha = 1;
+        ctx.strokeStyle = 'rgba(5,24,32,0.9)';
+        ctx.lineWidth = 1;
+        ctx.strokeRect(rx - 2.5, y2 - 4.5, 13, 9);
+      }
     }
-    // router node
     ctx.beginPath();
-    ctx.arc(lx - 14, y1, 7, 0, Math.PI * 2);
-    ctx.fillStyle = e.up === false ? '#3a4a5a' : cols[i % cols.length];
-    ctx.globalAlpha = e.up === false ? 0.6 : 0.95;
+    ctx.arc(lx - 16, y1, 7, 0, Math.PI * 2);
+    ctx.fillStyle = down ? '#3a4a5a' : col;
+    ctx.globalAlpha = down ? 0.55 : 0.95;
     ctx.fill();
     ctx.globalAlpha = 1;
-    ctx.fillStyle = '#c9d6e2';
-    ctx.font = '11px monospace';
-    ctx.fillText(String(e.label || e.key || 'engine').slice(0, 18), 4, y1 - 11);
-    ctx.fillStyle = '#7d8fa3';
-    ctx.fillText(Math.round(rate) + ' t/s', lx - 14 - 16, y1 + 20);
+    ctx.strokeStyle = 'rgba(5,24,32,0.9)';
+    ctx.lineWidth = 1.5;
+    ctx.stroke();
+    if (!down) {
+      ctx.beginPath();
+      ctx.arc(lx - 16, y1, 10 + Math.sin(now / 500 + i * 1.7) * 1.2, 0, Math.PI * 2);
+      ctx.strokeStyle = col;
+      ctx.globalAlpha = 0.35;
+      ctx.lineWidth = 1;
+      ctx.stroke();
+      ctx.globalAlpha = 1;
+    }
+    if (!down && rate > 0) {
+      const p = ((now / (1400 - Math.min(1100, frac * 1100))) + i * 0.37) % 1;
+      const bx = (1 - p) * (1 - p) * (1 - p) * lx + 3 * (1 - p) * (1 - p) * p * ((lx + mx) / 2) + 3 * (1 - p) * p * p * ((mx + rx) / 2) + p * p * p * rx;
+      const byy = (1 - p) * (1 - p) * (1 - p) * y1 + 3 * (1 - p) * (1 - p) * p * y1 + 3 * (1 - p) * p * p * y1 + p * p * p * y1;
+      ctx.fillStyle = '#ffffff';
+      ctx.globalAlpha = 0.9;
+      ctx.beginPath(); ctx.arc(bx, byy, 2, 0, Math.PI * 2); ctx.fill();
+      ctx.globalAlpha = 1;
+    }
+    ctx.fillStyle = '#d8f0f0';
+    ctx.font = '10px monospace';
+    ctx.fillText(String(e.label || e.key || 'engine').slice(0, 16), 4, Math.max(10, y1 - 12));
+    ctx.fillStyle = down ? '#3a4a5a' : '#5a8488';
+    ctx.font = '8px monospace';
+    ctx.fillText(down ? 'DOWN' : Math.round(rate) + ' t/s' + (hits ? ' · ' + hits + ' req' : ''), lx - 34, Math.min(h - 4, y1 + 20));
+    const dst = String(e.backend || e.label || e.key || '').split('/').pop().slice(-14);
+    if (dst) {
+      ctx.fillStyle = '#5a8488';
+      ctx.fillText(dst, rx - 8, Math.min(h - 4, Math.min(bot, Math.max(top, y1)) + 18));
+    }
   });
 }
 
-/* SAFEHOUSE — scoped helix view from sessions: same engines/strata
-   panels as helix/cohort, rendered as an isolated dimmed "room" with a
-   muted palette so scoped reasoning stays visually separate. */
+/* SAFEHOUSE — scoped dimmed room, muted teal/grey palette. */
 export function paintScopeStrip(canvas, sessions, now) {
   if (!canvas) return;
   const { ctx, w, h } = fit(canvas);
   ctx.clearRect(0, 0, w, h);
-  // dimmed room
-  ctx.fillStyle = '#0e141d';
+  ctx.fillStyle = '#08141b';
   ctx.fillRect(0, 0, w, h);
-  ctx.strokeStyle = 'rgba(125,143,163,0.5)';
+  ctx.strokeStyle = 'rgba(90,132,136,0.5)';
   ctx.lineWidth = 1;
   ctx.setLineDash([8, 5]);
   ctx.strokeRect(4.5, 4.5, w - 9, h - 9);
   ctx.setLineDash([]);
-  ctx.fillStyle = '#7d8fa3';
-  ctx.font = '11px monospace';
+  ctx.fillStyle = '#5a8488';
+  ctx.font = '10px monospace';
   ctx.fillText('safehouse · scoped view', 12, 20);
-
   const rows = (Array.isArray(sessions) ? sessions : []).slice(0, 10);
   if (!rows.length) {
     ctx.fillStyle = '#3a4a5a';
-    ctx.font = '12px monospace';
+    ctx.font = '11px monospace';
     ctx.fillText('scoped · no sessions', 12, h / 2);
     return;
   }
@@ -237,22 +299,20 @@ export function paintScopeStrip(canvas, sessions, now) {
     const y = y0 + i * rh;
     const f = s.window ? Math.max(0, Math.min(1, (s.used || 0) / s.window)) : 0;
     const sway = 0.5 + 0.5 * Math.sin(now / 800 + i * 0.9);
-    // mini rung
-    ctx.strokeStyle = 'rgba(125,143,163,' + (0.25 + 0.35 * sway * f).toFixed(2) + ')';
+    ctx.strokeStyle = 'rgba(0,224,224,' + (0.25 + 0.35 * sway * f).toFixed(2) + ')';
     ctx.lineWidth = 1;
     ctx.beginPath();
     ctx.moveTo(12, y + rh / 2);
     ctx.lineTo(12 + 26 * (0.4 + 0.6 * sway), y + rh / 2);
     ctx.stroke();
-    // muted usage bar
-    ctx.fillStyle = '#232f3d';
+    ctx.fillStyle = '#14202a';
     ctx.fillRect(46, y + 3, w - 46 - 90, rh - 8);
-    ctx.fillStyle = i % 2 ? '#4a5a73' : '#3f6b7a';
-    ctx.globalAlpha = 0.75;
+    ctx.fillStyle = i % 2 ? '#4a5a73' : '#1c6b74';
+    ctx.globalAlpha = 0.8;
     ctx.fillRect(46, y + 3, (w - 46 - 90) * f, rh - 8);
     ctx.globalAlpha = 1;
-    ctx.fillStyle = '#7d8fa3';
-    ctx.font = '10px monospace';
+    ctx.fillStyle = '#5a8488';
+    ctx.font = '9px monospace';
     ctx.fillText(String(s.id || 'sess').slice(0, 16), w - 82, y + rh / 2 + 3);
   });
 }

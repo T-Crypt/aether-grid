@@ -4,8 +4,8 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>HEX-LAB — Runtime Field Monitor</title>
-<meta name="description" content="HEX-LAB static clone: status pills, brainwave terrain, helix reasoning, cohort KV grid. No build.">
-<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Cpolygon points='16,2 28,9 28,23 16,30 4,23 4,9' fill='none' stroke='%235fd6ff' stroke-width='2'/%3E%3Ccircle cx='16' cy='16' r='4' fill='%235fd6ff'/%3E%3C/svg%3E">
+<meta name="description" content="HEX-LAB field monitor: status pills, brainwave terrain, helix reasoning, cohort grid. No build.">
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Cpolygon points='16,2 28,9 28,23 16,30 4,23 4,9' fill='none' stroke='%2300e0e0' stroke-width='2'/%3E%3Ccircle cx='16' cy='16' r='4' fill='%2300e0e0'/%3E%3C/svg%3E">
 <script>
 (function(){function show(m){var d=document.getElementById('js-err');if(!d){d=document.createElement('pre');d.id='js-err';(document.body||document.documentElement).appendChild(d);}d.textContent+=m+'\n';}
 addEventListener('error',function(e){show('error: '+e.message);});
@@ -14,27 +14,33 @@ addEventListener('unhandledrejection',function(e){var r=e.reason;show('rejection
 <link rel="stylesheet" href="tokens.css">
 </head>
 <body>
+  <div class="bg-grid" aria-hidden="true"></div>
+  <div class="vignette" aria-hidden="true"></div>
+  <div class="scanlines" aria-hidden="true"></div>
+  <div class="grain" aria-hidden="true"><svg xmlns="http://www.w3.org/2000/svg"><filter id="n"><feTurbulence type="fractalNoise" baseFrequency="0.9" numOctaves="2"/></filter><rect width="100%" height="100%" filter="url(#n)" opacity="0.6"/></svg></div>
   <header class="pills" id="pills" aria-label="Status pills"></header>
+  <div class="timecode-bar" id="timecode" aria-label="Timecode strip"></div>
   <main class="deck">
-    <section class="panel span-12" aria-label="Key metrics"><h2>Key metrics</h2><div class="kpis" id="kpis"></div></section>
-    <section class="panel span-7" aria-label="Brainwave terrain"><h2>Brainwave terrain</h2><canvas class="field" id="terrain" height="220"></canvas></section>
-    <section class="panel span-5" aria-label="Helix reasoning"><h2>Helix reasoning</h2><canvas class="field" id="helix" height="220"></canvas></section>
-    <section class="panel span-12" aria-label="Field layers"><h2>Field layers</h2>
-      <div style="display:flex;gap:1.25rem;flex-wrap:wrap;margin-bottom:.5rem;font-size:.85em">
+    <section class="panel p-kpis" aria-label="Key metrics"><div class="br tl"></div><div class="br tr"></div><div class="br bl"></div><div class="br br-c"></div><h2>[ KEY METRICS ]</h2><span class="bp-rlabel">RET</span><span class="br-id tl">[ +1 ]</span><span class="br-id tr">[ R1 ]</span><div class="kpis" id="kpis" style="padding-top:14px"></div><div class="meta-strip" id="kpi-meta"></div></section>
+    <section class="panel p-terrain" aria-label="Brainwave terrain"><div class="br tl"></div><div class="br tr"></div><div class="br bl"></div><div class="br br-c"></div><h2>[ 4_CKS / CTX ]</h2><span class="bp-rlabel">RET</span><span class="br-id tl">[ +1 ]</span><span class="br-id br-c">[ A4 ]</span><div class="panel-body"><canvas class="field" id="terrain" height="220"></canvas><div class="meta-strip" id="terrain-meta"></div></div></section>
+    <section class="panel cool p-helix" aria-label="Helix reasoning"><div class="br tl"></div><div class="br tr"></div><div class="br bl"></div><div class="br br-c"></div><h2>[ SHE_10N / DEV ]</h2><span class="bp-rlabel">DEV</span><span class="br-id tl">[ +2 ]</span><span class="br-id br-c">[ B2 ]</span><div class="panel-body"><canvas class="field" id="helix" height="220"></canvas><div class="meta-strip" id="helix-meta"></div></div></section>
+    <section class="panel data p-gauges" aria-label="Gauges"><div class="br tl"></div><div class="br tr"></div><div class="br bl"></div><div class="br br-c"></div><h2>[ TEMP / PSI ]</h2><span class="bp-rlabel">DEV</span><div class="panel-body"><canvas class="field" id="gauges" height="220" style="height:170px"></canvas><div class="meta-strip" id="gauge-meta"></div></div></section>
+    <section class="panel p-field" aria-label="Field layers"><div class="br tl"></div><div class="br tr"></div><div class="br bl"></div><div class="br br-c"></div><h2>[ FIELD LAYERS ]</h2><span class="bp-rlabel">TR1</span>
+      <div class="toggles panel-body" style="flex:none">
         <label><input type="checkbox" id="tgl-declination" checked> declination</label>
         <label><input type="checkbox" id="tgl-scope" checked> scope-omega</label>
         <label><input type="checkbox" id="tgl-loom" checked> loom-9</label>
         <label><input type="checkbox" id="tgl-safehouse" checked> safehouse</label>
       </div>
-      <h3>Declination · backdrop</h3><canvas class="field" id="backdrop" height="160"></canvas>
-      <h3>Scope-omega · scatter</h3><canvas class="field" id="scatter" height="160"></canvas>
-      <h3>Loom-9 · cables</h3><canvas class="field" id="cables" height="160"></canvas>
-      <h3>Safehouse · scope</h3><canvas class="field" id="scope" height="160"></canvas>
+      <div class="layer-row"><h3><b>DECLINATION</b> · BACKDROP</h3><canvas class="field short" id="backdrop" height="150"></canvas></div>
+      <div class="layer-row"><h3><b>SCOPE-OMEGA</b> · SCATTER</h3><canvas class="field short" id="scatter" height="150"></canvas></div>
+      <div class="layer-row"><h3><b>LOOM-9</b> · CABLES</h3><canvas class="field short" id="cables" height="150"></canvas></div>
+      <div class="layer-row"><h3><b>SAFEHOUSE</b> · SCOPE</h3><canvas class="field short" id="scope" height="150"></canvas></div>
     </section>
-    <section class="panel span-12" aria-label="Cohort KV slots"><h2>Cohort grid · KV slots</h2><div class="cohort" id="cohort"></div></section>
-    <section class="panel span-8" aria-label="Events"><h2>Events</h2><ul class="log" id="events"></ul></section>
-    <section class="panel span-4" aria-label="Requests"><h2>Requests</h2><ul class="log" id="requests"></ul></section>
+    <section class="panel p-cohort" aria-label="Cohort grid"><div class="br tl"></div><div class="br tr"></div><div class="br bl"></div><div class="br br-c"></div><h2>[ COHORT / KV ]</h2><span class="bp-rlabel">GL_OV3R</span><div class="cohort" id="cohort" style="padding-top:14px"></div><div class="meta-strip" id="cohort-meta"></div></section>
+    <section class="panel p-events" aria-label="Events"><div class="br tl"></div><div class="br tr"></div><div class="br bl"></div><div class="br br-c"></div><h2>[ LOG / EXP ]</h2><span class="bp-rlabel">EXP</span><div class="panel-body"><ul class="log" id="events"></ul><ul class="log" id="requests" style="margin-top:8px"></ul></div></section>
   </main>
+  <div class="data-band" id="databand" aria-label="Data band"></div>
   <footer class="foot" id="foot"></footer>
   <script type="module" src="app.js"></script>
 </body>
