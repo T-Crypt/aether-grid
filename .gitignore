@@ -8,3 +8,4 @@ node_modules/
 # [ome]: local hydrated state is never committed
 .ome/events/
 .ome/log/
+.pytest_cache/
