@@ -2,6 +2,9 @@ __pycache__/
 *.pyc
 .speculum.db
 *.db
-.ome/
 .router/
 node_modules/
+
+# [ome]: local hydrated state is never committed
+.ome/events/
+.ome/log/
