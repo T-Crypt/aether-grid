@@ -7,7 +7,7 @@
 <meta name="description" content="Aether Grid field monitor: status pills, brainwave terrain, helix reasoning, cohort grid. No build.">
 <link id="favicon" rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Cpath d='M4 25H28' stroke='%23647294' stroke-width='1.5' stroke-linecap='round'/%3E%3Cpath d='M6 10.5A13.5 13.5 0 0 1 26 10.5' fill='none' stroke='%238f7bff' stroke-width='1.5' stroke-linecap='round' opacity='.55'/%3E%3Cpath d='M9.5 14.5A9 9 0 0 1 22.5 14.5' fill='none' stroke='%238f7bff' stroke-width='2' stroke-linecap='round'/%3E%3Ccircle cx='16' cy='19' r='3' fill='%238f7bff'/%3E%3C/svg%3E">
 <script>
-try{document.documentElement.dataset.skin=localStorage.getItem('aether.skin')||'aether';}catch(e){}
+try{var p=new URLSearchParams(location.search);document.documentElement.dataset.skin=p.get('skin')||localStorage.getItem('aether.skin')||'aether';}catch(e){document.documentElement.dataset.skin='aether';}
 </script>
 <script>
 (function(){function show(m){var d=document.getElementById('js-err');if(!d){d=document.createElement('pre');d.id='js-err';(document.body||document.documentElement).appendChild(d);}d.textContent+=m+'\n';}
@@ -21,6 +21,15 @@ addEventListener('unhandledrejection',function(e){var r=e.reason;show('rejection
   <div class="vignette" aria-hidden="true"></div>
   <div class="scanlines" aria-hidden="true"></div>
   <div class="grain" aria-hidden="true"><svg xmlns="http://www.w3.org/2000/svg"><filter id="n"><feTurbulence type="fractalNoise" baseFrequency="0.9" numOctaves="2"/></filter><rect width="100%" height="100%" filter="url(#n)" opacity="0.6"/></svg></div>
+  <nav class="skin-rail" aria-label="Interface skin">
+    <button type="button" data-skin-btn="aether" aria-pressed="true">Aether<span class="skin-accent"></span></button>
+    <button type="button" data-skin-btn="hexlab" aria-pressed="false">Hex-Lab<span class="skin-accent"></span></button>
+    <button type="button" data-skin-btn="braid" aria-pressed="false">The Braid<span class="skin-accent"></span></button>
+    <button type="button" data-skin-btn="isodose" aria-pressed="false">IsoDose<span class="skin-accent"></span></button>
+    <button type="button" data-skin-btn="corvane" aria-pressed="false">Corvane<span class="skin-accent"></span></button>
+    <button type="button" data-skin-btn="sounding" aria-pressed="false">Sounding<span class="skin-accent"></span></button>
+    <button type="button" data-skin-btn="gullet" aria-pressed="false">Gullet<span class="skin-accent"></span></button>
+  </nav>
   <header class="pills" id="pills" aria-label="Status pills"></header>
   <div class="timecode-bar" id="timecode" aria-label="Timecode strip"></div>
   <main class="deck">
