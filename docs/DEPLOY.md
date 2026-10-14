@@ -69,10 +69,20 @@ LAN-direct collector access: add `ports: ["8793:8792"]` to the
 ## Bare-metal alternative
 
 ```sh
-python3 collector/speculum.py [--port 8792] [--config speculum.toml]
-# then serve web/ with any static server, or open web/index.html
-# against the collector (same host:port the collector serves from ROOT).
+python3 collector/aether.py [--port 8792] [--config speculum.toml]
+# serves web/ at / plus /api/snapshot and /api/stream
+# (speculum feed merged with router + reasoning keys).
+# Bare feed instead: python3 collector/speculum.py [same flags]
+# (serves the repo root; UI then lives at /web/index.html).
 ```
 
-Note: `web/index.html` loads `app.js` (module script) — the file is not
-in `web/` yet; add it before the UI will render past static markup.
+`web/` ships `index.html` + `app.js` + `layers.js` + `field.js` +
+`tokens.css` (no build). `index.html` loads `app.js` as a module,
+which imports `field.js` (terrain/helix painters) and `layers.js`
+(backdrop/scatter/cables/scope painters).
+
+## Demo mode (no backends needed)
+
+Open `http://<host>:8792/?demo` (or `?demo` on a bare-metal run)
+for the seeded in-browser simulator: same paint path, fake engine +
+KPI/host histories, no collector traffic.

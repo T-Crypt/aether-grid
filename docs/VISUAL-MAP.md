@@ -31,7 +31,8 @@ Long-range panels (`/api/history`, `/api/spans`, `/api/leaderboard`,
 The ambient backdrop behind every panel: a slow drift field driven by
 host/GPU baselines. Maps to the **Brainwave terrain** panel's inputs —
 `gpu.hist` (`util`, `temp`, `power`) and `host.hist` (`cpu`, `ram_gb`)
-— rendered as background wash rather than the terrain's own traces.
+— rendered as background wash on the dedicated `#backdrop` canvas
+(toggle `#tgl-declination`) rather than the terrain's own traces.
 When `gpu.present` is null (no NVIDIA box), declination falls back to
 `host.hist` alone. No new endpoint: same `gpu`/`host` snapshot panels.
 
@@ -47,8 +48,8 @@ VRAM pressure, temperature excursions, stalled engines. Sources:
   engines and erroring engines plot as flagged points.
 - `events` (level `warn`/`err`/`alert`): timestamped annotations on the scatter.
 
-Lives wherever `#terrain`/`#helix` render; consumes KPI + alerts +
-events panels.
+Renders on the dedicated `#scatter` canvas (toggle `#tgl-scope`);
+consumes KPI + alerts + events panels.
 
 ### LOOM-9 — router cables
 
@@ -62,7 +63,7 @@ Drawn over the **Cohort grid** panel. Sources:
 - `models`: full model roster for cable endpoints.
 
 Each cable is one running entry; thickness from `rates`, label from
-model name.
+model name. Renders on the dedicated `#cables` canvas (toggle `#tgl-loom`).
 
 ### SAFEHOUSE — reasoning scope
 
@@ -75,8 +76,8 @@ never leaks into the shared field. Maps to the **Helix reasoning** panel:
 - `strata.models`: which models back the scoped sessions.
 
 Safehouse reads the same `engines`/`strata` panels as helix/cohort but
-renders them behind a scope boundary (separate canvas region + muted
-palette from `tokens.css`).
+renders them behind a scope boundary on the dedicated `#scope` canvas
+(toggle `#tgl-safehouse`, muted palette from `tokens.css`).
 
 ## Quick reference
 
