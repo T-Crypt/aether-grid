@@ -28,7 +28,7 @@ const PHASE_TONE = {
 }
 
 export default function Header() {
-  const { snap, tick, paused, setPaused, stepOnce, demo, skin, setSkin, mode } = useScene()
+  const { snap, tick, paused, setPaused, stepOnce, demo, skin, mode } = useScene()
   const pills = derivePills(snap)
   const accent = SKINS.find((s) => s.id === skin)?.accent || '#00e0e0'
   const phase = snap?.phase
@@ -43,34 +43,6 @@ export default function Header() {
               <div className="text-[13px] font-bold tracking-[0.22em] text-ink-1">AETHER GRID</div>
               <div className="micro mt-1">field console</div>
             </div>
-          </div>
-
-          <div className="order-3 flex w-full min-w-0 items-center gap-1.5 md:order-none md:w-auto md:flex-1">
-            <span className="micro hidden shrink-0 lg:inline">skin</span>
-            <nav
-              aria-label="Interface skin"
-              className="no-bar flex min-w-0 flex-1 items-center gap-1 overflow-x-auto md:flex-wrap md:overflow-visible"
-            >
-              {SKINS.map((s) => {
-                const isActive = s.id === skin
-                return (
-                  <button
-                    key={s.id}
-                    type="button"
-                    aria-pressed={isActive}
-                    onClick={() => setSkin(s.id)}
-                    className={`relative shrink-0 whitespace-nowrap px-2.5 py-1.5 text-2xs transition-colors duration-200 focus-visible:outline focus-visible:outline-1 focus-visible:outline-offset-2 focus-visible:outline-acc ${
-                      isActive ? 'bg-acc/[0.12] text-ink-1' : 'text-ink-3 hover:bg-acc/[0.06] hover:text-ink-1'
-                    }`}
-                  >
-                    <span className="inline-flex items-center gap-2">
-                      <span className="inline-block h-0.5 w-4 rounded-full" style={{ backgroundColor: s.accent }} />
-                      {s.label}
-                    </span>
-                  </button>
-                )
-              })}
-            </nav>
           </div>
 
           <div className="ml-auto flex shrink-0 items-center gap-1.5">

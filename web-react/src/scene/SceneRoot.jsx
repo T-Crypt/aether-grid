@@ -35,11 +35,18 @@
 //   paint full-bleed behind the scene; safehouse paints as a pinned corner
 //   overlay. Toggles live in `layers` and gate both the canvas and its
 //   visibility.
+//
+//   Scenes: a scene is a complete visual program (chrome, layout, painters)
+//   for the same telemetry. The registry (lib/scenes.js) is pure data; the
+//   Root component per scene id mounts in App.jsx. `scene` + `skin` together
+//   select the palette: conductor.palette = resolvePalette(scene, skin).
+//   App-level chrome (the scene dock) mounts above the active scene.
 
 import { createContext, useCallback, useContext, useEffect, useMemo, useRef, useState } from 'react'
 import { useTelemetry } from '../hooks/useTelemetry'
 import { createConductor, translateSnap } from './conductor'
 import { DEFAULT_SKIN, SKIN_IDS, skinById, faviconFor } from '../lib/skins'
+import { DEFAULT_SCENE, SCENE_IDS, sceneById, resolvePalette } from '../lib/scenes'
 
 export const SceneCtx = createContext(null)
 export const useScene = () => useContext(SceneCtx)
@@ -52,6 +59,10 @@ export default function SceneRoot({ children }) {
   const [skin, setSkin] = useState(() => {
     const s = document.documentElement.dataset.skin
     return SKIN_IDS.includes(s) ? s : DEFAULT_SKIN
+  })
+  const [scene, setScene] = useState(() => {
+    const s = document.documentElement.dataset.scene
+    return SCENE_IDS.includes(s) ? s : DEFAULT_SCENE
   })
 
   const conductor = useMemo(() => createConductor(), [])
@@ -106,16 +117,27 @@ export default function SceneRoot({ children }) {
   }, [layers, conductor])
 
   useEffect(() => {
-    conductor.palette = skinById(skin).palette
-    document.title = `Aether Grid | ${skinById(skin).label}`
+    const meta = sceneById(scene)
+    document.documentElement.dataset.scene = scene
+    document.documentElement.dataset.skin = skin
+    conductor.palette = resolvePalette(scene, skin)
+    document.title =
+      scene === DEFAULT_SCENE
+        ? `Aether Grid | ${skinById(skin).label}`
+        : `Aether Grid | ${meta.label} / ${skinById(skin).label}`
     const fav = document.getElementById('favicon')
     if (fav) fav.href = faviconFor(skin)
+    try {
+      localStorage.setItem('aether.console.scene', scene)
+    } catch {
+      /* storage blocked */
+    }
     try {
       localStorage.setItem('aether.console.skin', skin)
     } catch {
       /* storage blocked */
     }
-  }, [skin, conductor])
+  }, [scene, skin, conductor])
 
   const value = useMemo(
     () => ({
@@ -130,11 +152,13 @@ export default function SceneRoot({ children }) {
       animated,
       layers,
       setLayer,
+      scene,
+      setScene,
       skin,
       setSkin,
       mode: snap?.mode || 'boot',
     }),
-    [conductor, snap, tick, paused, reduced, demo, layers, skin],
+    [conductor, snap, tick, paused, reduced, demo, layers, scene, skin],
   )
 
   return (
