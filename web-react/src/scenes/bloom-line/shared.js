@@ -232,6 +232,31 @@ export function envRows(snap) {
   return { env, atm, rot, offline }
 }
 
+// Active-runtime hero figure: the loaded model plus the live tok/s, MTP
+// accept, thinking-token count, gpu temp and engine load. ACTIVE =
+// kpi.tps_models[0], else the first up engine label, else models[0].id;
+// engine = first up label, else up/total. Pure function of snap.
+export function activeOf(snap) {
+  const k = (snap && snap.kpi) || {}
+  const fromTps = Array.isArray(k.tps_models) && k.tps_models.length ? String(k.tps_models[0]) : null
+  const engines = ((snap && snap.engines) || []).filter((e) => e && e.key != null)
+  const up = engines.filter((e) => e.up !== false)
+  const first = up.length ? up[0] : null
+  const fromEng = first ? String(first.label || first.key) : null
+  const models = (snap && snap.models) || []
+  const fromModels = models.length ? String(models[0].id || models[0]) : null
+  const gpu = (snap && snap.gpu) || null
+  const r = (snap && snap.reasoning) || {}
+  return {
+    model: fromTps || fromEng || fromModels,
+    tps: k.tps != null ? k.tps : null,
+    temp: gpu && gpu.temp != null ? gpu.temp : null,
+    mtp: r.mtp_accept_pct != null ? r.mtp_accept_pct : k.mtp != null ? k.mtp : null,
+    think: r.thinking_tokens != null ? r.thinking_tokens : null,
+    engine: fromEng || (engines.length ? `${up.length}/${engines.length}` : null),
+  }
+}
+
 // SHIP manifest: the four newest queued requests; dest = model, mass = the
 // request's share of the queue (output tokens), eta = a pseudo-date hashed
 // from the id so the table is stable per request.

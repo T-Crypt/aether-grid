@@ -11,9 +11,9 @@
 //   price/chart/ticker  = kpi.vram (B/L); the overflow phase is the climb
 //   lamps + device      = per-engine up/down (amber up, violet down/anomaly)
 //   reading             = Strata thinking rate (the unmeasurable meter)
-//   stoop ledger        = events (who to whom, level)
-//   scan log            = per-request stream (lamp + boots + status)
-//   tin / cistern       = queue depth / vram used-window
+//   stamp ledger        = events (desk to post, level)
+//   scan log            = per-request stream (lamp + session + origin/status)
+//   queue tin / cistern = queue depth served / vram used-window
 //   tallies             = per-engine counts by status, session-fill ranks
 //   post log            = events, newest at bottom
 //   generator           = host cpu + gpu power; dead bulbs = down engines
@@ -170,8 +170,22 @@ export function talliesOf(snap) {
   }
 }
 
+export function staleOf(snap) {
+  const k = (snap && snap.kpi) || {}
+  return !snap || snap.mode === 'offline' || snap.mode === 'boot' || (k.tps || 0) === 0
+}
+
+// Decode-rate gate 0..1 for booth motion (bulb shimmer, tape run, scan
+// walk): 0 when the feed is stale so the booth holds still, otherwise the
+// kpi decode rate normalised the way the conductor normalises flow.
+export function decode01(snap) {
+  if (staleOf(snap)) return 0
+  const tps = snap && snap.kpi && snap.kpi.tps != null ? snap.kpi.tps : 0
+  return clamp(tps / 280, 0.3, 1)
+}
+
 // ---------------------------------------------------------------------------
-// STOOP LEDGER rows: the event stream dressed as who-to-whom. Level tints:
+// STAMP LEDGER rows: the event stream dressed as desk-to-post. Level tints:
 // err → violet, warn → amber, ok → plain (the officer's ink).
 // ---------------------------------------------------------------------------
 
@@ -185,7 +199,7 @@ export function ledgerRows(snap) {
     const lamp = h % 10 < 7 ? 'AMBER' : 'VIOLET'
     const boot = BOOT_LABELS[h % 4]
     const toPost = h % 5 !== 2
-    const from = toPost ? 'POST · OFFICER' : `${dk} ${lamp}·${boot.slice(0, 3)}`
+    const from = toPost ? 'POST · DESK' : `${dk} ${lamp}·${boot.slice(0, 3)}`
     const to = toPost ? String(dk) : 'POST'
     const n = 1 + (h % 3)
     const level = e.level === 'err' || e.level === 'alert' ? 'V' : e.level === 'warn' ? 'A' : ''
@@ -199,8 +213,10 @@ export function ledgerRows(snap) {
 }
 
 // ---------------------------------------------------------------------------
-// SCAN LOG: per-request stream — docket, lamp, boots, reading, stoops, status.
-// Deterministic per request id so a held feed prints a held table.
+// PROBE LOG: per-request stream — probe seq, lamp, session, reading,
+// origin, status. Deterministic per request id so a held feed prints a
+// held table. Freshness is an event-dedupe boundary owned by the plate
+// (unseen ids flash once), never the row position.
 // ---------------------------------------------------------------------------
 
 export function scanRows(snap, lamp, tick) {
@@ -242,7 +258,6 @@ export function scanRows(snap, lamp, tick) {
       sx,
       sxC,
       hot: rowLamp === 'V' && h % 4 === 0,
-      fresh: i === 0,
     })
   })
   return rows
@@ -259,7 +274,7 @@ export function postLog(snap) {
     .map((e, i) => {
       const m = String(e.msg || '')
       const tag = /phase|overflow|recover/i.test(m)
-        ? 'PRICE'
+        ? 'RATE'
         : /vram|power|temp|kv|slot|cohort|cache|reingest/i.test(m)
           ? 'GEN'
           : /queue|p95|decode/i.test(m)
@@ -319,9 +334,10 @@ export function bulbFracs(litMask) {
 }
 
 // ---------------------------------------------------------------------------
-// THE EXCHANGE boards: TIN (declared buttons, spent as the queue deepens),
-// STRONGBOX (the post's box of buttons, worth less water each re-post) and
-// CISTER (the water stock: vram used-window, sold at the posted price).
+// THE EXCHANGE boards: QUEUE SERVED (the declared 2,000-cell tin, spent as
+// the queue deepens), STRONGBOX (the post's box of serve cells, worth less
+// water each re-post) and CISTER (the water stock: vram used-window, sold
+// at the posted price).
 // ---------------------------------------------------------------------------
 
 export function tinStats(snap, price) {
@@ -368,12 +384,14 @@ export function activeModelOf(snap) {
   const models = (snap && snap.models) || []
   const fromModels = models.length ? String(models[0].id || models[0]) : null
   const g = (snap && snap.gpu) || null
+  const upCount = engines.filter((e) => e.up !== false).length
   return {
     model: fromTps || fromEng || fromModels,
     tps: k.tps != null ? k.tps : null,
     temp: g && g.temp != null ? g.temp : null,
     queue: k.queue != null ? k.queue : null,
     p95: k.p95 != null ? k.p95 : null,
+    engine: fromEng || (engines.length ? `${upCount}/${engines.length}` : null),
   }
 }
 

@@ -2,10 +2,11 @@
 // layers: the body and the live CRT face), the four co-cards that call it
 // out (DOM, hidden on phones), the stoop ledger window and the scan log.
 // Bindings: engine up/down → the lamp (amber up, violet down); reasoning
-// mtp_accept_pct (or the conductor reason) → the reading; sessions → boots
-// ranks; requests → the scan log (newest at the bottom, flashed once as it
-// lands); events → the stoop ledger rows.
+// mtp_accept_pct (or the conductor reason) → the reading; sessions → session
+// ranks; requests → the probe log (newest at the bottom, flashed once as it
+// lands); events → the stamp ledger rows.
 
+import { useEffect, useRef } from 'react'
 import { useScene } from '../../scene/SceneRoot'
 import SceneCanvas from '../../scene/Canvas'
 import { paintDevBody, paintDevLive } from './painters'
@@ -37,6 +38,27 @@ export default function AssayPlate() {
   const pr = priceStats(snap, snap && snap.gpu)
   const ledger = ledgerRows(snap).slice(0, 8)
   const scans = scanRows(snap, lamp, tick)
+  // One-shot boundary: ids already rendered never re-flash, so a held feed
+  // or a list shift cannot restart the finite row animation on an old row.
+  // Only genuinely new request/event ids take the class (stable keys mean
+  // no per-tick remount either). The first paint stays silent: mounting is
+  // not an event. Scene-local refs, no store.
+  const seenScans = useRef(new Set())
+  const seenLedger = useRef(new Set())
+  const announced = useRef(false)
+  for (const r of scans) {
+    r.fresh = announced.current && r.id != null && !seenScans.current.has(r.id)
+  }
+  for (const r of ledger) {
+    r.flash = announced.current && r.id != null && !seenLedger.current.has(r.id)
+  }
+  // The boundary updates post-commit: writing it during render would mark
+  // ids seen before StrictMode's second render pass and eat the one-shot.
+  useEffect(() => {
+    announced.current = true
+    seenScans.current = new Set(scans.map((r) => r.id))
+    seenLedger.current = new Set(ledger.map((r) => r.id))
+  })
   const lastScan = scans.length ? scans[scans.length - 1] : null
   const word = lamp === 'A' ? 'AMBER' : 'VIOLET'
   const boots = lastScan ? BOOT_FROM_CODE[lastScan.boots] || 'GREY' : 'GREY'
@@ -46,10 +68,10 @@ export default function AssayPlate() {
   const act = activeModelOf(snap)
   const screenLineShort = offline
     ? 'NO SOURCE'
-    : `${act.model || 'NO MODEL'} · ${act.tps != null ? `${Math.round(act.tps)} TOK/S` : '— TOK/S'} · ${act.temp != null ? `${Math.round(act.temp)}°C` : '—'}`
+    : `${act.model || 'NO MODEL'} · ${act.tps != null ? `${Math.round(act.tps)} TOK/S` : '— TOK/S'} · ${act.temp != null ? `${Math.round(act.temp)}°C` : '—'} · ENG ${act.engine || '—'}`
   const screenLine = offline
     ? 'NO SOURCE'
-    : `LAST ${hm} · DOCKET ${dk} · LAMP ${word} · ${act.model || 'NO MODEL'} · ${act.tps != null ? `${Math.round(act.tps)} TOK/S` : '— TOK/S'} · ${act.temp != null ? `${Math.round(act.temp)}°C` : '—'} · Q ${act.queue != null ? Math.round(act.queue) : '—'} · P95 ${act.p95 != null ? Math.round(act.p95) : '—'}`
+    : `LAST ${hm} · SEQ ${dk} · LAMP ${word} · ${act.model || 'NO MODEL'} · ${act.tps != null ? `${Math.round(act.tps)} TOK/S` : '— TOK/S'} · ${act.temp != null ? `${Math.round(act.temp)}°C` : '—'} · ENG ${act.engine || '—'} · Q ${act.queue != null ? Math.round(act.queue) : '—'} · P95 ${act.p95 != null ? Math.round(act.p95) : '—'}`
 
   return (
     <section aria-label="The Assay" className="cy-plate flex min-h-0 min-w-0 flex-col overflow-hidden">
@@ -91,8 +113,8 @@ export default function AssayPlate() {
               />
               <CoCard
                 no="3"
-                label="BOOTS"
-                body={offline ? '—' : `${boots} BOOT ENTERED`}
+                label="SESSION"
+                body={offline ? '—' : `${boots} SESSION`}
                 sub={offline ? 'NO SOURCE' : `${hm} · HAND`}
                 top="62%"
               />
@@ -108,16 +130,16 @@ export default function AssayPlate() {
 
           <div className="cy-win flex flex-col shrink-0 px-1.5 pt-1 pb-1.5 min-[769px]:h-[126px]">
             <div className="flex items-baseline justify-between gap-2">
-              <span className="text-[9px] font-semibold tracking-[0.14em] text-ink-2">STOOP LEDGER · WHO TO WHOM</span>
+              <span className="text-[9px] font-semibold tracking-[0.14em] text-ink-2">STAMP LEDGER · DESK TO POST</span>
               <span className="text-[8px] tracking-[0.08em] text-ink-3 tabular-nums">
                 {offline ? 'NO SOURCE' : `YEAR 3,927 · POST 3`}
               </span>
             </div>
             <div className={LED_COLS + ' border-b border-black/40 text-[8px] tracking-[0.1em] text-ink-3'}>
-              <span className="px-0.5 pt-1">DOCKET</span>
+              <span className="px-0.5 pt-1">SEQ</span>
               <span className="px-0.5">TRAVELLER</span>
               <span className="px-0.5">SH</span>
-              <span className="px-0.5">BOOTS</span>
+              <span className="px-0.5">SESSION</span>
               <span className="px-0.5">READ</span>
               <span className="px-0.5">STATUS</span>
             </div>
@@ -133,7 +155,7 @@ export default function AssayPlate() {
                   className={
                     LED_COLS +
                     ' leading-[13px] ' +
-                    (i === ledger.length - 1 ? 'cy-flash' : '') +
+                    (r.flash ? 'cy-flash' : '') +
                     (r.level === 'V' ? ' cy-flash-v' : '')
                   }
                 >
@@ -161,20 +183,20 @@ export default function AssayPlate() {
         {/* right: the scan log */}
         <div className="cy-win flex min-h-[220px] flex-col px-1.5 pt-1 pb-1.5 min-[769px]:min-h-0">
           <div className="flex items-baseline justify-between gap-2">
-            <span className="text-[9px] font-semibold tracking-[0.14em] text-ink-2">SCAN LOG</span>
+            <span className="text-[9px] font-semibold tracking-[0.14em] text-ink-2">PROBE LOG</span>
             <span className="text-[8px] tracking-[0.08em] text-ink-3 tabular-nums">
               {offline
                 ? 'NO SOURCE · LOG HELD'
-                : `LAST 40 · 0061-K · ${pr.price != null ? pr.price.toFixed(1) : '—'} B/L TODAY`}
+                : `LAST 40 · 0061-K · ${pr.price != null ? pr.price.toFixed(1) : '—'} POSTED TODAY`}
             </span>
           </div>
           <div className="grid grid-cols-[4.6ch_1.8ch_2.8ch_minmax(0,1.2fr)_3.2ch_minmax(0,1.6fr)] items-center gap-x-1 border-b border-black/40 px-0.5 pt-1 text-[8px] tracking-[0.1em] text-ink-3">
-            <span>DOCKET</span>
+            <span>SEQ</span>
             <span>SH</span>
             <span>LAMP</span>
-            <span>BOOTS</span>
+            <span>SESSION</span>
             <span>READ</span>
-            <span>STOOPS · STATUS</span>
+            <span>ORIGIN · STATUS</span>
           </div>
           <div className="min-h-0 flex-1 overflow-hidden">
             {scans.length === 0 && (

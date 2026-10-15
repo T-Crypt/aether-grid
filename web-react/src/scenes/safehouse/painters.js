@@ -61,8 +61,17 @@ function bracket(ctx, bx, by, dx, dy, armW, armH) {
 
 export function paintSat(ctx, w, h, c) {
   const p = c.palette
-  const engines = (c.snap && c.snap.engines) || []
+  const snap = c.snap
+  const engines = (snap && snap.engines) || []
   const locked = engines.find((e) => e && e.up)
+  // The desk scan runs on decode: sweep speed tracks the serving decode
+  // rate and parks mid-sweep while dormant (no lock, held feed, offline).
+  // Brightness follows activity; the bullseye follows lock alone.
+  const decode = engines
+    .filter((e) => e && e.up !== false)
+    .reduce((a, e) => a + (e && e.rates && e.rates.decode_tps != null ? e.rates.decode_tps : 0), 0)
+  const live = locked && snap && snap.mode !== 'offline' && snap.mode !== 'boot' && decode > 0
+  const sweepRate = 0.02 + Math.min(1, decode / 280) * 0.05
 
   // Base wash: cool radial bloom, token-driven.
   const base = ctx.createRadialGradient(w * 0.5, h * 0.55, 0, w * 0.5, h * 0.55, Math.max(w, h) * 0.55)
@@ -95,9 +104,9 @@ export function paintSat(ctx, w, h, c) {
     ctx.stroke()
   }
 
-  // Slow scan sweep on the master clock. Phase offset 0.5 so the settled
-  // (reduced-motion / held-feed) frame reads mid-sweep, not at the edge.
-  const sweepX = (((c.t * 0.045 + 0.5) % 1) + 1) % 1
+  // Scan sweep on the decode rate. Phase offset 0.5 so the parked
+  // (dormant / reduced-motion / held-feed) frame reads mid-sweep.
+  const sweepX = live && !c.reduced ? (((c.t * sweepRate + 0.5) % 1) + 1) % 1 : 0.5
   const sx = sweepX * w
   const band = ctx.createLinearGradient(sx - 44, 0, sx, 0)
   band.addColorStop(0, rgba(p.acc, 0))
@@ -115,11 +124,11 @@ export function paintSat(ctx, w, h, c) {
   const cy = h * 0.55
   const halfW = w * 0.16
   const halfH = h * 0.2
-  const pulse = c.reduced ? 0.5 : Math.sin(c.t * 3.9) * 0.5 + 0.5
+  const pulse = c.reduced || !live ? 0.35 : Math.sin(c.t * 3.9) * 0.5 + 0.5
   const armW = Math.min(28, halfW * 0.6)
   const armH = Math.min(22, halfH * 0.6)
 
-  const retAlpha = locked ? 0.7 + pulse * 0.3 : 0.35
+  const retAlpha = live ? 0.7 + pulse * 0.3 : 0.35
   ctx.strokeStyle = rgba(p.acc, retAlpha)
   ctx.lineWidth = 1.4
   bracket(ctx, cx - halfW, cy - halfH, 1, 1, armW, armH)
@@ -173,7 +182,10 @@ export function paintWave(kind) {
   return function drawWave(ctx, w, h, c) {
     const p = c.palette
     const t = c.t
-    const scalar = Math.min(1, voice ? c.reason : c.flow)
+    // Dormant desk: a stale feed parks the trace at its floor (flat held
+    // line behind the panel's NO SOURCE veil) and freezes the noise step.
+    const stale = !c.snap || c.snap.mode === 'offline' || c.snap.mode === 'boot'
+    const scalar = stale ? 0 : Math.min(1, voice ? c.reason : c.flow)
     const alarm = c.alert > 0.6
     const tint = alarm ? ALM : voice ? p.dat : p.acc
 
@@ -204,7 +216,7 @@ export function paintWave(kind) {
     const ampScale = h * 0.44
     const amp = 0.18 + 0.82 * scalar
     const samples = voice ? 160 : 96
-    const frame = Math.floor(t * 8) // 8 Hz seeded noise step, deterministic in t
+    const frame = c.reduced || stale ? 0 : Math.floor(t * 8) // 8 Hz seeded noise step, deterministic in t
 
     // One sample per column, signed displacement in pixels.
     const y = new Array(samples + 1)
@@ -303,8 +315,8 @@ export function paintWave(kind) {
       }
     }
 
-    // Scan cursor: soft alarm-red sweep on the master clock.
-    const scanX = ((((t * (voice ? 0.22 : 0.29)) % 1) + 1) % 1) * w
+    // Scan cursor: soft alarm-red sweep while live, parked mid-trace dormant.
+    const scanX = (c.reduced || stale ? 0.5 : ((((t * (voice ? 0.22 : 0.29)) % 1) + 1) % 1)) * w
     ctx.strokeStyle = rgba(ALM, 0.5)
     ctx.lineWidth = 1
     ctx.beginPath()

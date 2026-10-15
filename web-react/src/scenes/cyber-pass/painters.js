@@ -8,8 +8,9 @@
 //   paintBulbRail   rail-cv          the bare-bulb wire (14 sockets)
 //   paintDevBody    dv-body          the handheld: metal, lens housing, keys,
 //                                    plate, grip, coiled cord, callout leaders
-//   paintDevLive    dv-live          CRT face (hum scope, lamp word, ritual,
-//                                    reading bar), the lamp lens, pressed key
+//   paintDevLive    dv-live          CRT face (hum scope, SOS/model face,
+//                                    lamp word, reading bar), the lamp lens,
+//                                    pressed key
 //   paintChart      ch-cv + ch-fx    the posted-price chart: the year of closes
 //                                    (acc) across the break to today's steps
 //                                    (dat), the held NOW marker, the TIN line,
@@ -26,7 +27,7 @@
 // black/white alphas (no hue); the only hard-coded colour is the absolute
 // alarm red (ALM) where severity, not palette, is the meaning.
 
-import { genStats, priceStats, readingOf, talliesOf, assayLamp, engineLamps, docketOf, tinSpentOf } from './shared'
+import { genStats, priceStats, readingOf, talliesOf, assayLamp, docketOf, tinSpentOf, staleOf, decode01, activeModelOf } from './shared'
 
 const chan = (s) => String(s || '0 0 0').trim().split(/\s+/).map(Number)
 const clamp01 = (a) => (a < 0 ? 0 : a > 1 ? 1 : a)
@@ -57,7 +58,8 @@ function rrPath(ctx, x, y, w, h, r) {
 // BULB RAIL — one wire, fourteen bare bulbs on GEN-1. Lit level follows the
 // generator bus (load from host cpu + gpu power); dead sockets are the down
 // engines (offline: all dark). Shimmer is a slow deterministic drift seeded
-// on the master clock; offline and reduced motion hold the frame still.
+// on the master clock, gated on the decode rate; stale and reduced motion
+// hold the frame still.
 // ---------------------------------------------------------------------------
 
 export function paintBulbRail(ctx, w, h, c) {
@@ -112,12 +114,13 @@ export function paintBulbRail(ctx, w, h, c) {
   const r = Math.max(2.6, h * 0.14)
   const ry = r * 1.3
   const deadSet = new Set(g.dead)
+  const held = staleOf(snap)
   for (let i = 0; i < 14; i++) {
     const x = lerp(x0, x1, (i + 0.5) / 14)
     const cord = 0.08 + 0.12 * det(i * 7.7)
     const wy = wireY(x)
     const sy = wy + h * cord
-    const L = deadSet.has(i) ? 0 : base * (anim ? 0.86 + 0.14 * Math.sin(t * (0.7 + det(i * 3.1) * 0.6) + i * 2.1) : 1)
+    const L = deadSet.has(i) ? 0 : base * (anim && !held ? 0.86 + 0.14 * Math.sin(t * (0.7 + det(i * 3.1) * 0.6) + i * 2.1) : 1)
     // cord + socket
     ctx.strokeStyle = 'rgba(0,0,0,0.65)'
     ctx.lineWidth = 1
@@ -504,12 +507,21 @@ export function paintDevLive(ctx, w, h, c) {
   const t = c.t
   const anim = !c.reduced
   const snap = c.snap
+  const stale = staleOf(snap)
   const lamp = assayLamp(snap, c.alert)
   const rd = readingOf(c, snap)
-  const kick = anim ? Math.max(0, c.helix.kick || 0) : 0
+  const act = activeModelOf(snap)
+  // the booth remembers the last assayed model across a held feed: a plain
+  // scene-local hold (no store), read back by the SOS face below.
+  if (!stale) {
+    if (act.model) lastSeen.model = act.model
+    if (act.tps != null) lastSeen.tps = Math.round(act.tps)
+    if (act.temp != null) lastSeen.temp = Math.round(act.temp)
+  }
+  const kick = anim && !stale ? Math.max(0, c.helix.kick || 0) : 0
   const warming = kick > 0.3
   const word = warming ? null : lamp === 'A' ? 'AMBER' : 'VIOLET'
-  const B = warming ? 0.5 + 0.4 * (1 - kick) : 0.85
+  const B = stale ? 0.42 : warming ? 0.5 + 0.4 * (1 - kick) : 0.85
 
   const tickSec = Math.max(0, Math.floor((snap && snap.t) || 0))
   const hm = `${String(Math.floor((9 * 3600 + 52 * 60 + tickSec) / 3600) % 24).padStart(2, '0')}:${String(Math.floor(((9 * 3600 + 52 * 60 + tickSec) / 60) % 60) % 60).padStart(2, '0')}`
@@ -554,7 +566,7 @@ export function paintDevLive(ctx, w, h, c) {
   const y1 = g.crt.y + pad + hdrF * 0.62
   ctx.font = `${hdrF.toFixed(1)}px "VT323", ui-monospace, monospace`
   ctx.fillStyle = ink(0.62)
-  const hdrL = `0061-K · ${warming ? 'ASSAY IN PROGRESS' : lamp === 'A' ? 'DOCKET ' + dk : 'RE-ASSAY'} · ${hm}`
+  const hdrL = stale ? `0061-K · SOS · ${hm}` : `0061-K · ${warming ? 'ASSAY IN PROGRESS' : lamp === 'A' ? 'SEQ ' + dk : 'RE-ASSAY'} · ${hm}`
   ctx.fillText(hdrL, g.crt.x + pad, y1)
   const rdTxt = `READ ${rd.toFixed(3)}`
   ctx.textAlign = 'right'
@@ -564,7 +576,15 @@ export function paintDevLive(ctx, w, h, c) {
   // the lamp word (the only large type on the face)
   const y2 = y1 + Math.max(4, g.crt.h * 0.045) + wordF * 0.6
   ctx.font = `${wordF.toFixed(1)}px "VT323", ui-monospace, monospace`
-  if (warming) {
+  if (stale) {
+    // SOS broadcast face: held alarm styling, steady — the alarm never blinks.
+    ctx.save()
+    ctx.shadowColor = rgba(p.alm, 0.7 * B)
+    ctx.shadowBlur = 14 * u
+    ctx.fillStyle = rgba(p.alm, 1)
+    ctx.fillText('SOS', g.crt.x + pad, y2)
+    ctx.restore()
+  } else if (warming) {
     const dots = '·'.repeat(1 + Math.floor((1 - kick) * 5))
     ctx.fillStyle = ink(0.75)
     ctx.fillText('ASSAYING ' + dots, g.crt.x + pad, y2 - wordF * 0.18)
@@ -614,22 +634,26 @@ export function paintDevLive(ctx, w, h, c) {
     ctx.fillText('HUM ' + g2.hz + ' HZ', sx0 + 3, sy1 - 3)
   }
 
-  // the ritual, as the device prints it
+  // the assay readout, as the device prints it: the active model with live
+  // tok/s + temp in booth voice; held last-model SOS face when the feed is
+  // stale (boots/stoops dressing removed — the screen names the inference).
   const y3 = y2 + Math.max(5, g.crt.h * 0.06) + lineF * 0.62
   const y4 = y3 + lineF * 1.02
   ctx.font = `${lineF.toFixed(1)}px "VT323", ui-monospace, monospace`
   ctx.fillStyle = ink(0.92)
-  const lamps = engineLamps(snap)
-  const boots = (lamps.length ? lamp : 'A') === 'A' ? 'TAN' : 'GREY'
-  const lineB = warming ? `${dk} · ····· · BOOTS ···` : `${dk} · ${word} · BOOTS ${boots}`
+  const tpsS = !stale && act.tps != null ? `${Math.round(act.tps)} TOK/S` : stale && lastSeen.tps != null ? `${lastSeen.tps} TOK/S` : '— TOK/S'
+  const tempS = !stale && act.temp != null ? `${Math.round(act.temp)}°C` : stale && lastSeen.temp != null ? `${lastSeen.temp}°C` : '—'
+  const lineB = stale
+    ? `SOS · HOLDING LAST MODEL · ${lastSeen.model || 'NO MODEL'}`
+    : warming ? `${dk} · ····· · STAMPING ···` : `${act.model || 'NO MODEL'} · ${tpsS} · ${tempS}`
   ctx.fillText(lineB, g.crt.x + pad, y3)
-  const stoopTxt = lamp === 'A' ? `STOOPS ${1 + (hashCodeId(snap) % 3)} → POST` : 'STOOPS OWED BY POST: ALL'
-  const tail = lamp === 'A' ? ' · DONE' : ' · IN POST'
-  const full = stoopTxt + (warming ? '' : tail)
+  const lineC = stale
+    ? `HELD · ${tpsS} · ${tempS}`
+    : warming ? `SEQ ${dk} · PROBING ···` : `SEQ ${dk} · LAMP ${word} · Q ${act.queue != null ? Math.round(act.queue) : '—'} · P95 ${act.p95 != null ? Math.round(act.p95) : '—'}`
   ctx.fillStyle = ink(0.92)
-  ctx.fillText(warming ? stoopTxt : full, g.crt.x + pad, y4)
-  if (!warming) {
-    const ex = ctx.measureText(full).width
+  ctx.fillText(lineC, g.crt.x + pad, y4)
+  if (!warming && !stale) {
+    const ex = ctx.measureText(lineC).width
     ctx.fillStyle = ink(0.8)
     ctx.fillRect(g.crt.x + pad + ex + 2, y4 - lineF * 0.55, lineF * 0.4, lineF * 0.6)
   }
@@ -655,13 +679,13 @@ export function paintDevLive(ctx, w, h, c) {
     ctx.fillStyle = ink(0.78)
     ctx.fillRect(bx0 + 1, y5 - bh, (bx1 - bx0 - 1) * Math.max(0, rd), bh - 1)
     ctx.fillStyle = ink(0.6)
-    ctx.fillText(`${rd.toFixed(3)} · UNIT n/a`, bx1 + 6, y5)
+    ctx.fillText(`${rd.toFixed(3)} · STAMPED`, bx1 + 6, y5)
   }
   const yf = g.crt.y + g.crt.h - pad
   if (g.crt.h > 108) {
     ctx.font = `${hdrF.toFixed(1)}px "VT323", ui-monospace, monospace`
     ctx.fillStyle = ink(0.42)
-    ctx.fillText(`TODAY ${grp(tallies.stoops)} · AMBER ${tallies.amb} · VIOLET ${tallies.vio} · STOOPS ${grp(tallies.stoops)}`, g.crt.x + pad, yf)
+    ctx.fillText(`TODAY ${grp(tallies.stoops)} STAMPED · AMBER ${tallies.amb} · VIOLET ${tallies.vio}`, g.crt.x + pad, yf)
   }
 
   // the warm-up sweep: the lamp charging, a bar of light down the face
@@ -685,8 +709,9 @@ export function paintDevLive(ctx, w, h, c) {
   ctx.fillRect(g.crt.x, g.crt.y, g.crt.w, g.crt.h)
   ctx.restore()
 
-  // the lamp lens: amber when the set is up, violet when any engine is down
-  const L = lamp === 'A' ? 0.75 : 0.85
+  // the lamp lens: amber when the set is up, violet when any engine is down;
+  // held dim while the feed is stale (dormant booth: HELD, never dark).
+  const L = stale ? 0.16 : lamp === 'A' ? 0.75 : 0.85
   const ln = g.lens
   const col = lamp === 'A' ? p.acc : p.col
   ctx.save()
@@ -754,6 +779,11 @@ export function paintDevLive(ctx, w, h, c) {
     }
   }
 }
+
+// The booth's held memory: the last assayed model + figures, read back by
+// the SOS face while the feed is stale. Scene-local (this module only),
+// never a store; the device screen is the only reader.
+const lastSeen = { model: null, tps: null, temp: null }
 
 // A stable hash of the snapshot's docket inputs, for deterministic dressing.
 function hashCodeId(snap) {
@@ -1015,7 +1045,7 @@ export function paintChart(ctx, w, h, c) {
     ctx.setLineDash([])
     const lf = 10
     ctx.font = `600 ${lf}px Rubik, system-ui, sans-serif`
-    const chip = 'TIN OF 2,000 · ' + hmAt(snap, today.length - 1 - spikeI)
+    const chip = 'QUEUE OF 2,000 · ' + hmAt(snap, today.length - 1 - spikeI)
     const cw = ctx.measureText(chip).width
     const cx0 = Math.min(xd + 4, x3 - cw - 4)
     ctx.fillStyle = rgba(p.col, 0.9)
@@ -1064,9 +1094,10 @@ export function paintChart(ctx, w, h, c) {
   ctx.lineTo(Math.round(xNow) + 0.5, ny - 7)
   ctx.stroke()
 
-  // the precedent scan: a band walking the year after each re-post; the
+  // the precedent scan: a band walking the year with the decode rate; the
   // closes under it re-stroke bright. Settled frame rests mid-band.
-  const bandPh = anim ? (t * 0.055) % 1 : 0.45
+  const bandRate = decode01(snap)
+  const bandPh = anim && bandRate > 0 ? (t * 0.055 * bandRate) % 1 : 0.45
   const xh = mL + bandPh * (xBreak - mL)
   const bw = Math.max(9, (xBreak - mL) * 0.035)
   const cg = ctx.createLinearGradient(xh - 2 * bw, 0, xh + 2 * bw, 0)
@@ -1192,7 +1223,10 @@ export function paintTicker(ctx, w, h, c) {
     x -= gap
     if (x < -sw - gap) break
   }
-  const shift = anim ? (t * 24) % (w * 2 + 200) : 0
+  // the tape runs on the decode rate: full run at full decode, held still
+  // on a stale feed (a held feed prints a held tape).
+  const rate = decode01(snap)
+  const shift = anim && rate > 0 ? (t * 24 * rate) % (w * 2 + 200) : 0
 
   ctx.textBaseline = 'middle'
   ctx.textAlign = 'left'
