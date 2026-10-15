@@ -4,7 +4,7 @@
 // except the absolute alarm red. Under reduced motion the conductor settles
 // each canvas on one static frame via paintSettled.
 
-import { det } from './shared'
+import { det, staleOf } from './shared'
 
 // ---------------------------------------------------------------------------
 // Hero waterfall: scrolling time×frequency heat. A small offscreen ring
@@ -23,9 +23,10 @@ const wf = { cv: null, lastT: -1, acc: 0 }
 function wfColumn(snap, c, rows) {
   const k = (snap && snap.kpi) || {}
   const r = (snap && snap.reasoning) || {}
-  const think = r.thinking_tokens != null ? r.thinking_tokens : c.reason * 400
-  const base = 0.2 + Math.min(1, think / 400) * 0.45 + c.flow * 0.3
-  const spike = c.alert
+  const stale = staleOf(snap)
+  const think = stale ? 0 : r.thinking_tokens != null ? r.thinking_tokens : c.reason * 400
+  const base = stale ? 0.06 : 0.2 + Math.min(1, think / 400) * 0.45 + c.flow * 0.3
+  const spike = stale ? 0 : c.alert
   const bandRow = Math.floor(rows * 0.38) // the 1420 MHz candidate lane
   const col = new Float32Array(rows)
   for (let y = 0; y < rows; y++) {
@@ -105,7 +106,7 @@ export function paintWaterfall(ctx, w, h, c) {
     ctx.lineTo(w, y)
     ctx.stroke()
   }
-  if (c.alert > 0.25) {
+  if (!staleOf(snap) && c.alert > 0.25) {
     const y = h * (1 - 0.38)
     ctx.strokeStyle = `rgb(${pal.col} / 0.8)`
     ctx.setLineDash([6, 4])
@@ -125,7 +126,8 @@ export function paintMiniSpec(ctx, w, h, c) {
   const snap = c.snap
   const pal = c.palette || { acc: '125 184 196', dat: '91 232 114', col: '255 176 0', alm: '232 84 63' }
   const tick = (snap && snap.tick != null ? snap.tick : c.tick) || 0
-  const heat = 0.25 + c.flow * 0.5 + c.reason * 0.25
+  const stale = staleOf(snap)
+  const heat = stale ? 0.1 : 0.25 + c.flow * 0.5 + c.reason * 0.25
   const n = 48
   const bw = w / n
   for (let i = 0; i < n; i++) {
@@ -133,7 +135,7 @@ export function paintMiniSpec(ctx, w, h, c) {
     const shape = 0.5 + 0.5 * Math.sin(pos * Math.PI * 3 + 1.2)
     const v = Math.min(1, 0.12 + shape * 0.3 + heat * 0.5 + (det(i * 7.3 + Math.floor(tick) * 0.91) - 0.5) * 0.14)
     const bh = Math.max(1, v * h)
-    const hot = Math.abs(pos - 0.62) < 0.03 && c.alert > 0.25
+    const hot = !stale && Math.abs(pos - 0.62) < 0.03 && c.alert > 0.25
     ctx.fillStyle = hot
       ? `rgb(${pal.col} / 0.95)`
       : v > 0.6
@@ -156,7 +158,7 @@ export function paintLatencySpark(ctx, w, h, c) {
   const pal = c.palette || { acc: '125 184 196', dat: '91 232 114', col: '255 176 0', alm: '232 84 63' }
   const tick = (snap && snap.tick != null ? snap.tick : c.tick) || 0
   const k = (snap && snap.kpi) || {}
-  if (tick !== sparkTick) {
+  if (tick !== sparkTick && snap && snap.mode !== 'offline') {
     sparkTick = tick
     sparkHist.push(k.p95 != null ? k.p95 : k.queue != null ? k.queue : 0.47)
     if (sparkHist.length > 60) sparkHist.splice(0, sparkHist.length - 60)

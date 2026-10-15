@@ -8,6 +8,7 @@
 // is the absolute alarm red (ALM), per the conductor contract.
 
 import { ALM } from '../../scene/conductor'
+import { staleOf } from './shared'
 
 const chan = (s) => String(s || '0 0 0').trim().split(/\s+/).map(Number)
 const rgba = (s, a) => `rgba(${chan(s).join(',')},${a})`
@@ -38,10 +39,23 @@ function lcg(seed) {
 export function paintBioreactor(ctx, w, h, c) {
   const p = c.palette
   const t = c.t
-  const flow = Math.min(1, c.flow)
-  const heat = Math.min(1, c.reduced ? 0.5 : c.heat)
-  const alert = Math.min(1, c.alert)
-  const anim = !c.reduced
+  // Dormant loop: a stale feed (offline/boot/zero-tps) parks the scalars at
+  // zero so glow, dots and drift settle — the greenhouse reads HELD in its
+  // own voice (stage dim + swept callouts in Scene.jsx carry the DOM half).
+  const stale = staleOf(c.snap)
+  const flow = stale ? 0 : Math.min(1, c.flow)
+  const heat = stale ? 0 : Math.min(1, c.reduced ? 0.5 : c.heat)
+  const alert = stale ? 0 : Math.min(1, c.alert)
+  const anim = !c.reduced && !stale
+  // Nucleus reactivity: the bloom answers the inference load, not just the
+  // conductor smoothing. MTP accept sets the pulse rate, the thinking-token
+  // count sets the bloom density, tok/s runs the tank LEDs. A stale feed
+  // parks all three at zero, so the loop settles to its dormant drift.
+  const rs = (c.snap && c.snap.reasoning) || {}
+  const mtp = stale ? 0 : rs.mtp_accept_pct != null ? Math.min(1, Math.max(0, rs.mtp_accept_pct / 100)) : Math.min(1, c.reason)
+  const think = stale ? 0 : rs.thinking_tokens != null ? Math.min(1, Math.max(0, rs.thinking_tokens / 400)) : Math.min(1, c.reason)
+  const tpsRate = stale ? 0 : Math.min(1, Math.max(0, ((c.snap && c.snap.kpi && c.snap.kpi.tps) || 0) / 280))
+  const performing = !stale && think > 0.5
 
   const cx = w / 2
   const cy = h / 2
@@ -86,18 +100,20 @@ export function paintBioreactor(ctx, w, h, c) {
   ctx.fill()
 
   // ---------- Bloom hotspots: warm radial glows that grow with `heat` ----------
+  // (live only: stale parks the loop at its settled glow; MTP accept hurries
+  // the breathe and the thinking count feeds the glow).
   for (let k = 0; k < 3; k++) {
     const a = det(k * 7.31) * Math.PI * 2
     const rr = rmax * (0.3 + det(k * 3.17) * 0.4)
     const hx = cx + Math.cos(a) * rr
     const hy = cy + Math.sin(a) * rr
-    const breathe = anim ? 0.9 + 0.1 * Math.sin(t * 0.9 + k * 2.1) : 1
-    const glow = ctx.createRadialGradient(hx, hy, 0, hx, hy, rmax * (0.10 + heat * 0.16) * breathe)
-    glow.addColorStop(0, rgba(p.dat, 0.10 + heat * 0.22))
+    const breathe = anim ? 0.9 + 0.1 * Math.sin(t * (0.9 + mtp * 1.8) + k * 2.1) : 1
+    const glow = ctx.createRadialGradient(hx, hy, 0, hx, hy, rmax * (0.10 + heat * 0.16 + think * 0.06) * breathe)
+    glow.addColorStop(0, rgba(p.dat, 0.10 + heat * 0.22 + think * 0.08))
     glow.addColorStop(1, rgba(p.dat, 0))
     ctx.fillStyle = glow
     ctx.beginPath()
-    ctx.arc(hx, hy, rmax * (0.1 + heat * 0.18) * breathe, 0, Math.PI * 2)
+    ctx.arc(hx, hy, rmax * (0.1 + heat * 0.18 + think * 0.07) * breathe, 0, Math.PI * 2)
     ctx.fill()
   }
 
@@ -136,10 +152,10 @@ export function paintBioreactor(ctx, w, h, c) {
   ctx.arc(cx, cy, rmax * 0.5, 0, Math.PI * 2)
   ctx.stroke()
   ctx.setLineDash([])
-  const yaw = anim ? t * (0.1 + flow * 0.5) : Math.PI * 0.35
+  const yaw = anim ? t * (0.1 + flow * 0.5 + mtp * 0.3) : Math.PI * 0.35
   ctx.strokeStyle = rgba(p.col, 0.55)
   ctx.lineWidth = 0.9
-  const arrows = 4 + Math.round(flow * 6) // density follows flow
+  const arrows = 4 + Math.round(flow * 6 + think * 3) // density follows flow + thinking
   for (let i = 0; i < arrows; i++) {
     const a = yaw * 0.4 + (i / arrows) * Math.PI * 2
     const ax = cx + Math.cos(a) * rmax * 0.5
@@ -192,12 +208,13 @@ export function paintBioreactor(ctx, w, h, c) {
     ctx.quadraticCurveTo(cb.cx1, cb.cy1, cb.x2, cb.y2)
     ctx.stroke()
   }
-  // Flow dots travel the cables; count and speed follow `flow`.
-  const dots = 3 + Math.round(flow * 12)
+  // Flow dots travel the cables; count and speed follow `flow`, MTP and the
+  // thinking count (an accepting, thinking run reads visibly busier).
+  const dots = 3 + Math.round(flow * 10 + think * 8)
   ctx.fillStyle = rgba(p.col, 0.8)
   for (let d = 0; d < dots; d++) {
     const cb = cables[d % cables.length]
-    const u = anim ? (t * (0.05 + flow * 0.16) + cb.ph + d * 0.13) % 1 : 0.2 + cb.ph * 0.6
+    const u = anim ? (t * (0.05 + flow * 0.16 + mtp * 0.1) + cb.ph + d * 0.13) % 1 : 0.2 + cb.ph * 0.6
     const v = 1 - u
     const x = v * v * cb.x1 + 2 * v * u * cb.cx1 + u * u * cb.x2
     const y = v * v * cb.y1 + 2 * v * u * cb.cy1 + u * u * cb.y2
@@ -260,8 +277,8 @@ export function paintBioreactor(ctx, w, h, c) {
     ctx.arc(0, 0, tankR * 0.62, 0, Math.PI * 2)
     ctx.stroke()
 
-    // Sodium-lamp aeroponic LED (pulses on the master clock)
-    const lamp = anim ? 0.55 + 0.25 * Math.sin(t * 1.4 + i * 0.5) : 0.65
+    // Sodium-lamp aeroponic LED (pulse rate runs on tok/s)
+    const lamp = anim ? 0.55 + 0.25 * Math.sin(t * (1.4 + tpsRate * 3.2) + i * 0.5) : 0.65
     ctx.fillStyle = rgba(p.dat, lamp)
     ctx.beginPath()
     ctx.arc(0, -tankR * 1.3, 2.2, 0, Math.PI * 2)
@@ -270,13 +287,26 @@ export function paintBioreactor(ctx, w, h, c) {
     // Plant signature: three deterministic sub-shapes per tank index.
     if (!isBloom) drawPlantSignature(ctx, tankR, i, i % 3, p)
 
-    // Bloom pulse: extra glow on the bloom tank (static under reduced).
+    // Bloom pulse: MTP accept sets the rate, the thinking count the depth.
+    // A long agentic run (think > 0.5) grows a dense orbiting sporule ring:
+    // the performing state, unmistakable next to the dormant settle.
     if (isBloom) {
-      const pulse = anim ? 0.45 + 0.3 * Math.sin(t * 4.6) : 0.55
-      ctx.fillStyle = rgba(heat > 0.55 ? ALM : p.col, pulse * (0.16 + heat * 0.2))
+      const pulse = anim ? 0.45 + (0.25 + think * 0.2) * Math.sin(t * (3.2 + mtp * 4.4)) : 0.55
+      ctx.fillStyle = rgba(heat > 0.55 ? ALM : p.col, pulse * (0.16 + heat * 0.2 + think * 0.1))
       ctx.beginPath()
       ctx.arc(0, 0, tankR * 1.6, 0, Math.PI * 2)
       ctx.fill()
+      if (performing) {
+        const spor = 10 + Math.round(think * 6)
+        for (let s = 0; s < spor; s++) {
+          const sa = (anim ? t * (0.6 + mtp * 1.2) : 0.4) + (s / spor) * Math.PI * 2
+          const srad = tankR * (2.0 + 0.25 * Math.sin((anim ? t * 2 : 0) + s * 1.7))
+          ctx.fillStyle = rgba(p.dat, 0.35 + think * 0.4)
+          ctx.beginPath()
+          ctx.arc(Math.cos(sa) * srad, Math.sin(sa) * srad, 1.8, 0, Math.PI * 2)
+          ctx.fill()
+        }
+      }
     }
 
     ctx.restore()
@@ -431,8 +461,9 @@ const FILAMENTS = (() => {
 export function paintMicro(ctx, w, h, c) {
   const p = c.palette
   const t = c.t
-  const reason = Math.min(1, c.reason)
-  const anim = !c.reduced
+  const stale = staleOf(c.snap)
+  const reason = stale ? 0 : Math.min(1, c.reason)
+  const anim = !c.reduced && !stale
 
   // Filaments drift apart/skim with the thinking stream.
   const drift = anim ? Math.sin(t * 0.2) * (0.015 + reason * 0.075) : 0.03
@@ -493,8 +524,9 @@ export function paintMicro(ctx, w, h, c) {
 export function paintAlgae(ctx, w, h, c) {
   const p = c.palette
   const t = c.t
-  const flow = Math.min(1, c.flow)
-  const anim = !c.reduced
+  const stale = staleOf(c.snap)
+  const flow = stale ? 0 : Math.min(1, c.flow)
+  const anim = !c.reduced && !stale
 
   // Stars (hash-derived, stable).
   for (let i = 0; i < 22; i++) {

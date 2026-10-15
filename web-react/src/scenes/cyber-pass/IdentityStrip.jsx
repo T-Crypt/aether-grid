@@ -1,6 +1,6 @@
 // Identity strip (row T): the top beam of the booth wall. POST / SHIFT /
-// ASSAYED / PRICE (the big VT323 number with the held up-arrow — the
-// reference's alarm that never blinks) / DOCKET / officer line / the assays
+// ASSAYED / PROBE RATE (the big VT323 number with the held up-arrow — the
+// reference's alarm that never blinks) / PROBE SEQ / attendant line / the assays
 // spark (hidden below 1280 px, as in the reference) / the shift clock.
 // Bindings: host.uptime → shift, tick → clock, kpi.rpm → assayed count,
 // kpi.vram → the posted price (kpiHist.vram gives the climb since open).
@@ -57,7 +57,7 @@ export default function IdentityStrip() {
           CUSTOMS POST 3 · CYBER PASS · 2,140 M<span className="hidden min-[1280px]:inline"> · LOWER WORKS – UPPER BENCHES</span>
         </span>
         <span className="text-[8px] tracking-[0.1em] text-ink-3">
-          SHIFT {offline ? '—' : shift} · OFFICER EKUNDAYO · <span className="text-ink-2">{clock}</span>
+          SHIFT {offline ? '—' : shift} · PROBE ATTENDANT · <span className="text-ink-2">{clock}</span>
         </span>
       </Cell>
 
@@ -65,7 +65,7 @@ export default function IdentityStrip() {
         <span className={R1}>
           SHIFT <b className="font-bold">{offline ? '—' : shift}</b>
         </span>
-        <span className={R2}>06:00–18:00 · 1 OFFICER</span>
+        <span className={R2}>06:00–18:00 · DESK 1</span>
       </Cell>
 
       <Cell title="kpi.rpm as the assayed count">
@@ -83,7 +83,7 @@ export default function IdentityStrip() {
         title="kpi.vram as the posted price of a litre, B/L"
       >
         <div className="flex items-baseline gap-1.5">
-          <span className="text-[9px] font-semibold tracking-[0.16em] text-ink-2">PRICE</span>
+          <span className="text-[9px] font-semibold tracking-[0.16em] text-ink-2">PROBE RATE</span>
           <span className="cy-vt min-w-[2.2ch] text-right text-[30px] leading-[0.8] text-ink-1 [text-shadow:0_0_10px_rgb(var(--alm)_/_0.6)] min-[1280px]:text-[36px]">
             {priceBig || '—'}
           </span>
@@ -92,24 +92,24 @@ export default function IdentityStrip() {
         </div>
         <span className="min-w-[26ch] text-[8px] tracking-[0.08em] text-ink-3 tabular-nums">
           {offline || price == null
-            ? 'NO SOURCE · PRICE HELD'
+            ? 'NO SOURCE · RATE HELD'
             : `${priceBig} · ${delta || '+0.00'} SINCE ${pr.openHm || clockHm(0)} · ${pct || '±0%'}`}
         </span>
       </Cell>
 
       <Cell className="shadow-[inset_2px_0_0_rgb(var(--col)),-2px_0_10px_rgb(var(--col)_/_0.35)]" title="the docket in post">
         <span className={R1}>
-          DOCKET <b className="font-bold text-[rgb(var(--col))] [text-shadow:0_0_8px_rgb(var(--col)_/_0.55)]">{dk || '—'}</b> IN POST
+          PROBE SEQ <b className="font-bold text-[rgb(var(--col))] [text-shadow:0_0_8px_rgb(var(--col)_/_0.55)]">{dk || '—'}</b> · IN POST
         </span>
         <span className="min-w-[31ch] text-[8px] tracking-[0.08em] text-ink-3 tabular-nums">
-          {offline ? 'NO SOURCE · DOCKET HELD' : `VIOLET · BOOTS GREY · TIN ${String(1940 - ((k.queue || 0) * 12) % 120)}`}
+          {offline ? 'NO SOURCE · SEQ HELD' : `VIOLET · SESSION GREY · Q ${Math.round(k.queue || 0)}`}
         </span>
       </Cell>
 
       <Cell title="the officer line">
-        <span className={R1}>OFFICER EKUNDAYO</span>
+        <span className={R1}>PROBE ATTENDANT</span>
         <span className="min-w-[21ch] text-[8px] tracking-[0.08em] text-ink-3 tabular-nums">
-          {offline ? 'NO SOURCE' : `VIOLET · BOOTS RED · STOOPED ${tallies.stoops % 9}`}
+          {offline ? 'NO SOURCE' : `VIOLET · SESSION RED · STAMPED ${tallies.stoops % 9}`}
         </span>
       </Cell>
 

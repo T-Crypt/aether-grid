@@ -8,12 +8,17 @@
 // follows gpu. Everything else is facility lore (flagged decorative).
 
 import { useScene } from '../../scene/SceneRoot'
-import { fmtClock, growDay } from './shared'
+import { fmtClock, growDay, staleOf, activeOf } from './shared'
 
 export function EdgeTop() {
   const { snap, tick, conductor } = useScene()
   const offline = !snap || snap.mode === 'offline'
   const heat = Math.min(1, conductor.heat)
+  const stale = staleOf(snap)
+  const act = activeOf(snap)
+  const hero = stale || offline
+    ? `HELD · ${act.model || 'NO MODEL'} · DRIFT`
+    : `FLOWERED · ${act.model || 'NO MODEL'} · ${act.tps != null ? `${Math.round(act.tps)} TOK/S` : '— TOK/S'} · ENG ${act.engine || '—'} · ${act.temp != null ? `${Math.round(act.temp)}°C` : '—'} · MTP ${act.mtp != null ? `${Math.round(act.mtp)}%` : '—'} · THINK ${act.think != null ? Math.round(act.think) : '—'}`
   return (
     <header
       className="z-20 flex flex-wrap items-center gap-x-4 gap-y-1 bg-bgg/85 px-4 py-1 text-[9px] tracking-[0.16em] text-ink-1 min-[769px]:h-[30px] min-[769px]:shrink-0 min-[769px]:flex-nowrap min-[769px]:overflow-hidden min-[769px]:backdrop-blur-sm"
@@ -34,6 +39,16 @@ export function EdgeTop() {
       <span className="hidden items-baseline gap-1.5 whitespace-nowrap lg:flex">
         <span className="text-[7.5px] tracking-[0.2em] text-ink-3">OPER.</span>
         <span className="tabular-nums tracking-[0.06em]">YUMI ADEYEMI-PARK</span>
+      </span>
+      <span className="hidden min-w-0 shrink truncate whitespace-nowrap sm:block" title={hero} aria-label="Active runtime hero">
+        <span className="text-[7.5px] tracking-[0.2em] text-ink-3">{stale || offline ? 'HELD' : 'FLOWERED'}</span>{' '}
+        <span
+          className={`tabular-nums tracking-[0.06em] ${
+            stale || offline ? 'text-ink-2' : 'text-dat [text-shadow:0_0_4px_rgb(var(--dat)_/_0.4)]'
+          }`}
+        >
+          {hero.replace(/^(FLOWERED|HELD) · /, '')}
+        </span>
       </span>
       <span className="min-w-0 flex-1" />
       <span className="flex items-baseline gap-1 whitespace-nowrap">

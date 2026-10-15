@@ -21,6 +21,37 @@ export function pad(n, w = 2) {
 
 const clamp = (v, lo, hi) => (v < lo ? lo : v > hi ? hi : v)
 
+// Dormant outpost: offline/boot or a held zero-tps stream. Heat and spike
+// park so the waterfall scrolls near-empty (dimmed drift) and the band
+// strip settles; the rails already hold their numbers behind HOLD states.
+export function staleOf(snap) {
+  const k = (snap && snap.kpi) || {}
+  return !snap || snap.mode === 'offline' || snap.mode === 'boot' || (k.tps || 0) === 0
+}
+
+// Active-runtime figure for the RUNTIME edge span: the loaded model plus
+// live tok/s, gpu temp and engine load, in outpost-neutral nouns. Model =
+// kpi.tps_models[0], else the first up engine label, else models[0].id;
+// engine = first up label, else up/total. Pure function of snap; the scene
+// renders no ACTIVE-model hero by design, this span is the closest live line.
+export function runtimeOf(snap) {
+  const k = (snap && snap.kpi) || {}
+  const fromTps = Array.isArray(k.tps_models) && k.tps_models.length ? String(k.tps_models[0]) : null
+  const engines = ((snap && snap.engines) || []).filter((e) => e && e.key != null)
+  const up = engines.filter((e) => e.up !== false)
+  const first = up.length ? up[0] : null
+  const fromEng = first ? String(first.label || first.key) : null
+  const models = (snap && snap.models) || []
+  const fromModels = models.length ? String(models[0].id || models[0]) : null
+  const gpu = (snap && snap.gpu) || null
+  return {
+    model: fromTps || fromEng || fromModels,
+    tps: k.tps != null ? k.tps : null,
+    temp: gpu && gpu.temp != null ? gpu.temp : null,
+    engine: fromEng || (engines.length ? `${up.length}/${engines.length}` : null),
+  }
+}
+
 // SAST wall clock (UTC+2) advanced at feed rate from the snapshot clock, so
 // it ticks in live and demo and freezes identically under reduced motion.
 // Seed puts the shift near the 02:14 candidate log on first paint.
@@ -40,6 +71,7 @@ export function sastOf(snap) {
 // ---------------------------------------------------------------------------
 
 export function waterfallOf(snap, conductor) {
+  if (staleOf(snap)) return { heat: 0.06, spike: 0, tps: 0, think: 0, amberX: 0.62 }
   const k = (snap && snap.kpi) || {}
   const r = (snap && snap.reasoning) || {}
   const think = r.thinking_tokens != null ? r.thinking_tokens : (conductor ? conductor.reason * 400 : 0)

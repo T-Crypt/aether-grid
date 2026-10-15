@@ -7,6 +7,7 @@
 // On phones the band stacks; the manual clause drops first (Scene.jsx hides
 // nothing here — ClausePlate renders its own hidden-on-phone wrapper).
 
+import { useEffect, useRef } from 'react'
 import { useScene } from '../../scene/SceneRoot'
 import SceneCanvas from '../../scene/Canvas'
 import { paintSpark, paintTally, paintWeather } from './painters'
@@ -59,15 +60,15 @@ export function TalliesPlate() {
         <Bar label="VIOLET" pct={offline ? 0 : (t.vio / total) * 100} tone="col" />
         <div className="mt-0.5 flex flex-col gap-[3px]">
           {bootLabels.map((b, i) => (
-            <Bar key={b} label={b + ' BOOT'} pct={offline ? 0 : (ranks[i] / rTot) * 100} />
+            <Bar key={b} label={b + ' SESSION'} pct={offline ? 0 : (ranks[i] / rTot) * 100} />
           ))}
         </div>
         <div className="mt-1 flex items-baseline gap-2">
-          <span className="text-[8px] tracking-[0.1em] text-ink-3">STOOPS</span>
+          <span className="text-[8px] tracking-[0.1em] text-ink-3">STAMPS</span>
           <span className="cy-vt text-[22px] leading-none text-ink-1 [text-shadow:0_0_8px_rgb(var(--dat)_/_0.45)] tabular-nums">
             {offline ? '—' : t.stoops}
           </span>
-          <span className="text-[8px] tracking-[0.06em] text-ink-3 tabular-nums">PERFORMED 0000-0918</span>
+          <span className="text-[8px] tracking-[0.06em] text-ink-3 tabular-nums">STAMPED 0000-0918</span>
         </div>
         <div className="relative h-[34px] min-h-[26px]">
           <SceneCanvas draw={(ctx, w, h, c) => paintTally(ctx, w, h, c)} className="absolute inset-0 h-full w-full" />
@@ -83,6 +84,19 @@ export function PostLogPlate() {
   const { snap } = useScene()
   const offline = !snap || snap.mode === 'offline'
   const entries = postLog(snap)
+  // One-shot boundary like the assay plates: only unseen event ids flash;
+  // the first paint stays silent (mounting is not an event).
+  const seen = useRef(new Set())
+  const announced = useRef(false)
+  for (const e of entries) {
+    e.flash = announced.current && e.id != null && !seen.current.has(e.id)
+  }
+  // Post-commit boundary update (see AssayPlate: render-time writes eat
+  // the one-shot under double-render).
+  useEffect(() => {
+    announced.current = true
+    seen.current = new Set(entries.map((e) => e.id))
+  })
   const shift = snap && snap.host && snap.host.uptime != null ? (11 + Math.floor(snap.host.uptime / 86400)) % 24 : 11
 
   return (
@@ -93,7 +107,7 @@ export function PostLogPlate() {
           <div className="flex h-full items-center justify-center text-[9px] tracking-[0.12em] text-ink-3">NO SOURCE · LOG HELD</div>
         )}
         {entries.map((e, i) => {
-          const fresh = i === entries.length - 1
+          const fresh = !!e.flash
           const tone =
             e.cls === 'v'
               ? 'text-[rgb(var(--col))] [text-shadow:0_0_7px_rgb(var(--col)_/_0.5)]'

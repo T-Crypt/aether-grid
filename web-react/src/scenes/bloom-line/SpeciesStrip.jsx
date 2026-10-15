@@ -6,13 +6,20 @@
 // Cheap DOM (47 divs, no canvas, no timers).
 
 import { useScene } from '../../scene/SceneRoot'
-import { SPECIES, TANK_CODES } from './shared'
+import { SPECIES, TANK_CODES, staleOf } from './shared'
 
 export default function SpeciesStrip() {
   const { snap, conductor } = useScene()
   const engines = ((snap && snap.engines) || [])
-  const alert = Math.min(1, conductor.alert)
-  const heat = Math.min(1, conductor.heat)
+  // Dormant strip: a stale feed clears the live scalars so the P23 bloom
+  // tick stops pulsing and the fleet ghosts (rails show "no source").
+  const stale = staleOf(snap)
+  const alert = stale ? 0 : Math.min(1, conductor.alert)
+  const heat = stale ? 0 : Math.min(1, conductor.heat)
+  // MTP accept hurries the P23 bloom tick: an accepting run throbs faster
+  // than a merely hot one (greenhouse rhythm, deterministic in the feed).
+  const rs = (snap && snap.reasoning) || {}
+  const mtp = stale ? 0 : rs.mtp_accept_pct != null ? Math.min(1, Math.max(0, rs.mtp_accept_pct / 100)) : 0
 
   const tickOf = (i) => {
     const sp = SPECIES[i]
@@ -48,7 +55,7 @@ export default function SpeciesStrip() {
             key={sp.id}
             title={title}
             className={`h-1.5 min-w-0 flex-1 ${cls} ${hot ? 'bl-tick-live' : ''}`}
-            style={hot ? { animationDuration: `${(1.6 - heat).toFixed(2)}s` } : undefined}
+            style={hot ? { animationDuration: `${Math.max(0.45, 1.8 - heat * 0.6 - mtp * 0.8).toFixed(2)}s` } : undefined}
           />
         )
       })}

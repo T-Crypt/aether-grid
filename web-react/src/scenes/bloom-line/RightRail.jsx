@@ -1,7 +1,7 @@
 // RightRail: the 200 px telemetry strip (hidden below 768 px). The 18-row
-// list is the KPI table padded with greenhouse lore rows; rows flash on
-// token_generated / kv_slot_changed (conductor events re-key the row so a
-// finite CSS animation plays — no scene timer). SHIP manifest = the newest
+// list is the KPI table padded with greenhouse lore rows; sparse conductor
+// events (well-state crossings, anomalies) re-key one row so a finite CSS
+// flash plays once — never per tick (no scene timer). SHIP manifest = the newest
 // queued requests (dest = model, mass = queue share, pseudo-ETA); FLEET 22
 // cells from the session pool (armed = anomalous); GERM chips from the model
 // list; RING gauge from the gpu proxy; ARCHIVE 47 cells from the host cpu
@@ -9,7 +9,8 @@
 
 import { useEffect, useState } from 'react'
 import { useScene } from '../../scene/SceneRoot'
-import { telemRows, shipManifest, germChips, ringStats, archiveCells, pad } from './shared'
+import { wellState } from '../../lib/format'
+import { telemRows, shipManifest, germChips, ringStats, archiveCells, pad, activeOf } from './shared'
 
 const ARCHIVE_COLS = 12
 
@@ -58,22 +59,28 @@ export default function RightRail() {
   const alert = Math.min(1, conductor.alert)
   const flow = Math.min(1, conductor.flow)
 
-  // Event-driven row flash: re-key one row per conductor event so its finite
-  // CSS flash restarts. token_generated lands on the throughput rows,
-  // kv_slot_changed on the drone/pressure rows, anomalies on P23.
+  // Event-driven row flash: re-key one row per sparse conductor event so its
+  // finite CSS flash plays once. token_generated is deliberately NOT
+  // subscribed: it fires every tick, which re-keyed a row per tick and read
+  // as constant flashing. kv_slot_changed flashes only on a real well-state
+  // crossing (fill drift alone just repaints the numbers); anomalies on P23.
   const [flash, setFlash] = useState(null)
   useEffect(() => {
-    const offTok = conductor.on('token_generated', (ev) => setFlash({ i: ev.seq % 7, seq: ev.seq }))
-    const offKv = conductor.on('kv_slot_changed', (ev) => setFlash({ i: 13 + (ev.index % 4), seq: 'kv' + ev.seq }))
+    const offKv = conductor.on('kv_slot_changed', (ev) => {
+      if (wellState(ev.from) !== wellState(ev.to)) setFlash({ i: 13 + (ev.index % 4), seq: 'kv' + ev.seq })
+    })
     const offAn = conductor.on('anomaly', (ev) => setFlash({ i: 8, seq: 'an' + ev.seq }))
     return () => {
-      offTok()
       offKv()
       offAn()
     }
   }, [conductor])
 
   const rows = offline ? telemRows(null, 0, 0, 0) : telemRows(snap, heat, alert, flow)
+  const act = activeOf(snap)
+  const liveLine = offline
+    ? null
+    : `${act.tps != null ? `${Math.round(act.tps)} TOK/S` : '— TOK/S'} · MTP ${act.mtp != null ? `${Math.round(act.mtp)}%` : '—'} · THINK ${act.think != null ? Math.round(act.think) : '—'} · ENG ${act.engine || '—'}`
   const manifest = shipManifest(snap)
   const germ = germChips(snap)
   const ring = ringStats(snap, heat)
@@ -278,7 +285,12 @@ export default function RightRail() {
           </>
         ) : (
           <>
-            ANALYSING · <span className="text-acc">{alert > 0.4 ? 'ANOMALY' : heat > 0.6 ? 'PRESSURE' : 'NOMINAL'}</span>
+            <div>
+              ANALYSING · <span className="text-acc">{alert > 0.4 ? 'ANOMALY' : heat > 0.6 ? 'PRESSURE' : 'NOMINAL'}</span>
+            </div>
+            <div className="mt-0.5 truncate tabular-nums text-ink-2" title={liveLine}>
+              {liveLine}
+            </div>
           </>
         )}
       </div>

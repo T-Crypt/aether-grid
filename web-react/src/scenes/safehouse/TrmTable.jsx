@@ -1,16 +1,16 @@
 // TrmTable: the SIGNAL PROCESSING TERMINAL (Bloomberg-style 22-row table).
-// Engine rows bind to live engine state: up/down, backend routing, queue
-// target; fixed infrastructure rows pad the table to 22 like the reference.
+// Engine rows bind to live engine state: up/down, backend host, queue
+// depth; fixed infrastructure rows pad the table to 22 like the reference.
 // Row state: amber (warn) on queue pressure, red (alarm) on down engines or
 // alerts naming them, and a one-shot cyan flash re-keyed by the conductor's
 // anomaly events (a finite CSS animation, no scene timer).
 
-import { useEffect, useMemo, useState } from 'react'
+import { useEffect, useMemo, useRef, useState } from 'react'
 import { useScene } from '../../scene/SceneRoot'
 import { Frame, hexFrom, pad } from './frame.jsx'
 
 const COLS = ['minmax(0,1.4fr) minmax(0,1.2fr) minmax(0,0.9fr) minmax(0,0.9fr) minmax(0,1.2fr) minmax(0,0.6fr) minmax(0,1.0fr)']
-const COL_LABELS = ['PORT DETECT', 'IP', 'AUTH ID', 'ROUTING', 'ENCRYPTION', 'NODE', 'OUTPUT']
+const COL_LABELS = ['ENGINE', 'HOST', 'AUTH ID', 'ROUTING', 'ENCRYPTION', 'NODE', 'QUEUE']
 
 // Fixed infrastructure lore rows that pad the table to 22 (atmosphere, not
 // telemetry): stable per index, no RNG.
@@ -38,7 +38,7 @@ function hostOf(backend) {
   return m || '—'
 }
 
-function TrmRow({ row, flash, keyId }) {
+function TrmRow({ row, flash, onDone }) {
   const state = row.state
   const cls =
     state === 'alarm'
@@ -48,11 +48,11 @@ function TrmRow({ row, flash, keyId }) {
         : 'text-ink-2/85'
   return (
     <div
-      key={keyId}
       className={`grid gap-2 whitespace-nowrap px-1 text-[6.5px] leading-[1.3] transition-colors duration-500 ${cls} ${
         flash ? 'sh-flash' : ''
       }`}
       style={{ gridTemplateColumns: COLS[0] }}
+      onAnimationEnd={flash ? onDone : undefined}
     >
       {row.cells.map((c, i) => (
         <span key={i} className="truncate tabular-nums">
@@ -66,13 +66,18 @@ function TrmRow({ row, flash, keyId }) {
 export default function TrmTable({ ghosted = false, note }) {
   const { snap, conductor, mode } = useScene()
   const [flash, setFlash] = useState(null) // { i, seq }
-
-  // Conductor anomaly events re-key one row so its finite CSS flash plays.
+  // One-shot boundary: the class clears when the finite animation ends, so
+  // a later anomaly on the same row replays by remounting on the new seq
+  // key. A redelivered seq is a no-op (dedupe), never a restart. No timer.
+  const lastSeq = useRef(null)
   useEffect(() => {
     return conductor.on('anomaly', (ev) => {
+      if (ev.seq === lastSeq.current) return
+      lastSeq.current = ev.seq
       setFlash({ i: ev.seq % 22, seq: ev.seq })
     })
   }, [conductor])
+  const clearFlash = (seq) => setFlash((f) => (f && f.seq === seq ? null : f))
 
   const rows = useMemo(() => {
     const engines = ((snap && snap.engines) || []).slice(0, 8)
@@ -85,7 +90,7 @@ export default function TrmTable({ ghosted = false, note }) {
       const named = alerts.length > 0 && alerts.toLowerCase().includes((e.label || e.key || '').toLowerCase())
       const pressured = e.queue != null && e.queue >= 8
       const cells = [
-        `RP-${e.key || i}`,
+        e.label || e.key || `ENG-${i}`,
         hostOf(e.backend),
         hexFrom(e.key || e.label || String(i), 4),
         `[${e.backend ? hostOf(e.backend) : e.origin || '—'}]`,
@@ -117,9 +122,17 @@ export default function TrmTable({ ghosted = false, note }) {
         ))}
       </div>
       <div className="h-full overflow-hidden pt-0.5" role="table" aria-label="Signal processing rows">
-        {rows.map((r, i) => (
-          <TrmRow key={r.key} row={r} flash={flash && flash.i === i} keyId={flash && flash.i === i ? `${r.key}-${flash.seq}` : r.key} />
-        ))}
+        {rows.map((r, i) => {
+          const hot = !!(flash && flash.i === i)
+          return (
+            <TrmRow
+              key={hot ? `${r.key}-${flash.seq}` : r.key}
+              row={r}
+              flash={hot}
+              onDone={hot ? () => clearFlash(flash.seq) : undefined}
+            />
+          )
+        })}
       </div>
     </Frame>
   )
