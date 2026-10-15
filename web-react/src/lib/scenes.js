@@ -34,6 +34,20 @@ export const SCENES = [
       corvane: { acc: '80 192 224', dat: '255 200 80', col: '255 255 255', alm: '255 72 48' },
     },
   },
+  {
+    // Reference palette (uispace.org/bloom-line): leaf-green accent #6BE8A4,
+    // grow-light amber #F0C060, cool #7DD8C4, soft-pink alarm #F09BAA. Gullet's
+    // base accent (#7CFF6B) is the closest base scheme, so it carries the
+    // native table; the other six keep their base role colours on the scene's
+    // leaf-green surfaces.
+    id: 'bloom-line',
+    label: 'Bloom-Line',
+    defaultScheme: 'gullet',
+    schemes: SKIN_IDS,
+    palettes: {
+      gullet: { acc: '107 232 164', dat: '240 192 96', col: '125 216 196', alm: '240 155 170' },
+    },
+  },
 ]
 
 export const SCENE_IDS = SCENES.map((s) => s.id)
