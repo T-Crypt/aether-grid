@@ -20,14 +20,14 @@ function CoCard({ no, label, body, sub, top }) {
         <span className="text-[7.5px] tracking-[0.14em] text-ink-3">
           {no} · {label}
         </span>
-        <span className="text-[10px] font-semibold tracking-[0.06em] text-ink-1 tabular-nums whitespace-nowrap">{body}</span>
-        <span className="text-[8px] tracking-[0.06em] text-ink-3 tabular-nums whitespace-nowrap">{sub}</span>
+        <span className="text-[10px] font-semibold tracking-[0.06em] text-ink-1 tabular-nums truncate whitespace-nowrap">{body}</span>
+        <span className="text-[8px] tracking-[0.06em] text-ink-3 tabular-nums truncate whitespace-nowrap">{sub}</span>
       </div>
     </div>
   )
 }
 
-const LED_COLS = 'grid grid-cols-[4.2ch_1.25fr_1.4ch_0.9fr_2.6ch_1fr] items-center gap-x-1'
+const LED_COLS = 'grid grid-cols-[4.2ch_minmax(0,1.25fr)_1.4ch_minmax(0,0.9fr)_2.6ch_minmax(0,1fr)] items-center gap-x-1'
 
 export default function AssayPlate() {
   const { snap, tick, conductor } = useScene()
@@ -57,7 +57,7 @@ export default function AssayPlate() {
         <span className="flex items-baseline gap-1.5">
           <i className="cy-st">A</i>
           <b className="text-[12.5px] font-semibold tracking-[0.18em] text-ink-1">THE ASSAY</b>
-          <span className="text-[8px] tracking-[0.12em] text-ink-3">HANDHELD · SERIAL 0061-K</span>
+          <span className="text-[8px] tracking-[0.12em] text-ink-3">INFERENCE PROBE · STAMPED TOK/S CHECK · 0061-K</span>
         </span>
         <span className="hidden min-w-0 truncate text-[9px] tracking-[0.08em] text-ink-3 tabular-nums min-[1280px]:block">
           {screenLine}
@@ -85,8 +85,8 @@ export default function AssayPlate() {
               <CoCard
                 no="2"
                 label="READING"
-                body={offline ? '0.000 · UNIT n/a' : `${rd.toFixed(3)} · UNIT n/a`}
-                sub={offline ? 'NO SOURCE' : `MTP ACCEPT ${((snap && snap.reasoning && snap.reasoning.mtp_accept_pct != null ? snap.reasoning.mtp_accept_pct : 0) / 100).toFixed(2)}%`}
+                body={offline ? '0.000 · CONF —' : `${rd.toFixed(3)} · CONF STAMPED`}
+                sub={offline ? 'NO SOURCE' : `ACCEPT ${((snap && snap.reasoning && snap.reasoning.mtp_accept_pct != null ? snap.reasoning.mtp_accept_pct : 0) / 100).toFixed(2)}% · BOOTH SEAL`}
                 top="36%"
               />
               <CoCard
@@ -168,7 +168,7 @@ export default function AssayPlate() {
                 : `LAST 40 · 0061-K · ${pr.price != null ? pr.price.toFixed(1) : '—'} B/L TODAY`}
             </span>
           </div>
-          <div className="grid grid-cols-[4.6ch_1.8ch_2.8ch_1.2fr_3.2ch_1.6fr] items-center gap-x-1 border-b border-black/40 px-0.5 pt-1 text-[8px] tracking-[0.1em] text-ink-3">
+          <div className="grid grid-cols-[4.6ch_1.8ch_2.8ch_minmax(0,1.2fr)_3.2ch_minmax(0,1.6fr)] items-center gap-x-1 border-b border-black/40 px-0.5 pt-1 text-[8px] tracking-[0.1em] text-ink-3">
             <span>DOCKET</span>
             <span>SH</span>
             <span>LAMP</span>
@@ -186,7 +186,7 @@ export default function AssayPlate() {
               <div
                 key={r.id}
                 className={
-                  'grid grid-cols-[4.6ch_1.8ch_2.8ch_1.2fr_3.2ch_1.6fr] items-center gap-x-1 px-0.5 leading-[13px] ' +
+                  'grid grid-cols-[4.6ch_1.8ch_2.8ch_minmax(0,1.2fr)_3.2ch_minmax(0,1.6fr)] items-center gap-x-1 px-0.5 leading-[13px] ' +
                   (r.fresh ? 'cy-flash' : '')
                 }
               >

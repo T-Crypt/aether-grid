@@ -37,17 +37,21 @@ function calloutState(bind, snap, heat, alert, flow, stale) {
   const co2 = Math.round(700 + heat * 40)
   const o2 = (20.9 - heat * 0.4).toFixed(1)
   const tps = k.tps != null ? Math.round(k.tps) : '—'
+  const tpsModels = Array.isArray(k.tps_models) && k.tps_models.length ? String(k.tps_models[0]) : null
+  const upFirst = engines.find((e) => e && e.up !== false)
+  const models = (snap && snap.models) || []
+  const activeModel = tpsModels || (upFirst ? String(upFirst.label || upFirst.key) : null) || (models.length ? String(models[0].id || models[0]) : 'NO MODEL')
   switch (bind) {
     case 'bloom':
       return {
         state: alert > 0.25 ? 'alarm' : 'normal',
-        val: `FLOWERED · ${tps} TOK/S`,
+        val: `FLOWERED · ${activeModel} · ${tps} TOK/S`,
         pill: 'UNSCHED',
       }
     case 'harv':
-      return { state: 'normal', val: `HARV. 4d · ${upEng}/${engines.length || 0} UP`, pill: 'TRACK' }
+      return { state: 'normal', val: `HARV. 4d · ${upEng}/${engines.length || 0} BEDS UP`, pill: 'TRACK' }
     case 'warn':
-      return { state: heat > 0.55 ? 'warn' : 'normal', val: `HARV. 2d · Q ${k.queue != null ? Math.round(k.queue) : '—'}`, pill: 'TRACK' }
+      return { state: heat > 0.55 ? 'warn' : 'normal', val: `BLIGHT PRESSURE · Q ${k.queue != null ? Math.round(k.queue) : '—'} · HARV. 2d`, pill: 'TRACK' }
     case 'hydro':
       return { state: 'normal', val: `${Math.round(140 + heat * 30)} ppm N`, pill: 'NOM' }
     case 'ph': {
@@ -61,7 +65,7 @@ function calloutState(bind, snap, heat, alert, flow, stale) {
     case 'drones':
       return {
         state: flagged ? 'alarm' : 'normal',
-        val: flagged ? `${flagged} → P23` : `${Math.min(28, sessions.length || 0)} / 28`,
+        val: flagged ? `${flagged} BEES FLAGGED → P23` : `${Math.min(28, sessions.length || 0)} / 28 BAYS`,
         pill: flagged ? 'FLAG' : 'STBY',
       }
     case 'hab': {

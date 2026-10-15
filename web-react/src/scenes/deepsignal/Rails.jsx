@@ -100,16 +100,16 @@ export function LeftRail({ snap, conductor }) {
   const offline = !snap || snap.mode === 'offline'
   return (
     <aside className="hidden w-[208px] min-w-0 shrink-0 flex-col gap-1.5 overflow-y-auto overflow-x-hidden p-1.5 min-[769px]:flex" aria-label="Candidate and receiver modules">
-      <Mod title="CAND · SCORE" right={cs.confirmed ? 'WOW!-2' : 'SCAN'}>
+      <Mod title="CAND · OUTPOST SCORE" right={cs.confirmed ? 'WOW!-2' : 'SCAN'}>
         <BigVal v={offline ? '—' : cs.score} unit="/ 100" tone={cs.confirmed && !offline ? 'amber' : ''} />
       </Mod>
-      <Mod title="S/N RATIO" right="dB">
+      <Mod title="S/N · CARRIER MARGIN" right="dB">
         <BigVal v={offline ? '—' : g.snr} unit="dB" tone="green" />
       </Mod>
-      <Mod title="INTEG TIME">
+      <Mod title="INTEG · DWELL WINDOW">
         <BigVal v={offline ? '—' : g.integ} />
       </Mod>
-      <Mod title="ANT TEMP">
+      <Mod title="ANT TEMP · FEED HORN">
         <BigVal v={offline ? '—' : g.temp} />
       </Mod>
       {strips.map((s) => (
@@ -119,13 +119,13 @@ export function LeftRail({ snap, conductor }) {
           </div>
         </Mod>
       ))}
-      <Mod title="RFI HITS · LAST HR" right={rfi.suppressed ? 'SUPP' : '↑12/HR'}>
+      <Mod title="RFI · INTERFERENCE LOG" right={rfi.suppressed ? 'SUPP' : '↑12/HR'}>
         <BigVal v={offline ? '—' : rfi.hits} unit="/ HR" tone={rfi.suppressed ? '' : 'amber'} />
       </Mod>
-      <Mod title="BANDW · MINISPEC" right="140">
+      <Mod title="BAND SWEEP · MINISPEC" right="140">
         <SceneCanvas draw={paintMiniSpec} label="Mini spectrum, band overview" className="h-[28px] w-full" />
       </Mod>
-      <Mod title="SIGNAL CLASSIFIER" right="PLEX">
+      <Mod title="CLASSIFIER · SIGNAL VOTE" right="PLEX">
         <div className="flex min-w-0 flex-col gap-[3px]">
           {bars.map((b) => (
             <div key={b.name} className="flex min-w-0 items-center gap-1.5">
@@ -138,7 +138,7 @@ export function LeftRail({ snap, conductor }) {
           ))}
         </div>
       </Mod>
-      <Mod title="CANDIDATE HISTORY" right="LAST 12">
+      <Mod title="CANDIDATE LOG · LAST 12" right="LAST 12">
         <div className="flex min-w-0 flex-col">
           {hist.length === 0 && <span className="truncate text-[8.5px] text-ink-3">NO EVENTS · NOISE FLOOR</span>}
           {hist.map((e) => (
@@ -151,7 +151,7 @@ export function LeftRail({ snap, conductor }) {
           ))}
         </div>
       </Mod>
-      <Mod title="NOISE" right="FLOOR">
+      <Mod title="NOISE FLOOR" right="FLOOR">
         <div className="truncate text-[8.5px] tabular-nums text-ink-3">−118 dBm · NOMINAL</div>
       </Mod>
     </aside>
@@ -214,7 +214,7 @@ export function RightRail({ snap }) {
       <Mod title="SOURCE · GJ 1132" right="CHART">
         <StarMap />
       </Mod>
-      <Mod title="DECODER PIPELINE" right="7 STG">
+      <Mod title="DECODE CHAIN · 7 STG" right="7 STG">
         <div className="flex min-w-0 flex-col gap-[2px]">
           {pipe.map((s) => (
             <div key={s.name} className="flex min-w-0 items-center justify-between gap-2 text-[8px] tracking-[0.08em]">
@@ -224,14 +224,14 @@ export function RightRail({ snap }) {
           ))}
         </div>
       </Mod>
-      <Mod title="LIVE LATENCY" right="CH 1">
+      <Mod title="LATENCY · QUEUE / RTT" right="CH 1">
         <SceneCanvas draw={paintLatencySpark} label="Queue latency sparkline" className="h-[16px] w-full" />
         <div className="mt-0.5 flex min-w-0 justify-between gap-2 text-[8.5px] tabular-nums">
           <span className="min-w-0 truncate text-ink-3">QUEUE <span className="text-ink-1">{lat.queue}s</span></span>
           <span className="shrink-0 text-ink-3">RTT <span className="text-ink-1">{lat.rtt}ms</span></span>
         </div>
       </Mod>
-      <Mod title="CORRELATOR" right="6/6">
+      <Mod title="CORRELATOR · ARRAY SYNC" right="6/6">
         <div className="truncate text-[8.5px] tabular-nums text-ink-2">{offline ? 'HOLD · NO SOURCE' : 'NOMINAL · 6/6'}</div>
       </Mod>
       <Mod title="SHIFT" right={meta.rpm}>

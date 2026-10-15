@@ -121,7 +121,7 @@ export default function LeftRail() {
           <NoSource />
         ) : (
           env.atm.map(([k, w, v, warn]) => (
-            <div key={k} className="grid grid-cols-[36px_1fr_auto] items-center gap-1.5 border-b border-dotted border-ink-3/20 py-px">
+            <div key={k} className="grid grid-cols-[36px_minmax(0,1fr)_auto] items-center gap-1.5 border-b border-dotted border-ink-3/20 py-px">
               <span className={`text-[7px] tracking-[0.06em] ${warn ? 'text-dat' : 'text-acc'}`}>{k}</span>
               <span className="relative h-[5px] overflow-hidden border border-ink-3/25 bg-bgg/65">
                 <span className={`absolute inset-y-0 left-0 ${warn ? 'bl-fill-warn' : 'bl-fill-atm'}`} style={{ width: `${w * 100}%` }} />

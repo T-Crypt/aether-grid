@@ -110,7 +110,7 @@ export default function RightRail() {
           rows.map((r, i) => (
             <div
               key={flash && flash.i === i ? `${i}-${flash.seq}` : `row-${i}`}
-              className={`bl-trow grid grid-cols-[1fr_auto] items-baseline gap-1.5 border-b border-dotted border-ink-3/20 px-2 py-px ${
+              className={`bl-trow grid grid-cols-[minmax(0,1fr)_auto] items-baseline gap-1.5 border-b border-dotted border-ink-3/20 px-2 py-px ${
                 flash && flash.i === i ? 'bl-row-flash' : ''
               }`}
             >
@@ -147,7 +147,7 @@ export default function RightRail() {
           manifest.map((m, i) => (
             <div
               key={m.id}
-              className={`grid grid-cols-[1fr_auto_auto] items-baseline gap-1.5 border-b border-dotted border-ink-3/20 py-px text-[7.5px] ${
+              className={`grid grid-cols-[minmax(0,1fr)_auto_auto] items-baseline gap-1.5 border-b border-dotted border-ink-3/20 py-px text-[7.5px] ${
                 i === 0 ? 'text-acc' : ''
               }`}
             >
@@ -231,11 +231,11 @@ export default function RightRail() {
         {offline ? (
           noSrc
         ) : (
-          <div className="grid grid-cols-[64px_1fr] items-center gap-2 px-0.5 py-1">
+          <div className="grid grid-cols-[64px_minmax(0,1fr)] items-center gap-2 px-0.5 py-1">
             <Ring pct={ring.pct} />
             <div className="flex flex-col gap-px">
               {ring.rows.map(([k, v]) => (
-                <div key={k} className="grid grid-cols-[auto_1fr] items-baseline gap-1 border-b border-dotted border-ink-3/20 py-px text-[7px]">
+                <div key={k} className="grid grid-cols-[auto_minmax(0,1fr)] items-baseline gap-1 border-b border-dotted border-ink-3/20 py-px text-[7px]">
                   <span className="tracking-[0.1em] text-ink-3">{k}</span>
                   <span className="whitespace-nowrap text-right text-[7.5px] tabular-nums tracking-[0.04em] text-ink-2">{v}</span>
                 </div>

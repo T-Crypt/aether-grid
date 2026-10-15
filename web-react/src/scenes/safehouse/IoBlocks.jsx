@@ -63,7 +63,7 @@ export default function IoBlocks({ target, ghosted }) {
   ]
 
   return (
-    <div className="grid min-h-[120px] flex-[18] grid-cols-2 gap-1.5 md:min-h-0 md:grid-cols-[1fr_1fr_64px]">
+    <div className="grid min-h-[120px] flex-[18] grid-cols-2 gap-1.5 md:min-h-0 md:grid-cols-[minmax(0,1fr)_minmax(0,1fr)_64px]">
       <IoBlock title="INPUT SIGNAL" rows={inRows} ghosted={ghosted} note="no source" />
       <IoBlock title="REQUEST DATA" rows={outRows} ghosted={ghosted} note="no source" />
       <div className="col-span-2 flex flex-wrap gap-1 md:col-span-1 md:flex-col">

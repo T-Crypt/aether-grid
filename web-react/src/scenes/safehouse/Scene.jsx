@@ -110,7 +110,7 @@ function RHeader() {
   const running = snap && snap.mode !== 'offline' && snap.mode !== 'boot' && up.length > 0
   const audioLine = !snap || snap.mode === 'offline'
     ? 'NO SOURCE'
-    : `${active || 'NO MODEL'} · ${running && decode > 0 ? `${Math.round(decode)} TOK/S · RUN` : 'IDLE'}`
+    : `SIG ${active || 'NO MODEL'} · ${running && decode > 0 ? `DECODE ${Math.round(decode)} TOK/S · ON AIR` : 'STANDBY · DESK OPEN'}`
   return (
     <div className="flex min-w-0 flex-col justify-center overflow-hidden px-1" aria-label="Audio analysis header">
       <div className="truncate text-[10px] uppercase tracking-[0.18em] text-acc sm:text-[11px]">AUDIO ANALYSIS · NETWORK EF DATA ANALYSIS</div>

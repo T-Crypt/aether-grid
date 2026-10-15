@@ -75,7 +75,7 @@ export function StampData() {
       className={`${plateBase()} px-3 py-2 min-[769px]:absolute min-[769px]:bottom-[198px] min-[769px]:left-[172px] min-[769px]:max-w-[360px]`}
       aria-label="Data plate"
     >
-      <div className="grid grid-cols-[auto_1fr_auto_1fr] gap-x-3 gap-y-0.5 text-[8.5px] min-[769px]:text-[8.5px]">
+      <div className="grid grid-cols-[auto_minmax(0,1fr)_auto_minmax(0,1fr)] gap-x-3 gap-y-0.5 text-[8.5px] min-[769px]:text-[8.5px]">
         {cells.map(([k, v]) => (
           <span key={k} className="contents">
             <span className="text-[7.5px] uppercase tracking-[0.14em] text-ink-3">{k}</span>

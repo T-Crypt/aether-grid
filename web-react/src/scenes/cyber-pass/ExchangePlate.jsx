@@ -81,7 +81,7 @@ export default function ExchangePlate() {
       <div className="grid shrink-0 grid-cols-1 gap-1.5 p-1.5 min-[769px]:grid-cols-[minmax(0,35fr)_minmax(0,35fr)_minmax(0,30fr)]">
         {/* TIN */}
         <div className="cy-win flex flex-col gap-1 px-1.5 py-1.5">
-          <BoardHead t="TIN" sub={offline ? 'NO SOURCE' : `DOCKET ${pr.openHm} · 1 CELL = 10 B`} />
+          <BoardHead t="TIN" sub={offline ? 'NO SOURCE' : `DOCKET ${pr.openHm} · SERVED 1 CELL = 10 B`} />
           <div className="flex items-baseline gap-1">
             <span className="cy-vt text-[21px] leading-none text-ink-1 [text-shadow:0_0_9px_rgb(var(--dat)_/_0.45)] tabular-nums">
               {offline ? '—' : tin.toLocaleString('en-US')}
@@ -89,7 +89,7 @@ export default function ExchangePlate() {
             <span className="text-[9px] text-ink-3 tabular-nums">/ 2,000 B = {(tin / 10).toFixed(0)} L</span>
           </div>
           <div className="text-[9px] text-ink-2 tabular-nums">
-            {offline ? 'NO SOURCE' : `SPENT ${spent.toLocaleString('en-US')} B · LAST ${pr.openHm} · 15 B`}
+            {offline ? 'NO SOURCE' : `SERVED ${spent.toLocaleString('en-US')} B · QUEUE DRAIN · LAST ${pr.openHm}`}
           </div>
           <div className="relative h-[42px]">
             <SceneCanvas draw={(ctx, w, h, c) => paintTin(ctx, w, h, c)} className="absolute inset-0 h-full w-full" />
@@ -98,7 +98,7 @@ export default function ExchangePlate() {
 
         {/* STRONGBOX */}
         <div className="cy-win flex flex-col gap-1 px-1.5 py-1.5">
-          <BoardHead t="STRONGBOX · POST 3" sub={offline ? 'NO SOURCE' : 'RUNNER 06:52'} />
+          <BoardHead t="STRONGBOX · POST 3" sub={offline ? 'NO SOURCE' : 'RUNNER 06:52 · THROUGHPUT COST'} />
           <div className="flex items-baseline gap-1">
             <span className="cy-vt text-[21px] leading-none text-ink-1 [text-shadow:0_0_9px_rgb(var(--dat)_/_0.45)] tabular-nums">
               {offline ? '—' : box.toLocaleString('en-US')}
@@ -108,7 +108,7 @@ export default function ExchangePlate() {
             </span>
           </div>
           <div className="text-[9px] text-ink-2 tabular-nums">
-            {offline ? 'NO SOURCE' : `TARIFF 40 B / TRAVELLER = ${(40 / Math.max(0.1, pr.price || 14.2)).toFixed(2)} L`}
+            {offline ? 'NO SOURCE' : `SERVE 40 B / REQUEST = ${(40 / Math.max(0.1, pr.price || 14.2)).toFixed(2)} L · QUEUE SERVED`}
           </div>
           <div className="relative h-[42px]">
             <SceneCanvas draw={(ctx, w, h, c) => paintBox(ctx, w, h, c)} className="absolute inset-0 h-full w-full" />
@@ -119,7 +119,7 @@ export default function ExchangePlate() {
         <div className="cy-win flex flex-col gap-1 px-1.5 py-1.5">
           <BoardHead
             t="CISTER · TAP 1"
-            sub={offline ? 'NO SOURCE' : 'PUMP ON · LOAD ' + ((k.tps != null ? k.tps : 0) > 250 ? 'HIGH' : 'STEADY')}
+            sub={offline ? 'NO SOURCE' : 'PUMP ON · SERVING · LOAD ' + ((k.tps != null ? k.tps : 0) > 250 ? 'HIGH' : 'STEADY')}
           />
           <div className="flex items-center gap-2">
             <div className="relative h-[52px] w-[30px] shrink-0">
@@ -133,9 +133,9 @@ export default function ExchangePlate() {
             </div>
           </div>
           <div className="text-[9px] text-ink-2 tabular-nums">
-            {offline ? 'NO SOURCE' : `WORTH ${worth.toLocaleString('en-US')} B`}
+            {offline ? 'NO SOURCE' : `WORTH ${worth.toLocaleString('en-US')} B AT POSTED RATE`}
           </div>
-          <div className="text-[9px] text-ink-3 tabular-nums">SOLD TODAY {sold.toLocaleString('en-US')} L · {soldB.toLocaleString('en-US')} B</div>
+          <div className="text-[9px] text-ink-3 tabular-nums">SERVED TODAY {sold.toLocaleString('en-US')} L · {soldB.toLocaleString('en-US')} B</div>
         </div>
       </div>
     </section>

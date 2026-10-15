@@ -9,7 +9,7 @@ import { useEffect, useMemo, useState } from 'react'
 import { useScene } from '../../scene/SceneRoot'
 import { Frame, hexFrom, pad } from './frame.jsx'
 
-const COLS = ['1.4fr 1.2fr 0.9fr 0.9fr 1.2fr 0.6fr 1.0fr']
+const COLS = ['minmax(0,1.4fr) minmax(0,1.2fr) minmax(0,0.9fr) minmax(0,0.9fr) minmax(0,1.2fr) minmax(0,0.6fr) minmax(0,1.0fr)']
 const COL_LABELS = ['PORT DETECT', 'IP', 'AUTH ID', 'ROUTING', 'ENCRYPTION', 'NODE', 'OUTPUT']
 
 // Fixed infrastructure lore rows that pad the table to 22 (atmosphere, not
@@ -109,7 +109,7 @@ export default function TrmTable({ ghosted = false, note }) {
 
   return (
     <Frame title="SIGNAL PROCESSING TERMINAL" tag="LK-R3" empty={ghosted} note={note} className="flex-[24] min-h-[170px] md:min-h-0">
-      <div className="grid grid-cols-[1.4fr_1.2fr_0.9fr_0.9fr_1.2fr_0.6fr_1fr] gap-2 whitespace-nowrap border-b border-acc/25 px-1 pb-0.5 text-[7px] uppercase tracking-[0.06em] text-ink-3">
+      <div className="grid grid-cols-[minmax(0,1.4fr)_minmax(0,1.2fr)_minmax(0,0.9fr)_minmax(0,0.9fr)_minmax(0,1.2fr)_minmax(0,0.6fr)_minmax(0,1fr)] gap-2 whitespace-nowrap border-b border-acc/25 px-1 pb-0.5 text-[7px] uppercase tracking-[0.06em] text-ink-3">
         {COL_LABELS.map((c) => (
           <span key={c} className="truncate">
             {c}

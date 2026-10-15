@@ -36,7 +36,7 @@ export default function ClfLog() {
       className="min-h-0 flex-[150]"
       bodyClass="overflow-hidden"
     >
-      <div className="grid grid-cols-[0.95fr_0.7fr_0.6fr_1.6fr_0.7fr] gap-1.5 whitespace-nowrap border-b border-acc/25 px-1.5 pb-0.5 text-[6px] uppercase tracking-[0.1em] text-ink-3">
+      <div className="grid grid-cols-[minmax(0,0.95fr)_minmax(0,0.7fr)_minmax(0,0.6fr)_minmax(0,1.6fr)_minmax(0,0.7fr)] gap-1.5 whitespace-nowrap border-b border-acc/25 px-1.5 pb-0.5 text-[6px] uppercase tracking-[0.1em] text-ink-3">
         <span>TIME GMT+1</span>
         <span>CHAN</span>
         <span>CLASS</span>
@@ -50,7 +50,7 @@ export default function ClfLog() {
           return (
             <div
               key={e.id ?? `${e.t}-${i}`}
-              className={`grid grid-cols-[0.95fr_0.7fr_0.6fr_1.6fr_0.7fr] gap-1.5 whitespace-nowrap px-1.5 text-[6.5px] leading-[1.4] tracking-[0.04em] transition-colors duration-500 ${
+              className={`grid grid-cols-[minmax(0,0.95fr)_minmax(0,0.7fr)_minmax(0,0.6fr)_minmax(0,1.6fr)_minmax(0,0.7fr)] gap-1.5 whitespace-nowrap px-1.5 text-[6.5px] leading-[1.4] tracking-[0.04em] transition-colors duration-500 ${
                 flag ? 'bg-alm/10 text-alm' : 'text-ink-2/85'
               }`}
             >
