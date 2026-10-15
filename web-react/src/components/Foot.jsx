@@ -7,7 +7,9 @@ export default function Foot({ snap }) {
       </span>
       <span className="tabular-nums">
         FEED {snap.feed} · ENG {engines.filter((e) => e.up).length}/{engines.length} ·{' '}
-        <span className="text-ink-2">SEEDED SIMULATOR · 1 HZ</span>
+        <span className="text-ink-2">
+          {snap.mode === 'demo' ? 'SEEDED SIMULATOR' : 'COLLECTOR FEED'} · {snap.feed === 'poll' ? '0.5' : '1'} HZ
+        </span>
       </span>
     </footer>
   )

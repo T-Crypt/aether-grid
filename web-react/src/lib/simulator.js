@@ -1,6 +1,6 @@
-// Seeded in-browser simulator. Same state shape as the live speculum snapshot
-// (web/app.js applySnapshot), so every component is fed real-shaped data and
-// the console can be pointed at /api/stream later without touching the views.
+// Seeded in-browser simulator. Same state shape as the live feed
+// (src/lib/adapt.js maps the collector snapshot and tick onto it), so every
+// component is fed real-shaped data and live and demo share one paint path.
 //
 // Deterministic on purpose: a reload replays the same run, which is what makes
 // screenshot diffs and the reduced-motion snapshot meaningful.

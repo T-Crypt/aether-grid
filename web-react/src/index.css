@@ -5,10 +5,10 @@
 /* ---------------------------------------------------------------------------
    Skin tokens.
    Space-separated RGB channels so Tailwind's `<alpha-value>` works
-   (`bg-acc/10`, `border-acc/20`, ...). Kept in sync with web/tokens.css so the
-   React console and the static UI speak the same seven-skin language.
-   ink-3 is deliberately lighter than web/tokens.css `--p-dim`: the audit found
-   the old dim text sat at 3.77-4.41:1 against panel surfaces (below 4.5).
+   (`bg-acc/10`, `border-acc/20`, ...). The same values live in
+   `src/lib/skins.js` for the canvas painters, so change one, change the other.
+   ink-3 is the readable dim tier: it clears 4.5:1 against panel surfaces,
+   which the old dim text did not (3.77-4.41:1).
 --------------------------------------------------------------------------- */
 @layer base {
   :root,
