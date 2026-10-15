@@ -162,6 +162,9 @@ class Handler(speculum.Handler):
             ".svg": "image/svg+xml",
             ".json": "application/json",
             ".md": "text/plain; charset=utf-8",
+            # Firefox refuses to load a font served as octet-stream
+            ".woff2": "font/woff2",
+            ".woff": "font/woff",
         }.get(f.suffix, "application/octet-stream")
         self.send_response(200)
         self.send_header("Content-Type", ctype)
@@ -180,6 +183,16 @@ def main():
     start adapter threads first. speculum.main() looks up Handler by
     module global, so patch speculum.Handler before delegating.
     """
+    if not DIST.is_dir():
+        # main() is the only place that may require the build; import-time
+        # must keep working (tests, `python -c "import collector.aether"`)
+        # with the repo-root fallback in place.
+        print(
+            "aether: web-react/dist not found — build the console first: "
+            "npm --prefix web-react run build",
+            file=sys.stderr,
+        )
+        sys.exit(1)
     for fn in (router_thread, reasoning_thread):
         threading.Thread(target=fn, daemon=True).start()
     speculum.Handler = Handler
