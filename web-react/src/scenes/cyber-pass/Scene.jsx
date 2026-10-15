@@ -21,8 +21,12 @@ import ExchangePlate from './ExchangePlate'
 import { TalliesPlate, PostLogPlate, GeneratorPlate, WeatherPlate, ClausePlate } from './BottomPlates'
 
 export default function CyberPassScene() {
-  const { snap } = useScene()
+  const { snap, conductor } = useScene()
   const g = genStats(snap, snap && snap.gpu, snap && snap.host)
+  // Wash opacity rides the eased conductor heat in coarse 0.1 steps, not
+  // the per-tick lit count: a smooth binding would still breathe every
+  // tick, and engine flaps would pulse the whole wall. Steps hold still.
+  const heat = Math.round(Math.min(1, Math.max(0, conductor.heat)) * 10) / 10
   const litMask = (i) => !g.dead.includes(i)
   const fracs = bulbFracs(litMask)
   // the screen-blended pool of bulb light on the wall, positioned from the
@@ -37,7 +41,7 @@ export default function CyberPassScene() {
       {/* stage atmosphere: bulb wash + vignette + static rust grain */}
       <div
         className="cy-light hidden min-[769px]:block"
-        style={{ top: '9%', height: '58%', backgroundImage: lightBg, opacity: 0.35 + (g.lit / 14) * 0.6 }}
+        style={{ top: '9%', height: '58%', backgroundImage: lightBg, opacity: 0.35 + heat * 0.6 }}
         aria-hidden="true"
       />
       <div className="cy-vignette pointer-events-none absolute inset-0 z-[60] hidden min-[769px]:block" aria-hidden="true" />

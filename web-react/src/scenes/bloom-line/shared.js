@@ -213,7 +213,7 @@ export function envRows(snap) {
   const env = [
     ['ВЛАЖН.', 'humidity', host ? `${Math.round(52 + host.cpu * 0.3)}%` : '—%'],
     ['CO₂', 'atm CO₂', `${co2} ppm`],
-    ['АЭРАЦИЯ', 'aeration', `${(1.2 + (k.tps || 0) / 1000).toFixed(2)} m³/h`],
+    ['АЭРАЦИЯ', 'aeration', `${(1.2 + (k.tps || 0) / 1000).toFixed(1)} m³/h`],
     ['NPK', 'nutrient', `${Math.round(144 + heat * 20)}/${Math.round(37 + heat * 8)}/${Math.round(188 - heat * 10)}`],
   ]
   const atm = [
@@ -223,10 +223,10 @@ export function envRows(snap) {
   ]
   const rpm = 1.6 + (k.tps || 0) / 3000
   const rot = [
-    ['RPM', 'spin', rpm.toFixed(3)],
-    ['g', 'sustained', (rpm * rpm * 0.158).toFixed(3)],
+    ['RPM', 'spin', rpm.toFixed(2)],
+    ['g', 'sustained', (rpm * rpm * 0.158).toFixed(2)],
     ['РЕЦИРК', 'recirc', `${(92 + heat * 6).toFixed(1)}%`],
-    ['pH', 'reservoir', (6.18 + det(hashCode((k.tps || 0).toString())) * 0.05).toFixed(2)],
+    ['pH', 'reservoir', (6.18 + det(hashCode(String(Math.round((k.tps || 0) / 5)))) * 0.05).toFixed(2)],
   ]
   const offline = !host && !gpu
   return { env, atm, rot, offline }

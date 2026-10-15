@@ -30,7 +30,7 @@ function Bar({ label, pct, tone = 'acc' }) {
     <div className="flex items-center gap-1.5">
       <span className="w-[52px] shrink-0 text-[8.5px] tracking-[0.08em] text-ink-3">{label}</span>
       <div className="h-[5px] min-w-[40px] flex-1 bg-black/40">
-        <div className={`h-full ${cls}`} style={{ width: `${Math.max(0, Math.min(100, pct))}%` }} />
+        <div className={`h-full ${cls} transition-[width] duration-300 ease-out`} style={{ width: `${Math.max(0, Math.min(100, pct))}%` }} />
       </div>
     </div>
   )
@@ -160,7 +160,7 @@ export function GeneratorPlate() {
           <span className="text-[9px] text-ink-2 tabular-nums">{offline ? '' : `${g.kw} KW · ${g.lit}/14 LIT`}</span>
         </div>
         <div className="relative h-[7px] w-full bg-black/45">
-          <div className="absolute inset-y-0 left-0 bg-[rgb(var(--acc))] shadow-[0_0_6px_rgb(var(--acc)_/_0.6)]" style={{ width: `${offline ? 0 : g.pct}%` }} />
+          <div className="absolute inset-y-0 left-0 bg-[rgb(var(--acc))] shadow-[0_0_6px_rgb(var(--acc)_/_0.6)] transition-[width] duration-300 ease-out" style={{ width: `${offline ? 0 : g.pct}%` }} />
           <div className="absolute inset-y-[-2px] left-[80%] w-px bg-[rgb(var(--col))]" title="80 % marker" />
         </div>
         <div className="relative h-[34px] min-h-[24px]">

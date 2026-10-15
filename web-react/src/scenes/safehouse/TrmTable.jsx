@@ -31,6 +31,22 @@ const INFRA = [
   ['187.092.216', '9485', 'KEF', 'EC.5M', '5C', 'PIPE-77'],
 ]
 
+// Queue-pressure latch (module-local, like cyber-pass lastSeen: written only
+// from feed data, read only here). Warn trips at queue >= 8 and holds until
+// the queue drains below 6, so per-tick jitter across 8 stops flipping the
+// row tint. Same-snap double render is idempotent, so StrictMode is safe.
+const pressLatch = new Map()
+function pressuredOf(key, q) {
+  if (q == null) {
+    pressLatch.delete(key)
+    return false
+  }
+  const prev = pressLatch.get(key) || false
+  const next = q >= 8 ? true : q < 6 ? false : prev
+  pressLatch.set(key, next)
+  return next
+}
+
 // host:port or bare host from a backend URL; '—' when the engine has none.
 function hostOf(backend) {
   if (!backend) return '—'
@@ -88,7 +104,7 @@ export default function TrmTable({ ghosted = false, note }) {
       const h = i * 7 + 1
       const down = e.up === false
       const named = alerts.length > 0 && alerts.toLowerCase().includes((e.label || e.key || '').toLowerCase())
-      const pressured = e.queue != null && e.queue >= 8
+      const pressured = pressuredOf(e.key || `eng-${i}`, e.queue)
       const cells = [
         e.label || e.key || `ENG-${i}`,
         hostOf(e.backend),

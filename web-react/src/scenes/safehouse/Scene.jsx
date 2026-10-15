@@ -237,7 +237,7 @@ function StatusStrip() {
   const cells = [
     ['FILTERING', 'FULL', true],
     ['BUS', '7A', false],
-    ['GAIN', gain > 0.02 ? `-${(gain * 1.6).toFixed(2)}` : '0.00', false],
+    ['GAIN', gain > 0.02 ? `-${(gain * 1.6).toFixed(1)}` : '0.0', false],
     ['PHASE', phase > 0.02 ? `-${(phase * 50).toFixed(1)}°` : '-0.0°', false],
     ['LOCK', 'LK-R3', true],
   ]

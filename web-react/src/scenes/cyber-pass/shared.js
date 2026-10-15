@@ -299,11 +299,14 @@ export function genStats(snap, gpu, host) {
   const k = (snap && snap.kpi) || {}
   const power = g && g.power != null ? g.power : null
   const cpu = h && h.cpu != null ? h.cpu / 100 : null
-  const load = clamp(
+  // Quantised to 0.05 steps: the feed relaxes with seeded noise every tick,
+  // so a raw load would repaint every bulb brightness, bar width and figure
+  // per tick. Coarse steps track real load while holding pixels still.
+  const load = Math.round(clamp(
     (cpu != null ? cpu * 0.55 : 0.3) + (power != null ? (power / 450) * 0.45 : 0.25),
     0,
     1,
-  )
+  ) * 20) / 20
   const kw = load * 3
   const dead = []
   if (snap && snap.mode === 'offline') {
@@ -316,11 +319,11 @@ export function genStats(snap, gpu, host) {
   }
   const lit = 14 - new Set(dead).size
   const volt = Math.round(230 - 6 * (kw / 3) - load * 8)
-  const hz = (50 - load * 0.4 - (cpu || 0) * 0.1).toFixed(2)
+  const hz = (50 - load * 0.4 - (cpu || 0) * 0.1).toFixed(1)
   const fuel = (24 * (1 - load * 0.62)).toFixed(1)
   const fuelPct = Math.round(100 - load * 62)
   const uptimeH = h && h.uptime != null ? Math.floor(h.uptime / 3600) : null
-  return { load, kw: kw.toFixed(2), pct: Math.round(load * 100), dead, lit, volt, hz, fuel, fuelPct, uptimeH, queue: k.queue != null ? Math.round(k.queue) : null }
+  return { load, kw: kw.toFixed(1), pct: Math.round(load * 100), dead, lit, volt, hz, fuel, fuelPct, uptimeH, queue: k.queue != null ? Math.round(k.queue) : null }
 }
 
 // Bulb x fractions (of the rail width) for the screen-blended light pool.

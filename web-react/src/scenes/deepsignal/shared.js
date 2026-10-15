@@ -74,8 +74,9 @@ export function waterfallOf(snap, conductor) {
   if (staleOf(snap)) return { heat: 0.06, spike: 0, tps: 0, think: 0, amberX: 0.62 }
   const k = (snap && snap.kpi) || {}
   const r = (snap && snap.reasoning) || {}
-  const think = r.thinking_tokens != null ? r.thinking_tokens : (conductor ? conductor.reason * 400 : 0)
-  const thinkRate = clamp(think / 400, 0, 1)
+  const thinkRaw = r.thinking_tokens != null ? r.thinking_tokens : (conductor ? conductor.reason * 400 : 0)
+  const think = Math.round(clamp(thinkRaw / 400, 0, 1) * 20) / 20
+  const thinkRate = think
   const flow = conductor ? clamp(conductor.flow, 0, 1) : 0
   const reason = conductor ? clamp(conductor.reason, 0, 1) : 0
   const heat = clamp(0.22 + thinkRate * 0.45 + flow * 0.33, 0, 1)
@@ -120,7 +121,7 @@ export function latOf(snap) {
   const q = k.p95 != null ? k.p95 / 1000 : k.ttft != null ? k.ttft / 1000 : null
   const rtt = k.ttft != null ? k.ttft : 137
   return {
-    queue: q != null ? q.toFixed(2) : '—',
+    queue: q != null ? q.toFixed(1) : '—',
     rtt: q != null || k.ttft != null ? Math.round(rtt) : 137,
     offline: !snap || snap.mode === 'offline',
   }
@@ -214,7 +215,7 @@ export function gaugeVals(snap) {
   const k = (snap && snap.kpi) || {}
   const gpu = (snap && snap.gpu) || null
   return {
-    snr: k.tps != null ? (8.4 + clamp(k.tps / 40, 0, 6)).toFixed(1) : '—',
+    snr: k.tps != null ? (8.4 + Math.round(clamp(k.tps / 40, 0, 6) * 2) / 2).toFixed(1) : '—',
     integ: k.queue != null ? `${Math.round(40 + k.queue * 2)} s` : '—',
     temp: gpu && gpu.temp != null ? `${Math.round(gpu.temp)} K` : '—',
   }
