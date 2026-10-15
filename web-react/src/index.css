@@ -90,6 +90,28 @@
     --text-3: #9dba8c;
   }
 
+  /* Scene surface tokens: the safehouse scene re-tunes the shared role
+     colours on its own cold-blue surfaces for every scheme, and carries the
+     reference's native palette (uispace.org/safehouse) on its default
+     scheme, corvane. Later block wins over the base skins above. The
+     --sh-top/--sh-bot pair is the stage gradient (reference #0E1E28 ->
+     #06121A over the #0A1820 base), painted on the scene root. */
+  [data-scene='safehouse'] {
+    --pan: 20 40 56;
+    --bgg: 10 24 32;
+    --text-1: #c8dce8;
+    --text-2: #93aabb;
+    --text-3: #608090;
+    --alm: 255 72 48;
+    --sh-top: #0e1e28;
+    --sh-bot: #06121a;
+  }
+  [data-scene='safehouse'][data-skin='corvane'] {
+    --acc: 80 192 224;
+    --dat: 255 200 80;
+    --col: 255 255 255;
+  }
+
   * {
     box-sizing: border-box;
   }
@@ -249,6 +271,90 @@
       linear-gradient(90deg, rgb(var(--acc) / 0.055) 1px, transparent 1px);
     background-size: 44px 44px;
   }
+
+  /* ------------------------------------------------------------------
+     Safehouse scene: staged surfaces for the two-pane SIGINT composition.
+     Everything is token-driven; the scene block in @layer base supplies
+     the values. Scoped by [data-scene='safehouse'] so the base skins and
+     the hexlab scene are untouched.
+  ------------------------------------------------------------------ */
+  .sh-stage {
+    background: linear-gradient(180deg, var(--sh-top) 0%, rgb(var(--bgg)) 60%, var(--sh-bot) 100%);
+  }
+  .sh-grid {
+    background-image: repeating-linear-gradient(
+        0deg,
+        rgb(var(--acc) / 0.06) 0px,
+        rgb(var(--acc) / 0.06) 1px,
+        transparent 1px,
+        transparent 48px
+      ),
+      repeating-linear-gradient(
+        90deg,
+        rgb(var(--acc) / 0.06) 0px,
+        rgb(var(--acc) / 0.06) 1px,
+        transparent 1px,
+        transparent 48px
+      );
+  }
+  .sh-vignette {
+    background: radial-gradient(ellipse 95% 90% at 50% 50%, transparent 50%, rgb(0 0 0 / 0.55) 100%);
+    mix-blend-mode: multiply;
+  }
+  .sh-grain {
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='160' height='160'%3E%3Cfilter id='g'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.92' numOctaves='2' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='160' height='160' filter='url(%23g)'/%3E%3C/svg%3E");
+    filter: grayscale(1);
+    mix-blend-mode: overlay;
+    opacity: 0.05;
+  }
+  .sh-pane {
+    background: linear-gradient(180deg, rgb(var(--pan) / 0.65) 0%, rgb(var(--bgg) / 0.55) 100%);
+    box-shadow: inset 0 0 0 1px rgb(var(--acc) / 0.12);
+  }
+  .sh-block {
+    background: linear-gradient(180deg, rgb(var(--pan) / 0.55) 0%, rgb(var(--bgg) / 0.45) 100%);
+  }
+  .sh-ghost {
+    opacity: 0.4;
+  }
+  .sh-ghost .sh-frame {
+    border-style: dashed;
+    border-color: rgb(var(--text-3) / 0.3);
+  }
+
+  /* 60 s linear status marquee: one duplicated track scrolls out, the
+     loop is seamless. Stopped under reduced motion with the first line
+     visible instead of the padding-left:100% lead-in. */
+  .sh-marquee-track {
+    display: inline-flex;
+    gap: 24px;
+    white-space: nowrap;
+    padding-left: 100%;
+    animation: sh-scroll 60s linear infinite;
+  }
+  @keyframes sh-scroll {
+    from {
+      transform: translateX(0);
+    }
+    to {
+      transform: translateX(-100%);
+    }
+  }
+
+  /* One-shot cyan row flash, re-triggered per anomaly by re-keying the row.
+     No JS timer: the element simply restarts a finite CSS animation. */
+  @keyframes sh-flash {
+    0% {
+      background-color: rgb(var(--acc) / 0.18);
+      color: rgb(var(--acc));
+    }
+    100% {
+      background-color: transparent;
+    }
+  }
+  .sh-flash {
+    animation: sh-flash 360ms ease-out;
+  }
 }
 
 @media (prefers-reduced-motion: reduce) {
@@ -258,5 +364,9 @@
     animation-duration: 0.001ms !important;
     animation-iteration-count: 1 !important;
     transition-duration: 0.001ms !important;
+  }
+  [data-scene='safehouse'] .sh-marquee-track {
+    animation: none;
+    padding-left: 8px;
   }
 }

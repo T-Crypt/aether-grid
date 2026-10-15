@@ -21,6 +21,19 @@ export const SCENES = [
     schemes: SKIN_IDS,
     palettes: {}, // empty: every base scheme applies to hex-lab as-is
   },
+  {
+    // Reference palette (uispace.org/safehouse): sky-cyan accent #50C0E0,
+    // data amber #FFC850, cool white #FFFFFF, alarm #FF4830. Corvane's base
+    // accent (#59C3FF) is the closest base scheme, so it carries the native
+    // table; the other six keep their base role colours on the scene surfaces.
+    id: 'safehouse',
+    label: 'Safehouse',
+    defaultScheme: 'corvane',
+    schemes: SKIN_IDS,
+    palettes: {
+      corvane: { acc: '80 192 224', dat: '255 200 80', col: '255 255 255', alm: '255 72 48' },
+    },
+  },
 ]
 
 export const SCENE_IDS = SCENES.map((s) => s.id)
