@@ -1,4 +1,5 @@
 # Aether Grid
+![Aether Grid](banner.svg)
 
 Aether Grid watches local inference engines and shows their numbers live, with history. It covers GPU, host, llama-swap, NInfer, and Strata on one screen. Every source is optional. A missing source leaves its panels empty.
 
