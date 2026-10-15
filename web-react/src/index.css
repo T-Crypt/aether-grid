@@ -112,6 +112,27 @@
     --col: 255 255 255;
   }
 
+  /* The bloom-line scene re-tunes the shared role colours on its leaf-green
+     surfaces for every scheme, and carries the reference's native palette
+     (uispace.org/bloom-line) on its default scheme, gullet. --bl-top/--bl-mid
+     are the stage wash stops (reference #08180F -> #061410 over the #04100C
+     base), painted on the scene root. */
+  [data-scene='bloom-line'] {
+    --pan: 10 26 20;
+    --bgg: 4 16 12;
+    --text-1: #d8f0e2;
+    --text-2: #a9cdbb;
+    --text-3: #5c8a78;
+    --alm: 240 155 170;
+    --bl-top: #08180f;
+    --bl-mid: #061410;
+  }
+  [data-scene='bloom-line'][data-skin='gullet'] {
+    --acc: 107 232 164;
+    --dat: 240 192 96;
+    --col: 125 216 196;
+  }
+
   * {
     box-sizing: border-box;
   }
@@ -355,6 +376,206 @@
   .sh-flash {
     animation: sh-flash 360ms ease-out;
   }
+
+  /* ------------------------------------------------------------------
+     Bloom-line scene: the orbital-greenhouse stage. Staged surfaces for the
+     stage-plus-rails composition: wash, engineering grid, sodium glow,
+     vignette and grain, inset frames, tick/fill states and the loop
+     animations. All token-driven; the scene block in @layer base supplies
+     the values. Scoped by [data-scene='bloom-line'] so the base skins and
+     the other scenes are untouched.
+  ------------------------------------------------------------------ */
+  .bl-wash {
+    background:
+      radial-gradient(ellipse 75% 65% at 50% 52%, rgb(var(--acc) / 0.06) 0%, rgb(var(--acc) / 0.03) 35%, transparent 75%),
+      radial-gradient(ellipse 110% 110% at 50% 55%, var(--bl-top) 0%, var(--bl-mid) 32%, rgb(var(--bgg)) 78%);
+  }
+  .bl-grid {
+    background-image: repeating-linear-gradient(
+        0deg,
+        rgb(var(--acc) / 0.05) 0px,
+        rgb(var(--acc) / 0.05) 1px,
+        transparent 1px,
+        transparent 44px
+      ),
+      repeating-linear-gradient(
+        90deg,
+        rgb(var(--acc) / 0.05) 0px,
+        rgb(var(--acc) / 0.05) 1px,
+        transparent 1px,
+        transparent 44px
+      );
+  }
+  .bl-sodium {
+    background:
+      radial-gradient(circle at 50% 38%, rgb(var(--dat) / 0.16) 0%, rgb(var(--dat) / 0.06) 12%, rgb(var(--acc) / 0.03) 28%, transparent 55%),
+      radial-gradient(circle at 50% 62%, rgb(var(--col) / 0.12) 0%, rgb(var(--acc) / 0.05) 14%, transparent 40%);
+    mix-blend-mode: screen;
+    opacity: 1;
+    animation: bl-sodium-pulse 7.2s ease-in-out infinite;
+  }
+  @keyframes bl-sodium-pulse {
+    0%,
+    100% {
+      opacity: 0.85;
+    }
+    50% {
+      opacity: 1;
+    }
+  }
+  .bl-vignette {
+    background: radial-gradient(ellipse 95% 90% at 50% 50%, transparent 50%, rgb(0 0 0 / 0.5) 100%);
+    mix-blend-mode: multiply;
+  }
+  .bl-grain {
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='160' height='160'%3E%3Cfilter id='g'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.92' numOctaves='2' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='160' height='160' filter='url(%23g)'/%3E%3C/svg%3E");
+    filter: grayscale(1);
+    mix-blend-mode: overlay;
+    opacity: 0.05;
+  }
+  .bl-inset {
+    border: 1px solid rgb(var(--pan));
+    background: rgb(var(--bgg) / 0.78);
+    box-shadow: 0 4px 16px rgb(0 0 0 / 0.4);
+    overflow: hidden;
+  }
+  .bl-crosshair {
+    position: absolute;
+    inset: 0;
+    pointer-events: none;
+    background:
+      linear-gradient(to right, transparent 49.6%, rgb(var(--acc) / 0.18) 49.8%, rgb(var(--acc) / 0.18) 50.2%, transparent 50.4%),
+      linear-gradient(to bottom, transparent 49.6%, rgb(var(--acc) / 0.18) 49.8%, rgb(var(--acc) / 0.18) 50.2%, transparent 50.4%);
+  }
+  .bl-strip {
+    background: linear-gradient(to bottom, rgb(var(--bgg) / 0.8), transparent);
+  }
+  .bl-tick {
+    background: rgb(var(--acc));
+    opacity: 0.55;
+  }
+  .bl-tick-hv {
+    background: rgb(var(--dat));
+    opacity: 0.85;
+  }
+  .bl-tick-bl {
+    background: rgb(var(--alm));
+    opacity: 1;
+    box-shadow: 0 0 6px rgb(var(--alm) / 0.6);
+  }
+  .bl-tick-dim {
+    background: rgb(var(--acc));
+    opacity: 0.2;
+  }
+  .bl-tick-live {
+    animation: bl-bloom-pulse 1.6s ease-in-out infinite;
+  }
+  @keyframes bl-bloom-pulse {
+    0%,
+    100% {
+      opacity: 1;
+    }
+    50% {
+      opacity: 0.55;
+    }
+  }
+  .bl-fill {
+    background: linear-gradient(to top, rgb(var(--acc)) 0%, rgb(var(--col)) 100%);
+    transition: height 600ms ease;
+  }
+  .bl-fill-bl {
+    background: linear-gradient(to top, rgb(var(--alm)) 0%, rgb(var(--dat)) 100%);
+    animation: bl-et-bloom 2.2s ease-in-out infinite;
+  }
+  @keyframes bl-et-bloom {
+    0%,
+    100% {
+      opacity: 1;
+    }
+    50% {
+      opacity: 0.65;
+    }
+  }
+  .bl-fill-atm {
+    background: linear-gradient(to right, rgb(var(--col)), rgb(var(--acc)));
+  }
+  .bl-fill-warn {
+    background: linear-gradient(to right, rgb(var(--dat)), rgb(var(--col)));
+  }
+  .bl-flag {
+    animation: bl-ed-flag 1.4s ease-in-out infinite;
+  }
+  @keyframes bl-ed-flag {
+    0%,
+    100% {
+      opacity: 0.95;
+    }
+    50% {
+      opacity: 0.45;
+    }
+  }
+  .bl-armed {
+    animation: bl-armed 1.6s ease-in-out infinite;
+  }
+  @keyframes bl-armed {
+    0%,
+    100% {
+      opacity: 1;
+    }
+    50% {
+      opacity: 0.55;
+    }
+  }
+  .bl-eta {
+    animation: bl-eta 2.4s ease-in-out infinite;
+  }
+  @keyframes bl-eta {
+    0%,
+    100% {
+      opacity: 1;
+    }
+    50% {
+      opacity: 0.55;
+    }
+  }
+  .bl-flash {
+    animation: bl-dot 1.6s ease-in-out infinite;
+  }
+  @keyframes bl-dot {
+    0%,
+    100% {
+      opacity: 1;
+    }
+    50% {
+      opacity: 0.35;
+    }
+  }
+  .bl-foundation {
+    animation: bl-foundation 4.5s ease-in-out infinite;
+  }
+  @keyframes bl-foundation {
+    0%,
+    100% {
+      opacity: 1;
+    }
+    50% {
+      opacity: 0.78;
+    }
+  }
+  @keyframes bl-row-flash {
+    0% {
+      background-color: rgb(var(--acc) / 0.22);
+    }
+    100% {
+      background-color: transparent;
+    }
+  }
+  .bl-row-flash {
+    animation: bl-row-flash 700ms ease-out;
+  }
+  .bl-serif {
+    font-family: 'Cormorant Garamond', 'IBM Plex Serif', Georgia, serif;
+  }
 }
 
 @media (prefers-reduced-motion: reduce) {
@@ -368,5 +589,18 @@
   [data-scene='safehouse'] .sh-marquee-track {
     animation: none;
     padding-left: 8px;
+  }
+  /* Bloom-line: the constant loops (sodium glow, bloom pulses, flags) stop
+     under reduced motion; the painters settle on one static frame via the
+     conductor, and the one-shot bl-row-flash degenerates instantly. */
+  [data-scene='bloom-line'] .bl-sodium,
+  [data-scene='bloom-line'] .bl-tick-live,
+  [data-scene='bloom-line'] .bl-fill-bl,
+  [data-scene='bloom-line'] .bl-flag,
+  [data-scene='bloom-line'] .bl-armed,
+  [data-scene='bloom-line'] .bl-eta,
+  [data-scene='bloom-line'] .bl-flash,
+  [data-scene='bloom-line'] .bl-foundation {
+    animation: none;
   }
 }
