@@ -1,5 +1,7 @@
-// Fixed background stack: grid lines, corner vignette, scanlines, film grain.
-// Purely decorative, so it is aria-hidden and pointer-events-none throughout.
+// Static texture base under everything: grid lines, skin-tint washes,
+// vignette, scanlines, film grain. The state-reactive wash is the
+// Declination canvas above this layer.
+
 export default function Atmosphere() {
   return (
     <div aria-hidden="true" className="pointer-events-none fixed inset-0 z-0 overflow-hidden">
@@ -8,20 +10,18 @@ export default function Atmosphere() {
         className="absolute inset-0"
         style={{
           background:
-            'radial-gradient(120% 90% at 12% -10%, rgb(var(--acc) / 0.10) 0%, transparent 55%),' +
-            'radial-gradient(90% 70% at 100% 0%, rgb(var(--col) / 0.07) 0%, transparent 60%),' +
-            'radial-gradient(140% 120% at 50% 120%, rgb(var(--acc) / 0.06) 0%, transparent 60%)',
+            'radial-gradient(120% 90% at 12% -10%, rgb(var(--acc) / 0.07) 0%, transparent 55%),' +
+            'radial-gradient(90% 70% at 100% 0%, rgb(var(--col) / 0.05) 0%, transparent 60%),' +
+            'radial-gradient(140% 120% at 50% 120%, rgb(var(--acc) / 0.05) 0%, transparent 60%)',
         }}
       />
+      <div className="scene-warm absolute inset-0" />
       <div
         className="absolute inset-0"
-        style={{
-          background:
-            'radial-gradient(ellipse at 50% 45%, transparent 55%, rgba(0,0,0,0.55) 100%)',
-        }}
+        style={{ background: 'radial-gradient(ellipse at 50% 45%, transparent 55%, rgba(0,0,0,0.5) 100%)' }}
       />
       <div
-        className="absolute inset-0 opacity-[0.22]"
+        className="absolute inset-0 opacity-[0.18]"
         style={{
           backgroundImage:
             'repeating-linear-gradient(to bottom, transparent 0, transparent 2px, rgba(0,0,0,0.35) 2px, rgba(0,0,0,0.35) 3px)',

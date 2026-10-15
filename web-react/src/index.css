@@ -16,6 +16,7 @@
     --acc: 0 224 224;
     --dat: 240 220 80;
     --col: 255 64 192;
+    --alm: 255 71 78;
     --pan: 10 38 50;
     --bgg: 5 24 32;
     --text-1: #d8f0f0;
@@ -26,6 +27,7 @@
     --acc: 143 123 255;
     --dat: 111 231 173;
     --col: 255 92 138;
+    --alm: 255 71 78;
     --pan: 12 18 38;
     --bgg: 6 10 20;
     --text-1: #dce6ff;
@@ -36,6 +38,7 @@
     --acc: 183 240 225;
     --dat: 255 209 102;
     --col: 255 143 107;
+    --alm: 255 71 78;
     --pan: 10 32 29;
     --bgg: 6 20 18;
     --text-1: #d9f2ee;
@@ -46,6 +49,7 @@
     --acc: 255 90 74;
     --dat: 255 197 92;
     --col: 89 195 255;
+    --alm: 255 71 78;
     --pan: 34 16 9;
     --bgg: 20 10 8;
     --text-1: #f6e3dd;
@@ -56,6 +60,7 @@
     --acc: 89 195 255;
     --dat: 111 231 173;
     --col: 255 92 138;
+    --alm: 255 71 78;
     --pan: 12 26 48;
     --bgg: 7 17 32;
     --text-1: #dceaff;
@@ -66,6 +71,7 @@
     --acc: 255 176 0;
     --dat: 111 231 173;
     --col: 89 195 255;
+    --alm: 255 71 78;
     --pan: 34 26 9;
     --bgg: 20 16 5;
     --text-1: #f4ead2;
@@ -76,6 +82,7 @@
     --acc: 124 255 107;
     --dat: 89 195 255;
     --col: 255 92 138;
+    --alm: 255 71 78;
     --pan: 12 34 9;
     --bgg: 7 20 6;
     --text-1: #e2f5d9;
@@ -98,16 +105,27 @@
     font-family: theme('fontFamily.mono');
     font-feature-settings: 'tnum' 1, 'cv01' 1;
     color: var(--text-1);
-    background-color: #04060d;
+    background-color: rgb(var(--bgg));
     -webkit-font-smoothing: antialiased;
     -moz-osx-font-smoothing: grayscale;
     text-rendering: optimizeLegibility;
     overflow-x: hidden;
   }
 
+  /* Scene state variables. The SceneRoot conductor publishes the smoothed
+     scalars here each frame; the CSS below and the canvas painters both
+     read them, so one load burst warms the whole surface and back.
+     --heat: vram/power/temp pressure (amber)  --alert: anomaly (red)
+     --flow: token flow (drives rail sweeps, packet density)             */
+  :root {
+    --heat: 0;
+    --alert: 0;
+    --flow: 0;
+  }
+
   /* A skin swap should crossfade, not snap. */
   body,
-  .glass {
+  .scope {
     transition: background-color 320ms cubic-bezier(0.22, 1, 0.36, 1),
       border-color 320ms cubic-bezier(0.22, 1, 0.36, 1), color 320ms cubic-bezier(0.22, 1, 0.36, 1);
   }
@@ -119,18 +137,64 @@
 }
 
 @layer components {
-  /* Frosted panel: the brief's glassmorphism, at a border weight that reads
-     as a glowing hairline rather than a box. */
-  .glass {
-    background: linear-gradient(180deg, rgb(2 6 16 / 0.62) 0%, rgb(2 6 16 / 0.78) 100%);
-    backdrop-filter: blur(14px) saturate(130%);
-    -webkit-backdrop-filter: blur(14px) saturate(130%);
-    border: 1px solid rgb(var(--acc) / 0.16);
-    box-shadow: 0 1px 0 rgb(var(--acc) / 0.05), 0 24px 60px -32px rgb(0 0 0 / 0.95);
+  /* Scope: the borderless scene region. One continuous surface; panels are
+     delineated by a hairline edge, corner ticks and the caption — never by
+     a fill, a shadow or a radius. */
+  .scope {
+    border: 1px solid rgb(var(--acc) / 0.10);
+    transition: border-color 220ms ease;
+  }
+  .scope:hover {
+    border-color: rgb(var(--acc) / 0.26);
+  }
+  .scope-ghost {
+    opacity: 0.38;
+    border-style: dashed;
+    border-color: rgb(var(--text-3) / 0.3);
+  }
+
+  .scope-tick {
+    position: absolute;
+    width: 12px;
+    height: 12px;
+    border: 0 solid rgb(var(--acc) / 0.55);
+    transition: border-color 220ms ease;
+  }
+  .scope-tick-dim {
+    border-color: rgb(var(--text-3) / 0.25);
   }
 
   .hairline {
     border-color: rgb(var(--acc) / 0.14);
+  }
+
+  .scene-warm {
+    background:
+      linear-gradient(to top, rgb(var(--dat) / calc(var(--heat) * 0.14)), transparent 45%),
+      linear-gradient(to bottom, rgb(var(--alm) / calc(var(--alert) * 0.12)), transparent 40%);
+    opacity: calc(0.25 + var(--heat) * 0.5);
+  }
+  .flow-rail {
+    position: relative;
+    overflow: hidden;
+  }
+  .flow-rail::after {
+    content: '';
+    position: absolute;
+    inset: 0;
+    background: linear-gradient(90deg, transparent 0%, rgb(var(--acc) / 0.35) 50%, transparent 100%);
+    background-size: 50% 100%;
+    background-repeat: no-repeat;
+    animation: flow-sweep 4.5s linear infinite;
+    opacity: calc(0.15 + var(--flow) * 0.85);
+  }
+
+  .strip {
+    border-top: 1px solid rgb(var(--acc) / 0.14);
+    border-bottom: 1px solid rgb(var(--acc) / 0.10);
+  }
+  .strip > * + * {
+    border-left: 1px solid rgb(var(--acc) / 0.10);
   }
 
   /* FUI micro-label above every panel title */
@@ -168,15 +232,6 @@
     background: rgb(var(--acc) / 0.55);
   }
 
-  /* Inset well behind every canvas: gives the traces a surface to sit in
-     instead of floating on bare glass, which is what the old UI got wrong. */
-  .well {
-    display: block;
-    width: 100%;
-    border: 1px solid rgb(var(--acc) / 0.10);
-    border-radius: 3px;
-    background: linear-gradient(180deg, rgb(var(--pan) / 0.30) 0%, rgb(var(--bgg) / 0.12) 100%);
-  }
 
   /* Horizontal rail that scrolls without showing a scrollbar. Used by the
      header's skin + pill rows on phones, where wrapping would eat the fold. */

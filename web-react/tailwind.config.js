@@ -19,6 +19,7 @@ export default {
         acc: rgbVar('--acc'),
         dat: rgbVar('--dat'),
         col: rgbVar('--col'),
+        alm: rgbVar('--alm'),
         pan: rgbVar('--pan'),
         bgg: rgbVar('--bgg'),
         ink: {
@@ -48,6 +49,10 @@ export default {
           '0%, 100%': { opacity: '1', transform: 'scale(1)' },
           '50%': { opacity: '0.45', transform: 'scale(0.82)' },
         },
+        'flow-sweep': {
+          '0%': { backgroundPosition: '-50% 0' },
+          '100%': { backgroundPosition: '200% 0' },
+        },
         sweep: {
           '0%': { transform: 'translateX(-100%)' },
           '100%': { transform: 'translateX(300%)' },
@@ -55,6 +60,7 @@ export default {
       },
       animation: {
         pulseDot: 'pulseDot 1.8s ease-in-out infinite',
+        'flow-sweep': 'flow-sweep 4.5s linear infinite',
         sweep: 'sweep 4.5s linear infinite',
       },
     },

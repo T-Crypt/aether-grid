@@ -1,6 +1,12 @@
+// TEMP / PSI. The GPU block scope. Four radial gauges (util, temp, vram,
+// power). SVG, updated at feed rate, eased by a CSS transition between
+// ticks so a load spike sweeps the needles on the same beat as the scene.
+
 import { Gauge as GaugeIcon } from 'lucide-react'
-import Panel from './Panel'
+import Scope from '../scene/Scope'
 import { clamp01, tempState } from '../lib/format'
+import { useScene } from '../scene/SceneRoot'
+import useAnchor from '../scene/useAnchor'
 
 const START = -120
 const END = 120
@@ -21,10 +27,17 @@ function arcPath(cx, cy, r, start, end) {
 function Gauge({ label, value, pct, color }) {
   const end = START + (END - START) * clamp01(pct)
   return (
-    <div className="flex flex-col items-center gap-1">
-      <svg viewBox="0 0 100 100" className="h-[86px] w-[86px]" role="img" aria-label={`${label} ${value}`}>
+    <div className="flex flex-col items-center gap-0.5">
+      <svg viewBox="0 0 100 100" className="h-[74px] w-[74px] sm:h-[86px] sm:w-[86px]" role="img" aria-label={`${label} ${value}`}>
         <path d={arcPath(50, 50, 37, START, END)} stroke="rgb(var(--acc) / 0.12)" strokeWidth="6" fill="none" strokeLinecap="round" />
-        <path d={arcPath(50, 50, 37, START, end)} stroke={color} strokeWidth="6" fill="none" strokeLinecap="round" />
+        <path
+          d={arcPath(50, 50, 37, START, end)}
+          stroke={color}
+          strokeWidth="6"
+          fill="none"
+          strokeLinecap="round"
+          style={{ transition: 'd 420ms cubic-bezier(.22,1,.36,1)' }}
+        />
         <text x="50" y="52" textAnchor="middle" className="fill-ink-1 text-[19px] font-bold tabular-nums">
           {value}
         </text>
@@ -36,9 +49,11 @@ function Gauge({ label, value, pct, color }) {
   )
 }
 
-/** Temp / PSI: four radial gauges for the GPU block. */
-export default function GaugePanel({ snap, stagger }) {
+export default function GpuScope() {
+  const { snap, mode } = useScene()
+  const ref = useAnchor('gpu')
   const gpu = snap.gpu || {}
+  const ghost = mode === 'live' || mode === 'demo' ? !snap.gpu : true
   const util = gpu.util
   const temp = gpu.temp
   const vram = gpu.vram
@@ -52,38 +67,40 @@ export default function GaugePanel({ snap, stagger }) {
       label: 'TEMP',
       value: temp != null ? `${Math.round(temp)}C` : '—',
       pct: (temp ?? 0) / 100,
-      color: ts === 'alert' ? 'rgb(var(--col))' : ts === 'warn' ? 'rgb(var(--dat))' : 'rgb(var(--acc))',
+      color: ts === 'alert' ? 'rgb(var(--alm))' : ts === 'warn' ? 'rgb(var(--dat))' : 'rgb(var(--acc))',
     },
-    { label: 'VRAM', value: vram != null ? `${vram.toFixed(0)}G` : '—', pct: (vram ?? 0) / vramTotal, color: 'rgb(var(--col))' },
+    { label: 'VRAM', value: vram != null ? `${vram.toFixed(0)}G` : '—', pct: (vram ?? 0) / vramTotal, color: 'rgb(var(--dat))' },
     { label: 'PWR', value: power != null ? `${Math.round(power)}W` : '—', pct: (power ?? 0) / 450, color: 'rgb(var(--dat))' },
   ]
 
   return (
-    <Panel
+    <Scope
+      id="sc-gpu"
       title="TEMP / PSI"
       eyebrow="gpu block"
-      icon={GaugeIcon}
       accent="dat"
-      right={gpu.name || '—'}
-      stagger={stagger}
+      right={ghost ? undefined : gpu.name || '—'}
+      ghosted={ghost}
+      ghostNote="no gpu source"
+      className="min-h-[200px] flex-1"
     >
-      <div className="grid flex-1 grid-cols-2 place-items-center gap-1">
+      <div ref={ref} className="grid flex-1 grid-cols-2 place-items-center gap-1 py-1">
         {gauges.map((g) => (
           <Gauge key={g.label} {...g} />
         ))}
       </div>
-      <div className="mt-2 flex items-center justify-between text-2xs text-ink-3">
+      <div className="mt-1.5 flex items-center justify-between text-2xs text-ink-3">
         <span>
           GPU <span className="text-col">{util != null ? `${Math.round(util)}%` : '—'}</span>
         </span>
         <span className="tabular-nums">
           TMP{' '}
-          <span className={ts === 'alert' ? 'text-col' : ts === 'warn' ? 'text-dat' : 'text-acc'}>
+          <span className={ts === 'alert' ? 'text-alm' : ts === 'warn' ? 'text-dat' : 'text-acc'}>
             {temp != null ? `${Math.round(temp)}C` : '—'}
           </span>
-          {snap.mode === 'demo' ? ' SIM' : ''}
+          {mode === 'demo' ? ' SIM' : ''}
         </span>
       </div>
-    </Panel>
+    </Scope>
   )
 }

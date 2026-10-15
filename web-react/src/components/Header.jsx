@@ -1,7 +1,7 @@
-import { motion } from 'framer-motion'
 import { Pause, Play, StepForward, Radio } from 'lucide-react'
 import { SKINS } from '../lib/skins'
 import { Pill, derivePills } from './Status'
+import { useScene } from '../scene/SceneRoot'
 
 function Sigil({ color }) {
   return (
@@ -15,26 +15,27 @@ function Sigil({ color }) {
 }
 
 const BTN =
-  'inline-flex items-center gap-1.5 rounded border border-acc/25 bg-acc/[0.08] px-2 py-1.5 text-2xs text-ink-2 ' +
+  'inline-flex items-center gap-1.5 rounded-none border border-acc/25 bg-acc/[0.08] px-2 py-1 text-2xs text-ink-2 ' +
   'transition-colors hover:border-acc/50 hover:text-ink-1 focus-visible:outline focus-visible:outline-1 ' +
   'focus-visible:outline-offset-2 focus-visible:outline-acc'
 
-/**
- * One floating frosted bar carrying the brand, the skin navigation and the
- * live status pills — the brief's "streamline the pills and tabs into a
- * frosted-glass header". Sticky, so telemetry state never scrolls away.
- *
- * On small screens the skin rail and the pill row scroll sideways instead of
- * wrapping. Wrapping cost 241px of header on a 390px phone and pushed the
- * first panel off the fold; a scrolling rail costs one row each.
- */
-export default function Header({ snap, skin, onSkin, paused, onTogglePause, onStep, tick, demo = true }) {
+const PHASE_TONE = {
+  idle: 'text-acc',
+  burst: 'text-dat',
+  pressure: 'text-dat',
+  overflow: 'text-alm',
+  recover: 'text-col',
+}
+
+export default function Header() {
+  const { snap, tick, paused, setPaused, stepOnce, demo, skin, setSkin, mode } = useScene()
   const pills = derivePills(snap)
   const accent = SKINS.find((s) => s.id === skin)?.accent || '#00e0e0'
+  const phase = snap?.phase
 
   return (
-    <header className="sticky top-0 z-40 mb-4 border-b border-acc/10 bg-space-950/70 backdrop-blur-xl">
-      <div className="mx-auto max-w-[1760px] px-3 py-2.5 sm:px-5">
+    <header className="sticky top-0 z-40 border-b border-acc/10 bg-space-950/60 backdrop-blur-md">
+      <div className="mx-auto max-w-[1920px] px-3 py-2 sm:px-5">
         <div className="flex flex-wrap items-center gap-x-4 gap-y-2">
           <div className="flex shrink-0 items-center gap-2.5">
             <Sigil color={accent} />
@@ -57,8 +58,8 @@ export default function Header({ snap, skin, onSkin, paused, onTogglePause, onSt
                     key={s.id}
                     type="button"
                     aria-pressed={isActive}
-                    onClick={() => onSkin(s.id)}
-                    className={`relative shrink-0 whitespace-nowrap rounded px-2.5 py-1.5 text-2xs transition-colors duration-200 focus-visible:outline focus-visible:outline-1 focus-visible:outline-offset-2 focus-visible:outline-acc ${
+                    onClick={() => setSkin(s.id)}
+                    className={`relative shrink-0 whitespace-nowrap px-2.5 py-1.5 text-2xs transition-colors duration-200 focus-visible:outline focus-visible:outline-1 focus-visible:outline-offset-2 focus-visible:outline-acc ${
                       isActive ? 'bg-acc/[0.12] text-ink-1' : 'text-ink-3 hover:bg-acc/[0.06] hover:text-ink-1'
                     }`}
                   >
@@ -66,13 +67,6 @@ export default function Header({ snap, skin, onSkin, paused, onTogglePause, onSt
                       <span className="inline-block h-0.5 w-4 rounded-full" style={{ backgroundColor: s.accent }} />
                       {s.label}
                     </span>
-                    {isActive ? (
-                      <motion.span
-                        layoutId="skin-underline"
-                        className="absolute inset-x-2 -bottom-px h-px bg-acc"
-                        transition={{ type: 'spring', stiffness: 420, damping: 34 }}
-                      />
-                    ) : null}
                   </button>
                 )
               })}
@@ -80,16 +74,22 @@ export default function Header({ snap, skin, onSkin, paused, onTogglePause, onSt
           </div>
 
           <div className="ml-auto flex shrink-0 items-center gap-1.5">
+            {demo && phase ? (
+              <span className={`${BTN} ${PHASE_TONE[phase] || 'text-ink-2'}`}>
+                <span className="micro text-ink-3">phase</span>
+                {phase}
+              </span>
+            ) : null}
             <span className={`${BTN} hidden text-acc sm:inline-flex`}>
               <Radio size={11} className={paused ? '' : 'animate-pulseDot'} aria-hidden="true" />
-              {paused ? 'held' : 'live'}
+              {paused ? 'held' : mode === 'offline' ? 'lost' : 'live'}
               <span className="tabular-nums text-ink-3">t{tick}</span>
             </span>
             {demo ? (
               <>
                 <button
                   type="button"
-                  onClick={onTogglePause}
+                  onClick={() => setPaused((p) => !p)}
                   aria-pressed={paused}
                   title={paused ? 'Resume the feed' : 'Hold the feed'}
                   className={BTN}
@@ -97,7 +97,7 @@ export default function Header({ snap, skin, onSkin, paused, onTogglePause, onSt
                   {paused ? <Play size={11} aria-hidden="true" /> : <Pause size={11} aria-hidden="true" />}
                   {paused ? 'resume' : 'hold'}
                 </button>
-                <button type="button" onClick={onStep} title="Advance one tick" aria-label="Advance one tick" className={BTN}>
+                <button type="button" onClick={stepOnce} title="Advance one tick" aria-label="Advance one tick" className={BTN}>
                   <StepForward size={11} aria-hidden="true" />
                 </button>
               </>
