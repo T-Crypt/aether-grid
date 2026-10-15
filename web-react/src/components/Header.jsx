@@ -28,7 +28,7 @@ const BTN =
  * wrapping. Wrapping cost 241px of header on a 390px phone and pushed the
  * first panel off the fold; a scrolling rail costs one row each.
  */
-export default function Header({ snap, skin, onSkin, paused, onTogglePause, onStep, tick }) {
+export default function Header({ snap, skin, onSkin, paused, onTogglePause, onStep, tick, demo = true }) {
   const pills = derivePills(snap)
   const accent = SKINS.find((s) => s.id === skin)?.accent || '#00e0e0'
 
@@ -85,19 +85,23 @@ export default function Header({ snap, skin, onSkin, paused, onTogglePause, onSt
               {paused ? 'held' : 'live'}
               <span className="tabular-nums text-ink-3">t{tick}</span>
             </span>
-            <button
-              type="button"
-              onClick={onTogglePause}
-              aria-pressed={paused}
-              title={paused ? 'Resume the feed' : 'Hold the feed'}
-              className={BTN}
-            >
-              {paused ? <Play size={11} aria-hidden="true" /> : <Pause size={11} aria-hidden="true" />}
-              {paused ? 'resume' : 'hold'}
-            </button>
-            <button type="button" onClick={onStep} title="Advance one tick" aria-label="Advance one tick" className={BTN}>
-              <StepForward size={11} aria-hidden="true" />
-            </button>
+            {demo ? (
+              <>
+                <button
+                  type="button"
+                  onClick={onTogglePause}
+                  aria-pressed={paused}
+                  title={paused ? 'Resume the feed' : 'Hold the feed'}
+                  className={BTN}
+                >
+                  {paused ? <Play size={11} aria-hidden="true" /> : <Pause size={11} aria-hidden="true" />}
+                  {paused ? 'resume' : 'hold'}
+                </button>
+                <button type="button" onClick={onStep} title="Advance one tick" aria-label="Advance one tick" className={BTN}>
+                  <StepForward size={11} aria-hidden="true" />
+                </button>
+              </>
+            ) : null}
           </div>
         </div>
 

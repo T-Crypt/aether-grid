@@ -1,4 +1,4 @@
-// The seven Aether Grid skins. Kept in step with web/app.js SKINS.
+// The seven Aether Grid skins. Token values mirror the palette in src/index.css.
 //
 // `palette` mirrors the CSS custom properties in src/index.css as
 // space-separated RGB channels. The CSS is what Tailwind classes read; this

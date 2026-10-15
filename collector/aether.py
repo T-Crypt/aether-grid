@@ -8,7 +8,8 @@ Reuses speculum's State, background threads and HTTP handler, and adds:
     reasoning  reasoning tokens, MTP accept %, TTFT/TPOT waves fed from
                the request stream (see reasoning.py)
 
-Serves the static UI from web/ (falls back to the repo root) plus:
+Serves the React console build from web-react/ (falls back to the repo
+root) plus:
 
     GET /api/snapshot   speculum snapshot + router + reasoning keys
     GET /api/stream     speculum tick with the same two keys merged in
@@ -40,8 +41,10 @@ router = _router_mod
 reasoning = _reasoning_mod
 
 ROOT = Path(__file__).resolve().parent.parent
-WEB = ROOT / "web"
-STATIC_ROOT = WEB if WEB.is_dir() else ROOT
+DIST = ROOT / "web-react" / "dist"
+# The console build; the fallback keeps import and tests working before
+# the first `npm --prefix web-react run build`.
+STATIC_ROOT = DIST if DIST.is_dir() else ROOT
 
 # Shared adapter state: bounded deques inside, speculum.State untouched.
 ROUTER = router.RouterGraph(run_roots=router.default_run_roots(ROOT))
@@ -111,7 +114,7 @@ def reasoning_thread(interval=2.0):
 
 
 class Handler(speculum.Handler):
-    """Speculum handler serving web/ + merged snapshot/stream."""
+    """Speculum handler serving the console build + merged snapshot/stream."""
 
     def do_GET(self):
         path = self.path.partition("?")[0]
@@ -159,6 +162,9 @@ class Handler(speculum.Handler):
             ".svg": "image/svg+xml",
             ".json": "application/json",
             ".md": "text/plain; charset=utf-8",
+            # Firefox refuses to load a font served as octet-stream
+            ".woff2": "font/woff2",
+            ".woff": "font/woff",
         }.get(f.suffix, "application/octet-stream")
         self.send_response(200)
         self.send_header("Content-Type", ctype)
@@ -177,11 +183,21 @@ def main():
     start adapter threads first. speculum.main() looks up Handler by
     module global, so patch speculum.Handler before delegating.
     """
+    if not DIST.is_dir():
+        # main() is the only place that may require the build; import-time
+        # must keep working (tests, `python -c "import collector.aether"`)
+        # with the repo-root fallback in place.
+        print(
+            "aether: web-react/dist not found — build the console first: "
+            "npm --prefix web-react run build",
+            file=sys.stderr,
+        )
+        sys.exit(1)
     for fn in (router_thread, reasoning_thread):
         threading.Thread(target=fn, daemon=True).start()
     speculum.Handler = Handler
-    # Serve from web/ (or repo root): speculum.Handler._static uses its
-    # module ROOT, so point it at our static root.
+    # Serve from web-react/dist (or repo root): speculum.Handler._static
+    # uses its module ROOT, so point it at our static root.
     speculum.ROOT = STATIC_ROOT
     sys.argv[0] = str(Path(__file__))
     speculum.main()

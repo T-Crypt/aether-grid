@@ -1,5 +1,4 @@
-// Formatters and thresholds shared by the console. Mirrors the field names in
-// web/app.js so both UIs read the same snapshot shape.
+// Formatters and thresholds shared by the console.
 
 export const KPI_KEYS = ['tps', 'rpm', 'p95', 'ttft', 'tpot', 'vram', 'cache', 'reingest', 'mtp', 'queue']
 
@@ -49,7 +48,7 @@ export function fmtBig(v) {
 
 export const clamp01 = (v) => (v < 0 ? 0 : v > 1 ? 1 : v)
 
-// Slot fill -> semantic state. Same ladder as web/app.js wellClass().
+// Slot fill -> semantic state. 0.85 is the alert line the cohort grid tints against.
 export function wellState(f) {
   if (f >= 0.85) return 'alert'
   if (f >= 0.6) return 'warn'

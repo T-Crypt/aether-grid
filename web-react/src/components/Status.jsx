@@ -24,7 +24,7 @@ export function Pill({ label, value, tone = 'ok', pulse = false }) {
   )
 }
 
-/** Derive the pill row from one snapshot, mirroring renderPills() in web/app.js. */
+/** Derive the pill row from one snapshot. */
 export function derivePills(snap) {
   const engines = snap.engines || []
   const up = engines.filter((e) => e.up).length
@@ -33,9 +33,16 @@ export function derivePills(snap) {
   const tmp = tempState(gpu.temp)
   const tmpTone = tmp === 'alert' ? 'crit' : tmp === 'warn' ? 'warn' : tmp === 'ok' ? 'ok' : 'idle'
   const q = kpi.queue || 0
+  const link =
+    {
+      live: { value: 'live', tone: 'live' },
+      demo: { value: 'sim', tone: 'live' },
+      offline: { value: 'offline', tone: 'crit' },
+      boot: { value: 'boot', tone: 'warn' },
+    }[snap.mode] || { value: 'boot', tone: 'warn' }
 
   return [
-    { key: 'link', label: 'link', value: snap.mode === 'live' ? 'live' : 'sim', tone: 'live', pulse: true },
+    { key: 'link', label: 'link', value: link.value, tone: link.tone, pulse: true },
     { key: 'eng', label: 'engines', value: `${up}/${engines.length}`, tone: up ? 'ok' : 'crit' },
     { key: 'tps', label: 'tok/s', value: fmtKpi('tps', kpi.tps) ?? '—', tone: 'live' },
     { key: 'queue', label: 'queue', value: fmtKpi('queue', q) ?? '—', tone: q >= 10 ? 'warn' : 'ok' },

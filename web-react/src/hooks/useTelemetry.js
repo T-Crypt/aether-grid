@@ -1,5 +1,7 @@
 import { useEffect, useRef, useState } from 'react'
 import { createSimulator } from '../lib/simulator'
+import { createLiveFeed } from '../lib/feed'
+import { emptyState } from '../lib/adapt'
 
 function usePrefersReducedMotion() {
   const [reduced, setReduced] = useState(
@@ -17,36 +19,58 @@ function usePrefersReducedMotion() {
 /**
  * One telemetry stream for the whole console.
  *
- * Stands in for the SSE feed in web/app.js: same 1 Hz cadence, same snapshot
- * shape. The simulator runs once and is stepped on an interval; `paused` stops
- * the clock and `prefers-reduced-motion` starts it paused, so the console has a
- * static, readable final frame instead of motion the user did not ask for.
+ * `?demo` keeps the seeded simulator: it runs once, is stepped on an
+ * interval, `paused` stops the clock, and `prefers-reduced-motion` starts
+ * it paused, so the console has a static, readable final frame instead of
+ * motion the user did not ask for.
+ *
+ * Without `?demo` the console is fed by the live collector feed
+ * (snapshot + SSE, poll fallback); the app is served by the collector, so
+ * there is nothing to pause or step — `paused` stays false and `stepOnce`
+ * is a no-op.
  */
 export function useTelemetry({ intervalMs = 1000 } = {}) {
   const reduced = usePrefersReducedMotion()
+  const demo =
+    typeof window !== 'undefined' && new URLSearchParams(window.location.search).has('demo')
+
   const simRef = useRef(null)
-  if (simRef.current === null) simRef.current = createSimulator()
-  const [snap, setSnap] = useState(() => simRef.current.state)
-  const [paused, setPaused] = useState(reduced)
+  if (demo && simRef.current === null) simRef.current = createSimulator()
+  const [snap, setSnap] = useState(() => (demo ? simRef.current.state : emptyState()))
+  const [paused, setPaused] = useState(demo ? reduced : false)
   const [tick, setTick] = useState(0)
 
   useEffect(() => {
+    if (!demo) return undefined
     setPaused(reduced)
-  }, [reduced])
+  }, [demo, reduced])
 
   useEffect(() => {
-    if (paused) return undefined
+    if (!demo || paused) return undefined
     const id = window.setInterval(() => {
       setSnap(simRef.current.step())
       setTick((t) => t + 1)
     }, intervalMs)
     return () => window.clearInterval(id)
-  }, [paused, intervalMs])
+  }, [demo, paused, intervalMs])
+
+  useEffect(() => {
+    if (demo) return undefined
+    const feed = createLiveFeed({
+      onState: (s) => {
+        setSnap(s)
+        setTick((t) => t + 1)
+      },
+    })
+    feed.start()
+    return () => feed.stop()
+  }, [demo])
 
   const stepOnce = () => {
+    if (!demo) return
     setSnap(simRef.current.step())
     setTick((t) => t + 1)
   }
 
-  return { snap, tick, paused, setPaused, stepOnce, reduced }
+  return { snap, tick, paused, setPaused, stepOnce, reduced, demo, mode: snap.mode }
 }
