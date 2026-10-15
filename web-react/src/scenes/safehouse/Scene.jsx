@@ -99,15 +99,27 @@ function Seal() {
 function RHeader() {
   const { snap } = useScene()
   const feed = snap ? snap.mode || 'live' : 'boot'
+  const k = (snap && snap.kpi) || {}
+  const engines = (snap && snap.engines) || []
+  const up = engines.filter((e) => e && e.up !== false)
+  const fromTps = Array.isArray(k.tps_models) && k.tps_models.length ? String(k.tps_models[0]) : null
+  const fromEng = up.length ? String(up[0].label || up[0].key) : null
+  const models = (snap && snap.models) || []
+  const active = fromTps || fromEng || (models.length ? String(models[0].id || models[0]) : null)
+  const decode = up.reduce((a, e) => a + (e && e.rates && e.rates.decode_tps != null ? e.rates.decode_tps : 0), 0)
+  const running = snap && snap.mode !== 'offline' && snap.mode !== 'boot' && up.length > 0
+  const audioLine = !snap || snap.mode === 'offline'
+    ? 'NO SOURCE'
+    : `${active || 'NO MODEL'} · ${running && decode > 0 ? `${Math.round(decode)} TOK/S · RUN` : 'IDLE'}`
   return (
-    <div className="flex min-w-0 flex-col justify-center px-1" aria-label="Audio analysis header">
+    <div className="flex min-w-0 flex-col justify-center overflow-hidden px-1" aria-label="Audio analysis header">
       <div className="truncate text-[10px] uppercase tracking-[0.18em] text-acc sm:text-[11px]">AUDIO ANALYSIS · NETWORK EF DATA ANALYSIS</div>
-      <div className="mt-1 flex items-baseline gap-3">
+      <div className="mt-1 flex min-w-0 items-baseline gap-3">
         <span className="text-[18px] font-medium tabular-nums tracking-[0.04em] text-ink-1 sm:text-[22px]">AUDIO138</span>
-        <span className="text-[8.5px] uppercase tracking-[0.18em] text-ink-3 sm:text-[9px]">EF.ANALYSIS</span>
-        <span className="ml-auto text-[24px] font-semibold leading-none tabular-nums text-dat sm:text-[30px]">07</span>
+        <span className="min-w-0 flex-1 truncate text-[8.5px] uppercase tracking-[0.18em] text-ink-3 sm:text-[9px]">{audioLine}</span>
+        <span className="text-[24px] font-semibold leading-none tabular-nums text-dat sm:text-[30px]">07</span>
       </div>
-      <div className="mt-1 whitespace-nowrap text-[6.5px] uppercase tracking-[0.14em] text-ink-3">
+      <div className="mt-1 truncate text-[6.5px] uppercase tracking-[0.14em] text-ink-3">
         <span>DEPLOY </span>
         <span className="tabular-nums text-dat">03</span>
         <span className="mx-1 text-acc/40">·</span>

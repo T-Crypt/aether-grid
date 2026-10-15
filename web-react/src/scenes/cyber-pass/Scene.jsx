@@ -1,4 +1,4 @@
-// Cinder-pass scene root: the mountain customs booth (uispace.org/cinder-pass
+// Cyber-pass scene root: the mountain customs booth (uispace.org/cyber-pass
 // recreation). A wall of riveted rust plates under one wire of bare bulbs —
 // four rows: the identity strip, the bulb rail, the two hero plates (the
 // handheld assay left, the button exchange right) and the bottom band of
@@ -20,7 +20,7 @@ import AssayPlate from './AssayPlate'
 import ExchangePlate from './ExchangePlate'
 import { TalliesPlate, PostLogPlate, GeneratorPlate, WeatherPlate, ClausePlate } from './BottomPlates'
 
-export default function CinderPassScene() {
+export default function CyberPassScene() {
   const { snap } = useScene()
   const g = genStats(snap, snap && snap.gpu, snap && snap.host)
   const litMask = (i) => !g.dead.includes(i)
@@ -33,15 +33,15 @@ export default function CinderPassScene() {
       : 'none'
 
   return (
-    <div className="cp-stage relative flex min-h-dvh flex-col overflow-x-hidden font-mono text-ink-1 min-[769px]:h-dvh min-[769px]:min-h-0 min-[769px]:overflow-hidden">
+    <div className="cy-stage relative flex min-h-dvh flex-col overflow-x-hidden font-mono text-ink-1 min-[769px]:h-dvh min-[769px]:min-h-0 min-[769px]:overflow-hidden">
       {/* stage atmosphere: bulb wash + vignette + static rust grain */}
       <div
-        className="cp-light hidden min-[769px]:block"
+        className="cy-light hidden min-[769px]:block"
         style={{ top: '9%', height: '58%', backgroundImage: lightBg, opacity: 0.35 + (g.lit / 14) * 0.6 }}
         aria-hidden="true"
       />
-      <div className="cp-vignette pointer-events-none absolute inset-0 z-[60] hidden min-[769px]:block" aria-hidden="true" />
-      <div className="cp-grain pointer-events-none absolute inset-0 z-[70] hidden min-[769px]:block" aria-hidden="true" />
+      <div className="cy-vignette pointer-events-none absolute inset-0 z-[60] hidden min-[769px]:block" aria-hidden="true" />
+      <div className="cy-grain pointer-events-none absolute inset-0 z-[70] hidden min-[769px]:block" aria-hidden="true" />
 
       <div className="relative z-10 flex min-h-0 flex-1 flex-col min-[769px]:grid min-[769px]:grid-rows-[auto_auto_minmax(0,62fr)_minmax(0,38fr)]">
         {/* T · identity strip */}

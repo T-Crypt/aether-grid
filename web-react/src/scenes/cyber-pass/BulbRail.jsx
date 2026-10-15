@@ -1,7 +1,7 @@
 // The bulb rail: one wire of fourteen bare bulbs on GEN-1. The canvas
 // paints wire, sockets, bulbs and dead sockets (the down engines); the DOM
 // supplies the two end labels. The wall wash this rail casts is the
-// .cp-light overlay in Scene.jsx. Hidden below 768 px (the reference's
+// .cy-light overlay in Scene.jsx. Hidden below 768 px (the reference's
 // portrait strategy drops it first).
 
 import { useScene } from '../../scene/SceneRoot'

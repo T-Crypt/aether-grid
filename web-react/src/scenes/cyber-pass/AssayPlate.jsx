@@ -9,7 +9,7 @@
 import { useScene } from '../../scene/SceneRoot'
 import SceneCanvas from '../../scene/Canvas'
 import { paintDevBody, paintDevLive } from './painters'
-import { assayLamp, ledgerRows, scanRows, priceStats, clockHm, clockHms, readingOf, grp, docketOf } from './shared'
+import { assayLamp, ledgerRows, scanRows, priceStats, clockHm, clockHms, readingOf, grp, docketOf, activeModelOf } from './shared'
 
 const BOOT_FROM_CODE = { b0: 'GREY', b1: 'TAN', b2: 'RED', b3: 'BLACK' }
 
@@ -43,17 +43,27 @@ export default function AssayPlate() {
   const dk = offline ? null : docketOf(snap)
   const hm = clockHms(tick)
   const scansCount = 3928 + ((snap && snap.requests) || []).length
+  const act = activeModelOf(snap)
+  const screenLineShort = offline
+    ? 'NO SOURCE'
+    : `${act.model || 'NO MODEL'} · ${act.tps != null ? `${Math.round(act.tps)} TOK/S` : '— TOK/S'} · ${act.temp != null ? `${Math.round(act.temp)}°C` : '—'}`
+  const screenLine = offline
+    ? 'NO SOURCE'
+    : `LAST ${hm} · DOCKET ${dk} · LAMP ${word} · ${act.model || 'NO MODEL'} · ${act.tps != null ? `${Math.round(act.tps)} TOK/S` : '— TOK/S'} · ${act.temp != null ? `${Math.round(act.temp)}°C` : '—'} · Q ${act.queue != null ? Math.round(act.queue) : '—'} · P95 ${act.p95 != null ? Math.round(act.p95) : '—'}`
 
   return (
-    <section aria-label="The Assay" className="cp-plate flex min-h-0 min-w-0 flex-col overflow-hidden">
-      <div className="cp-ph flex items-baseline justify-between gap-2 px-2.5 pt-1.5 pb-1">
+    <section aria-label="The Assay" className="cy-plate flex min-h-0 min-w-0 flex-col overflow-hidden">
+      <div className="cy-ph flex items-baseline justify-between gap-2 px-2.5 pt-1.5 pb-1">
         <span className="flex items-baseline gap-1.5">
-          <i className="cp-st">A</i>
+          <i className="cy-st">A</i>
           <b className="text-[12.5px] font-semibold tracking-[0.18em] text-ink-1">THE ASSAY</b>
           <span className="text-[8px] tracking-[0.12em] text-ink-3">HANDHELD · SERIAL 0061-K</span>
         </span>
-        <span className="hidden text-[9px] tracking-[0.08em] text-ink-3 tabular-nums min-[1280px]:block">
-          {offline ? 'NO SOURCE' : `LAST ${hm} · DOCKET ${dk} · LAMP ${word}`}
+        <span className="hidden min-w-0 truncate text-[9px] tracking-[0.08em] text-ink-3 tabular-nums min-[1280px]:block">
+          {screenLine}
+        </span>
+        <span className="min-w-0 flex-1 truncate text-right text-[9px] tracking-[0.08em] text-ink-3 tabular-nums min-[1280px]:hidden">
+          {screenLineShort}
         </span>
       </div>
 
@@ -64,7 +74,7 @@ export default function AssayPlate() {
             <SceneCanvas draw={(ctx, w, h, c) => paintDevBody(ctx, w, h, c)} className="absolute inset-0 h-full w-full" />
             <SceneCanvas draw={(ctx, w, h, c) => paintDevLive(ctx, w, h, c)} className="absolute inset-0 h-full w-full" />
             {/* the four co-cards: callout cards over the device's right side */}
-            <div data-cp-co="cards" className="absolute inset-y-0 right-1 z-10 hidden min-[769px]:block">
+            <div data-cy-co="cards" className="absolute inset-y-0 right-1 z-10 hidden min-[769px]:block">
               <CoCard
                 no="1"
                 label="THE LAMP"
@@ -96,7 +106,7 @@ export default function AssayPlate() {
             </div>
           </div>
 
-          <div className="cp-win flex flex-col shrink-0 px-1.5 pt-1 pb-1.5 min-[769px]:h-[126px]">
+          <div className="cy-win flex flex-col shrink-0 px-1.5 pt-1 pb-1.5 min-[769px]:h-[126px]">
             <div className="flex items-baseline justify-between gap-2">
               <span className="text-[9px] font-semibold tracking-[0.14em] text-ink-2">STOOP LEDGER · WHO TO WHOM</span>
               <span className="text-[8px] tracking-[0.08em] text-ink-3 tabular-nums">
@@ -123,8 +133,8 @@ export default function AssayPlate() {
                   className={
                     LED_COLS +
                     ' leading-[13px] ' +
-                    (i === ledger.length - 1 ? 'cp-flash' : '') +
-                    (r.level === 'V' ? ' cp-flash-v' : '')
+                    (i === ledger.length - 1 ? 'cy-flash' : '') +
+                    (r.level === 'V' ? ' cy-flash-v' : '')
                   }
                 >
                   <span className="px-0.5 text-[10px] font-semibold text-ink-1 tabular-nums">{r.to}</span>
@@ -149,7 +159,7 @@ export default function AssayPlate() {
         </div>
 
         {/* right: the scan log */}
-        <div className="cp-win flex min-h-[220px] flex-col px-1.5 pt-1 pb-1.5 min-[769px]:min-h-0">
+        <div className="cy-win flex min-h-[220px] flex-col px-1.5 pt-1 pb-1.5 min-[769px]:min-h-0">
           <div className="flex items-baseline justify-between gap-2">
             <span className="text-[9px] font-semibold tracking-[0.14em] text-ink-2">SCAN LOG</span>
             <span className="text-[8px] tracking-[0.08em] text-ink-3 tabular-nums">
@@ -177,14 +187,14 @@ export default function AssayPlate() {
                 key={r.id}
                 className={
                   'grid grid-cols-[4.6ch_1.8ch_2.8ch_1.2fr_3.2ch_1.6fr] items-center gap-x-1 px-0.5 leading-[13px] ' +
-                  (r.fresh ? 'cp-flash' : '')
+                  (r.fresh ? 'cy-flash' : '')
                 }
               >
-                <span className="cp-vt text-[11px] text-ink-1 tabular-nums">{r.dk.toLocaleString('en-US')}</span>
-                <span className="cp-vt text-[11px] text-ink-3 tabular-nums">{r.tm}</span>
+                <span className="cy-vt text-[11px] text-ink-1 tabular-nums">{r.dk.toLocaleString('en-US')}</span>
+                <span className="cy-vt text-[11px] text-ink-3 tabular-nums">{r.tm}</span>
                 <span
                   className={
-                    'cp-vt text-[11px] ' +
+                    'cy-vt text-[11px] ' +
                     (r.lamp === 'A'
                       ? 'text-[rgb(var(--acc))] [text-shadow:0_0_7px_rgb(var(--acc)_/_0.5)]'
                       : 'text-[rgb(var(--col))] [text-shadow:0_0_7px_rgb(var(--col)_/_0.5)]')
@@ -192,9 +202,9 @@ export default function AssayPlate() {
                 >
                   {r.lamp === 'A' ? 'AMBER' : 'VIOLET'}
                 </span>
-                <span className="cp-vt text-[11px] text-ink-2">{r.boots}</span>
-                <span className="cp-vt text-[11px] text-ink-2 tabular-nums">{r.rd}</span>
-                <span className="cp-vt truncate text-[11px] text-ink-3">
+                <span className="cy-vt text-[11px] text-ink-2">{r.boots}</span>
+                <span className="cy-vt text-[11px] text-ink-2 tabular-nums">{r.rd}</span>
+                <span className="cy-vt truncate text-[11px] text-ink-3">
                   {r.so} · {r.sx}
                 </span>
               </div>

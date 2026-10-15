@@ -7,14 +7,16 @@ import SceneDock from './components/SceneDock'
 import HexlabScene from './scenes/hexlab/Scene'
 import SafehouseScene from './scenes/safehouse/Scene'
 import BloomLineScene from './scenes/bloom-line/Scene'
-import CinderPassScene from './scenes/cinder-pass/Scene'
+import CyberPassScene from './scenes/cyber-pass/Scene'
+import DeepsignalScene from './scenes/deepsignal/Scene'
 
 // One Root component per scene id in lib/scenes.js.
 const SCENE_ROOTS = {
   hexlab: HexlabScene,
   safehouse: SafehouseScene,
   'bloom-line': BloomLineScene,
-  'cinder-pass': CinderPassScene,
+  'cyber-pass': CyberPassScene,
+  deepsignal: DeepsignalScene,
 }
 
 function SceneMount() {

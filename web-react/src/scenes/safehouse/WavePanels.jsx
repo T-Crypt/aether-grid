@@ -17,7 +17,11 @@ const HZ_SCALE = ['100', '1K', '2K', '5K', '10K Hz']
 function Cell({ kind, tag, transcript, ghosted }) {
   const { conductor, snap } = useScene()
   const scalar = kind === 'a' ? Math.min(1, conductor.reason) : Math.min(1, conductor.flow)
-  const readout = (scalar * 880).toFixed(1)
+  const engines = (snap && snap.engines) || []
+  const up = engines.filter((e) => e && e.up !== false)
+  const decode = up.reduce((a, e) => a + (e && e.rates && e.rates.decode_tps != null ? e.rates.decode_tps : 0), 0)
+  const running = snap && snap.mode !== 'offline' && snap.mode !== 'boot' && (decode > 0 || scalar > 0.02)
+  const readout = !running ? '—' : kind === 'a' ? (scalar * 880).toFixed(1) : `${Math.round(decode)} t/s`
   return (
     <div
       className={`relative min-h-0 min-w-0 flex-1 overflow-hidden border border-acc/25 bg-bgg/85 transition-opacity duration-500 ${
@@ -31,6 +35,11 @@ function Cell({ kind, tag, transcript, ghosted }) {
       />
       <span className="pointer-events-none absolute left-1.5 top-1 text-[7.5px] tracking-[0.16em] text-acc">{tag}</span>
       <span className="pointer-events-none absolute right-1.5 top-1 text-[7.5px] tabular-nums tracking-[0.1em] text-dat">{readout}</span>
+      {!running && (
+        <span className="pointer-events-none absolute inset-0 z-20 flex items-center justify-center text-[9px] tracking-[0.22em] text-ink-3">
+          NO SOURCE
+        </span>
+      )}
       <div className="pointer-events-none absolute bottom-[12px] left-[2px] top-[16px] z-10 flex flex-col justify-between text-[5.5px] tracking-[0.04em] text-ink-3">
         {DB_SCALE.map((d) => (
           <span key={d}>{d}</span>

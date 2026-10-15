@@ -102,6 +102,15 @@ export const CALLOUTS = [
 
 const clamp = (v, lo, hi) => (v < lo ? lo : v > hi ? hi : v)
 
+// Stale feed: offline/boot or a held zero-tps stream. The stage dims and
+// the callouts hold when this is true (Scene.jsx); the painters already
+// scale bloom pulse amplitude, cable-dot density and drift speed from
+// `flow`, so motion settles toward still on its own.
+export function staleOf(snap) {
+  const k = (snap && snap.kpi) || {}
+  return !snap || snap.mode === 'offline' || snap.mode === 'boot' || (k.tps || 0) === 0
+}
+
 // 12 bioreactor tank zones: per-engine KV fill (the card's best-fit source;
 // a missing engine reuses the previous zone so the ring never has holes).
 export function tankZones(snap) {

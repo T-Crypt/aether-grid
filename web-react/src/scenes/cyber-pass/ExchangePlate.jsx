@@ -41,19 +41,19 @@ export default function ExchangePlate() {
   const soldB = Math.round((spent / Math.max(1, pr.price || 14.2)) * 10)
 
   return (
-    <section aria-label="The Button Exchange" className="cp-plate flex min-h-0 min-w-0 flex-col overflow-hidden">
-      <div className="cp-ph flex flex-wrap items-baseline gap-x-2.5 gap-y-1 px-2.5 pt-1.5 pb-1">
+    <section aria-label="The Button Exchange" className="cy-plate flex min-h-0 min-w-0 flex-col overflow-hidden">
+      <div className="cy-ph flex flex-wrap items-baseline gap-x-2.5 gap-y-1 px-2.5 pt-1.5 pb-1">
         <span className="flex items-baseline gap-1.5">
-          <i className="cp-st">B</i>
+          <i className="cy-st">B</i>
           <b className="text-[12.5px] font-semibold tracking-[0.18em] text-ink-1">BUTTON EXCHANGE</b>
         </span>
         <span className="flex items-baseline gap-1.5">
           <span className="text-[8px] tracking-[0.12em] text-ink-3">POSTED</span>
-          <span className="cp-vt text-[22px] leading-none text-ink-1 [text-shadow:0_0_10px_rgb(var(--alm)_/_0.55)] tabular-nums">
+          <span className="cy-vt text-[22px] leading-none text-ink-1 [text-shadow:0_0_10px_rgb(var(--alm)_/_0.55)] tabular-nums">
             {pr.price != null ? pr.price.toFixed(2) : '—'}
           </span>
           <span className="text-[11px] text-ink-2">B/L</span>
-          <i className="cp-up" aria-label="price held up" />
+          <i className="cy-up" aria-label="price held up" />
           <b className="text-[12px] font-semibold text-[rgb(var(--alm))] tabular-nums">
             {pr.delta != null ? (pr.delta >= 0 ? `+${pr.delta.toFixed(2)}` : pr.delta.toFixed(2)) : '—'}
           </b>
@@ -70,20 +70,20 @@ export default function ExchangePlate() {
         </span>
       </div>
 
-      <div className="cp-win relative mx-1.5 flex min-h-[170px] flex-1 overflow-hidden min-[769px]:mx-1.5">
+      <div className="cy-win relative mx-1.5 flex min-h-[170px] flex-1 overflow-hidden min-[769px]:mx-1.5">
         <SceneCanvas draw={(ctx, w, h, c) => paintChart(ctx, w, h, c)} className="absolute inset-0 h-full w-full" />
       </div>
 
-      <div className="cp-win relative mx-1.5 mt-1.5 h-[26px] shrink-0 overflow-hidden">
+      <div className="cy-win relative mx-1.5 mt-1.5 h-[26px] shrink-0 overflow-hidden">
         <SceneCanvas draw={(ctx, w, h, c) => paintTicker(ctx, w, h, c)} className="absolute inset-0 h-full w-full" />
       </div>
 
       <div className="grid shrink-0 grid-cols-1 gap-1.5 p-1.5 min-[769px]:grid-cols-[minmax(0,35fr)_minmax(0,35fr)_minmax(0,30fr)]">
         {/* TIN */}
-        <div className="cp-win flex flex-col gap-1 px-1.5 py-1.5">
+        <div className="cy-win flex flex-col gap-1 px-1.5 py-1.5">
           <BoardHead t="TIN" sub={offline ? 'NO SOURCE' : `DOCKET ${pr.openHm} · 1 CELL = 10 B`} />
           <div className="flex items-baseline gap-1">
-            <span className="cp-vt text-[21px] leading-none text-ink-1 [text-shadow:0_0_9px_rgb(var(--dat)_/_0.45)] tabular-nums">
+            <span className="cy-vt text-[21px] leading-none text-ink-1 [text-shadow:0_0_9px_rgb(var(--dat)_/_0.45)] tabular-nums">
               {offline ? '—' : tin.toLocaleString('en-US')}
             </span>
             <span className="text-[9px] text-ink-3 tabular-nums">/ 2,000 B = {(tin / 10).toFixed(0)} L</span>
@@ -97,10 +97,10 @@ export default function ExchangePlate() {
         </div>
 
         {/* STRONGBOX */}
-        <div className="cp-win flex flex-col gap-1 px-1.5 py-1.5">
+        <div className="cy-win flex flex-col gap-1 px-1.5 py-1.5">
           <BoardHead t="STRONGBOX · POST 3" sub={offline ? 'NO SOURCE' : 'RUNNER 06:52'} />
           <div className="flex items-baseline gap-1">
-            <span className="cp-vt text-[21px] leading-none text-ink-1 [text-shadow:0_0_9px_rgb(var(--dat)_/_0.45)] tabular-nums">
+            <span className="cy-vt text-[21px] leading-none text-ink-1 [text-shadow:0_0_9px_rgb(var(--dat)_/_0.45)] tabular-nums">
               {offline ? '—' : box.toLocaleString('en-US')}
             </span>
             <span className="text-[9px] text-ink-3 tabular-nums">
@@ -116,7 +116,7 @@ export default function ExchangePlate() {
         </div>
 
         {/* CISTER */}
-        <div className="cp-win flex flex-col gap-1 px-1.5 py-1.5">
+        <div className="cy-win flex flex-col gap-1 px-1.5 py-1.5">
           <BoardHead
             t="CISTER · TAP 1"
             sub={offline ? 'NO SOURCE' : 'PUMP ON · LOAD ' + ((k.tps != null ? k.tps : 0) > 250 ? 'HIGH' : 'STEADY')}
@@ -126,7 +126,7 @@ export default function ExchangePlate() {
               <SceneCanvas draw={(ctx, w, h, c) => paintCistern(ctx, w, h, c)} className="absolute inset-0 h-full w-full" />
             </div>
             <div className="min-w-0">
-              <span className="cp-vt text-[21px] leading-none text-ink-1 [text-shadow:0_0_9px_rgb(var(--col)_/_0.5)] tabular-nums">
+              <span className="cy-vt text-[21px] leading-none text-ink-1 [text-shadow:0_0_9px_rgb(var(--col)_/_0.5)] tabular-nums">
                 {offline ? '—' : litres.toLocaleString('en-US')}
               </span>
               <span className="text-[9px] text-ink-3"> / 4,000 L</span>

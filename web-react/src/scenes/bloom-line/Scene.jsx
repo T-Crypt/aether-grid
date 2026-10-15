@@ -12,7 +12,7 @@ import '@fontsource/cormorant-garamond/400-italic.css'
 import SceneCanvas from '../../scene/Canvas'
 import { useScene } from '../../scene/SceneRoot'
 import { paintBioreactor, paintMicro, paintAlgae } from './painters'
-import { CALLOUTS, growDay } from './shared'
+import { CALLOUTS, growDay, staleOf } from './shared'
 import SpeciesStrip from './SpeciesStrip'
 import CallPopup from './CallPopup'
 import LeftRail from './LeftRail'
@@ -27,24 +27,27 @@ import { StampTitle, StampPlate, StampData } from './StampPlates'
 // alarm tint when its bound state crosses into alert, amber on warn.
 // ---------------------------------------------------------------------------
 
-function calloutState(bind, snap, heat, alert, flow) {
+function calloutState(bind, snap, heat, alert, flow, stale) {
   const k = (snap && snap.kpi) || {}
   const sessions = (snap && snap.sessions) || []
   const flagged = sessions.filter((s) => s.window && (s.used || 0) / s.window >= 0.85).length
   const engines = (snap && snap.engines) || []
+  const upEng = engines.filter((e) => e && e.up).length
+  if (stale) return { state: 'swept', val: 'HELD', pill: 'HELD' }
   const co2 = Math.round(700 + heat * 40)
   const o2 = (20.9 - heat * 0.4).toFixed(1)
+  const tps = k.tps != null ? Math.round(k.tps) : '—'
   switch (bind) {
     case 'bloom':
       return {
         state: alert > 0.25 ? 'alarm' : 'normal',
-        val: 'FLOWERED +3d EARLY',
+        val: `FLOWERED · ${tps} TOK/S`,
         pill: 'UNSCHED',
       }
     case 'harv':
-      return { state: 'normal', val: 'HARV. 4d', pill: 'TRACK' }
+      return { state: 'normal', val: `HARV. 4d · ${upEng}/${engines.length || 0} UP`, pill: 'TRACK' }
     case 'warn':
-      return { state: heat > 0.55 ? 'warn' : 'normal', val: 'HARV. 2d', pill: 'TRACK' }
+      return { state: heat > 0.55 ? 'warn' : 'normal', val: `HARV. 2d · Q ${k.queue != null ? Math.round(k.queue) : '—'}`, pill: 'TRACK' }
     case 'hydro':
       return { state: 'normal', val: `${Math.round(140 + heat * 30)} ppm N`, pill: 'NOM' }
     case 'ph': {
@@ -78,7 +81,7 @@ function calloutState(bind, snap, heat, alert, flow) {
   }
 }
 
-function LeaderLayer({ snap, heat, alert, flow }) {
+function LeaderLayer({ snap, heat, alert, flow, stale }) {
   const VBX = 1244
   const VBY = 834
   return (
@@ -86,11 +89,11 @@ function LeaderLayer({ snap, heat, alert, flow }) {
       <svg
         viewBox={`0 0 ${VBX} ${VBY}`}
         preserveAspectRatio="none"
-        className="pointer-events-none absolute inset-0 z-[5] hidden h-full w-full min-[769px]:block"
+        className={`pointer-events-none absolute inset-0 z-[5] hidden h-full w-full transition-opacity duration-500 min-[769px]:block ${stale ? 'opacity-40' : ''}`}
         aria-hidden="true"
       >
         {CALLOUTS.map((c, i) => {
-          const s = calloutState(c.bind, snap, heat, alert, flow).state
+          const s = calloutState(c.bind, snap, heat, alert, flow, stale).state
           const col =
             s === 'alarm'
               ? 'rgb(var(--alm) / 0.55)'
@@ -114,7 +117,7 @@ function LeaderLayer({ snap, heat, alert, flow }) {
         })}
       </svg>
       {CALLOUTS.map((c, i) => {
-        const s = calloutState(c.bind, snap, heat, alert, flow)
+        const s = calloutState(c.bind, snap, heat, alert, flow, stale)
         const valCls =
           s.state === 'alarm'
             ? 'text-alm [text-shadow:0_0_5px_rgb(var(--alm)_/_0.6)]'
@@ -126,7 +129,7 @@ function LeaderLayer({ snap, heat, alert, flow }) {
         return (
           <div
             key={i}
-            className="pointer-events-none absolute z-[6] hidden max-w-[220px] min-[769px]:block"
+            className={`pointer-events-none absolute z-[6] hidden max-w-[220px] transition-opacity duration-500 min-[769px]:block ${stale ? 'opacity-50' : ''}`}
             style={{
               left: `${c.l.x}%`,
               top: `${c.l.y}%`,
@@ -211,6 +214,7 @@ export default function BloomLineScene() {
   const heat = Math.min(1, conductor.heat)
   const alert = Math.min(1, conductor.alert)
   const flow = Math.min(1, conductor.flow)
+  const stale = staleOf(snap)
 
   return (
     <div className="bl-stage relative flex min-h-dvh flex-col overflow-x-hidden font-mono text-ink-1 min-[769px]:h-dvh min-[769px]:min-h-0 min-[769px]:overflow-hidden">
@@ -228,10 +232,10 @@ export default function BloomLineScene() {
           className="relative h-[55vh] min-h-[320px] overflow-hidden min-[769px]:absolute min-[769px]:inset-y-0 min-[769px]:left-[156px] min-[769px]:right-[200px] min-[769px]:h-auto min-[769px]:min-h-0"
           aria-label="Bioreactor schematic stage"
         >
-          <SceneCanvas draw={paintBioreactor} label="Bioreactor schematic, orbital greenhouse" className="absolute inset-0 h-full w-full" />
+          <SceneCanvas draw={paintBioreactor} label="Bioreactor schematic, orbital greenhouse" className={`absolute inset-0 h-full w-full transition-opacity duration-500 ${stale ? 'opacity-60' : ''}`} />
           <div className="bl-sodium pointer-events-none absolute inset-0 z-[4]" aria-hidden="true" />
           <SpeciesStrip />
-          <LeaderLayer snap={snap} heat={heat} alert={alert} flow={flow} />
+          <LeaderLayer snap={snap} heat={heat} alert={alert} flow={flow} stale={stale} />
           <MicroInset />
           <AlgaeInset />
         </section>

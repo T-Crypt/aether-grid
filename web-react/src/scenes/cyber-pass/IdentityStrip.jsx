@@ -46,7 +46,7 @@ export default function IdentityStrip() {
   return (
     <header
       aria-label="Identity strip"
-      className="cp-strip relative flex h-[54px] shrink-0 items-stretch overflow-hidden bg-pan shadow-[inset_0_-1px_0_rgb(0_0_0_/_0.5),0_2px_6px_rgb(0_0_0_/_0.6)] min-[769px]:h-[56px]"
+      className="cy-strip relative flex h-[54px] shrink-0 items-stretch overflow-hidden bg-pan shadow-[inset_0_-1px_0_rgb(0_0_0_/_0.5),0_2px_6px_rgb(0_0_0_/_0.6)] min-[769px]:h-[56px]"
       style={{
         backgroundImage: 'linear-gradient(180deg, rgb(0 0 0 / 0.3), rgb(0 0 0 / 0.45)), rgb(var(--pan))',
         borderBottom: '1px solid rgb(0 0 0 / 0.7)',
@@ -54,7 +54,7 @@ export default function IdentityStrip() {
     >
       <Cell className="pl-3">
         <span className="text-[8px] tracking-[0.14em] text-ink-3">
-          CUSTOMS POST 3 · CINDER PASS · 2,140 M<span className="hidden min-[1280px]:inline"> · LOWER WORKS – UPPER BENCHES</span>
+          CUSTOMS POST 3 · CYBER PASS · 2,140 M<span className="hidden min-[1280px]:inline"> · LOWER WORKS – UPPER BENCHES</span>
         </span>
         <span className="text-[8px] tracking-[0.1em] text-ink-3">
           SHIFT {offline ? '—' : shift} · OFFICER EKUNDAYO · <span className="text-ink-2">{clock}</span>
@@ -84,11 +84,11 @@ export default function IdentityStrip() {
       >
         <div className="flex items-baseline gap-1.5">
           <span className="text-[9px] font-semibold tracking-[0.16em] text-ink-2">PRICE</span>
-          <span className="cp-vt min-w-[2.2ch] text-right text-[30px] leading-[0.8] text-ink-1 [text-shadow:0_0_10px_rgb(var(--alm)_/_0.6)] min-[1280px]:text-[36px]">
+          <span className="cy-vt min-w-[2.2ch] text-right text-[30px] leading-[0.8] text-ink-1 [text-shadow:0_0_10px_rgb(var(--alm)_/_0.6)] min-[1280px]:text-[36px]">
             {priceBig || '—'}
           </span>
-          <span className="cp-vt text-[14px] text-ink-2">B/L</span>
-          <i className="cp-up" aria-label="price held up" />
+          <span className="cy-vt text-[14px] text-ink-2">B/L</span>
+          <i className="cy-up" aria-label="price held up" />
         </div>
         <span className="min-w-[26ch] text-[8px] tracking-[0.08em] text-ink-3 tabular-nums">
           {offline || price == null

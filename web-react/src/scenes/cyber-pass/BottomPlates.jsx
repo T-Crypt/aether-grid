@@ -15,7 +15,7 @@ function PlateHead({ letter, t, sub, className = '' }) {
   return (
     <div className={`flex items-baseline justify-between gap-2 px-2 pt-1.5 pb-0.5 ${className}`}>
       <span className="flex items-baseline gap-1.5">
-        <i className="cp-st">{letter}</i>
+        <i className="cy-st">{letter}</i>
         <b className="text-[10.5px] font-semibold tracking-[0.16em] text-ink-1 whitespace-nowrap">{t}</b>
       </span>
       <span className="truncate text-[8px] tracking-[0.06em] text-ink-3 tabular-nums">{sub}</span>
@@ -52,7 +52,7 @@ export function TalliesPlate() {
   const bootLabels = ['GREY', 'TAN', 'RED', 'BLACK']
 
   return (
-    <section aria-label="Daily tallies" className="cp-plate flex min-h-0 min-w-0 flex-col overflow-hidden">
+    <section aria-label="Daily tallies" className="cy-plate flex min-h-0 min-w-0 flex-col overflow-hidden">
       <PlateHead letter="A" t="DAILY TALLIES" sub={offline ? 'NO SOURCE' : 'YEAR 3,927 · POST 3'} />
       <div className="flex min-h-0 flex-1 flex-col gap-[3px] px-2 pb-1.5">
         <Bar label="AMBER" pct={offline ? 0 : (t.amb / total) * 100} />
@@ -64,7 +64,7 @@ export function TalliesPlate() {
         </div>
         <div className="mt-1 flex items-baseline gap-2">
           <span className="text-[8px] tracking-[0.1em] text-ink-3">STOOPS</span>
-          <span className="cp-vt text-[22px] leading-none text-ink-1 [text-shadow:0_0_8px_rgb(var(--dat)_/_0.45)] tabular-nums">
+          <span className="cy-vt text-[22px] leading-none text-ink-1 [text-shadow:0_0_8px_rgb(var(--dat)_/_0.45)] tabular-nums">
             {offline ? '—' : t.stoops}
           </span>
           <span className="text-[8px] tracking-[0.06em] text-ink-3 tabular-nums">PERFORMED 0000-0918</span>
@@ -86,7 +86,7 @@ export function PostLogPlate() {
   const shift = snap && snap.host && snap.host.uptime != null ? (11 + Math.floor(snap.host.uptime / 86400)) % 24 : 11
 
   return (
-    <section aria-label="Post log" className="cp-plate flex min-h-0 min-w-0 flex-col overflow-hidden">
+    <section aria-label="Post log" className="cy-plate flex min-h-0 min-w-0 flex-col overflow-hidden">
       <PlateHead letter="D" t="POST LOG" sub={offline ? 'NO SOURCE' : `SHIFT ${shift} · T-2 · REPLAY ×15`} />
       <div className="flex min-h-0 flex-1 flex-col justify-end gap-[1.5px] overflow-hidden px-2 pb-1.5">
         {entries.length === 0 && (
@@ -103,10 +103,10 @@ export function PostLogPlate() {
                   ? 'text-[rgb(var(--alm))] [text-shadow:0_0_7px_rgb(var(--alm)_/_0.5)]'
                   : 'text-ink-2'
           return (
-            <div key={e.id} className={'flex gap-1.5 whitespace-nowrap text-[9.5px] leading-[12.5px] ' + (fresh ? 'cp-flash' : '')}>
-              <span className="cp-vt shrink-0 text-[11px] text-ink-3 tabular-nums">{e.t}</span>
+            <div key={e.id} className={'flex gap-1.5 whitespace-nowrap text-[9.5px] leading-[12.5px] ' + (fresh ? 'cy-flash' : '')}>
+              <span className="cy-vt shrink-0 text-[11px] text-ink-3 tabular-nums">{e.t}</span>
               <span className={
-                'cp-vt shrink-0 text-[11px] ' +
+                'cy-vt shrink-0 text-[11px] ' +
                 (e.cls === 'v' ? 'text-[rgb(var(--col))]' : e.cls === 'a' ? 'text-[rgb(var(--acc))]' : e.cls === 'w' ? 'text-[rgb(var(--alm))]' : 'text-ink-3')
               }>
                 {e.tag}
@@ -137,12 +137,12 @@ export function GeneratorPlate() {
   })
 
   return (
-    <section aria-label="Generator" className="cp-plate flex min-h-0 min-w-0 flex-col overflow-hidden">
+    <section aria-label="Generator" className="cy-plate flex min-h-0 min-w-0 flex-col overflow-hidden">
       <PlateHead letter="E" t="GENERATOR" sub={offline ? 'NO SOURCE' : 'GEN-1 · 3.0 KW · DIESEL'} />
       <div className="flex min-h-0 flex-1 flex-col gap-1 px-2 pb-1.5">
         <div className="flex items-baseline gap-2">
           <span className="text-[8px] tracking-[0.1em] text-ink-3">LOAD</span>
-          <span className="cp-vt text-[20px] leading-none text-ink-1 tabular-nums">{offline ? '—' : `${g.pct}%`}</span>
+          <span className="cy-vt text-[20px] leading-none text-ink-1 tabular-nums">{offline ? '—' : `${g.pct}%`}</span>
           <span className="text-[9px] text-ink-2 tabular-nums">{offline ? '' : `${g.kw} KW · ${g.lit}/14 LIT`}</span>
         </div>
         <div className="relative h-[7px] w-full bg-black/45">
@@ -183,10 +183,10 @@ export function WeatherPlate() {
   const wx = weatherOf(conductor, snap)
 
   return (
-    <section aria-label="Weather" className="cp-plate flex min-h-0 min-w-0 flex-col overflow-hidden">
+    <section aria-label="Weather" className="cy-plate flex min-h-0 min-w-0 flex-col overflow-hidden">
       <div className="flex items-baseline justify-between gap-2 px-2 pt-1.5 pb-0.5">
         <span className="flex items-baseline gap-1.5">
-          <i className="cp-st">F</i>
+          <i className="cy-st">F</i>
           <b className="text-[10.5px] font-semibold tracking-[0.16em] text-ink-1">WEATHER</b>
         </span>
         <span className="rounded-full border border-black/60 bg-[rgb(0_0_0_/_0.35)] px-1.5 text-[8px] tracking-[0.06em] text-ink-3">
@@ -196,7 +196,7 @@ export function WeatherPlate() {
       <div className="flex min-h-0 flex-1 flex-col gap-1 px-2 pb-1.5">
         <div className="flex items-baseline gap-2">
           <span className="text-[8px] tracking-[0.1em] text-ink-3">WIND</span>
-          <span className="cp-vt text-[19px] leading-none text-ink-1 tabular-nums">{offline ? '—' : wx.wind}</span>
+          <span className="cy-vt text-[19px] leading-none text-ink-1 tabular-nums">{offline ? '—' : wx.wind}</span>
           <span className="text-[9px] text-ink-2 tabular-nums">{offline ? '' : `M/S · ${wx.dir}°`}</span>
         </div>
         <div className="relative h-[46px] min-h-[34px]">
@@ -220,7 +220,7 @@ export function ClausePlate() {
   return (
     <section
       aria-label="Manual clause"
-      className="cp-plate hidden min-h-0 min-w-0 flex-col overflow-hidden min-[769px]:flex"
+      className="cy-plate hidden min-h-0 min-w-0 flex-col overflow-hidden min-[769px]:flex"
     >
       <PlateHead letter="G" t="MANUAL CLAUSE" sub="ED. 7 · OFFICER'S COPY" />
       <div className="flex min-h-0 flex-1 flex-col gap-1.5 px-2 pb-1.5">

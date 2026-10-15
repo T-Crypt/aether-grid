@@ -1,4 +1,4 @@
-// Cinder-pass canvas painters. Registered through SceneCanvas; every one is a
+// Cyber-pass canvas painters. Registered through SceneCanvas; every one is a
 // pure function of the conductor (master clock, latest snapshot, active
 // palette). No timers, no wall clock, no per-painter accumulators: every
 // phase derives from c.t, so a held feed freezes cleanly and reduced motion

@@ -49,17 +49,30 @@ export const SCENES = [
     },
   },
   {
-    // Reference palette (uispace.org/cinder-pass): lamp amber #FFAD3B, data
+    // Reference palette (uispace.org/cyber-pass): lamp amber #FFAD3B, data
     // cream #FFD99F, cool violet #A87BFF, held alarm #FFDC2B. Sounding's base
     // accent (#FFB000) is the closest base scheme, so it carries the native
     // table; the other six keep their base role colours on the scene's
     // rust-plate surfaces.
-    id: 'cinder-pass',
-    label: 'Cinder-Pass',
+    id: 'cyber-pass',
+    label: 'Cyber-Pass',
     defaultScheme: 'sounding',
     schemes: SKIN_IDS,
     palettes: {
       sounding: { acc: '255 173 59', dat: '255 217 159', col: '168 123 255', alm: '255 220 43' },
+    },
+  },
+  {
+    // Reference palette (deepsignal card): teal accent #7DB8C4, data green
+    // #5BE872, amber #FFB000, alarm coral #E8543F. Hexlab's cool base is the
+    // closest base scheme, so it carries the native table; the other six
+    // keep their base role colours on the scene's CRT surfaces.
+    id: 'deepsignal',
+    label: 'Deepsignal',
+    defaultScheme: 'hexlab',
+    schemes: SKIN_IDS,
+    palettes: {
+      hexlab: { acc: '125 184 196', dat: '91 232 114', col: '255 176 0', alm: '232 84 63' },
     },
   },
 ]

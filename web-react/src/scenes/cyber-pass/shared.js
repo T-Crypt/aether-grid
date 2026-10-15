@@ -1,11 +1,11 @@
-// Cinder-pass shared chrome: deterministic helpers (no RNG: the scene must
+// Cyber-pass shared chrome: deterministic helpers (no RNG: the scene must
 // replay identically on reload and settle identically under reduced motion)
 // plus the telemetry binding layer — every readout the plates print is a
 // pure function of the latest snap / conductor scalars. The scene never
 // owns a timer; transient row flashes restart a finite CSS animation by
 // re-keying the element.
 //
-// Reference lore (uispace.org/cinder-pass): a mountain customs booth whose
+// Reference lore (uispace.org/cyber-pass): a mountain customs booth whose
 // handheld assay lights amber or violet beside a button-currency exchange
 // whose price of water is still climbing. Telemetry mapping (P0 card):
 //   price/chart/ticker  = kpi.vram (B/L); the overflow phase is the climb
@@ -351,6 +351,30 @@ export function cisternStats(snap, price, gpu) {
   const worth = Math.round(litres * p)
   const sold = Math.round(level * 300)
   return { level, litres, cap: 4000, worth, sold, soldB: Math.round(sold * p) }
+}
+
+// ---------------------------------------------------------------------------
+// ACTIVE screen line: the loaded model this booth is assaying, plus the
+// live tok/s + temp + queue/p95 figures. ACTIVE = kpi.tps_models[0], else
+// the first up engine label, else models[0].id. Pure function of snap.
+// ---------------------------------------------------------------------------
+
+export function activeModelOf(snap) {
+  const k = (snap && snap.kpi) || {}
+  const fromTps = Array.isArray(k.tps_models) && k.tps_models.length ? String(k.tps_models[0]) : null
+  const engines = ((snap && snap.engines) || []).filter((e) => e && e.key != null)
+  const up = engines.find((e) => e.up !== false)
+  const fromEng = up ? String(up.label || up.key) : null
+  const models = (snap && snap.models) || []
+  const fromModels = models.length ? String(models[0].id || models[0]) : null
+  const g = (snap && snap.gpu) || null
+  return {
+    model: fromTps || fromEng || fromModels,
+    tps: k.tps != null ? k.tps : null,
+    temp: g && g.temp != null ? g.temp : null,
+    queue: k.queue != null ? k.queue : null,
+    p95: k.p95 != null ? k.p95 : null,
+  }
 }
 
 // ---------------------------------------------------------------------------
