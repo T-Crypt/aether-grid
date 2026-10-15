@@ -24,8 +24,9 @@ function wfColumn(snap, c, rows) {
   const k = (snap && snap.kpi) || {}
   const r = (snap && snap.reasoning) || {}
   const stale = staleOf(snap)
-  const think = stale ? 0 : r.thinking_tokens != null ? r.thinking_tokens : c.reason * 400
-  const base = stale ? 0.06 : 0.2 + Math.min(1, think / 400) * 0.45 + c.flow * 0.3
+  const thinkRaw = stale ? 0 : r.thinking_tokens != null ? r.thinking_tokens : c.reason * 400
+  const think = Math.round(Math.min(1, thinkRaw / 400) * 20) / 20
+  const base = stale ? 0.06 : 0.2 + think * 0.45 + c.flow * 0.3
   const spike = stale ? 0 : c.alert
   const bandRow = Math.floor(rows * 0.38) // the 1420 MHz candidate lane
   const col = new Float32Array(rows)

@@ -55,7 +55,7 @@ function calloutState(bind, snap, heat, alert, flow, stale) {
     case 'hydro':
       return { state: 'normal', val: `${Math.round(140 + heat * 30)} ppm N`, pill: 'NOM' }
     case 'ph': {
-      const ph = (6.2 + ((k.tps || 0) % 7) / 100).toFixed(2)
+      const ph = (6.2 + ((k.tps || 0) % 7) / 100).toFixed(1)
       return { state: 'normal', val: ph, pill: 'NOM' }
     }
     case 'co2':

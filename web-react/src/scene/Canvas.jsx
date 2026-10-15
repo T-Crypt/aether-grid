@@ -25,11 +25,16 @@ export default function SceneCanvas({ draw, viewport = false, res = 1, className
   const drawRef = useRef(draw)
   drawRef.current = draw
   const offRef = useRef(null)
+  // Stable dep key: the conductor instance is created once per SceneRoot,
+  // while the context value identity renews every feed tick. Keying on the
+  // conductor keeps one registration per mount instead of a fit (backing
+  // store clear) plus unregister/re-register on every tick.
+  const conductor = scene.conductor
 
   useEffect(() => {
     const canvas = ref.current
     if (!canvas) return undefined
-    const c = scene.conductor
+    const c = conductor
     const ctx = canvas.getContext('2d')
     let size = { w: 1, h: 1 }
     let dpr = 1
@@ -88,7 +93,7 @@ export default function SceneCanvas({ draw, viewport = false, res = 1, className
       if (onResize) window.removeEventListener('resize', onResize)
       ro?.disconnect()
     }
-  }, [scene, viewport])
+  }, [conductor, viewport])
 
   const style = viewport
     ? { position: 'fixed', inset: 0, width: '100vw', height: '100vh', zIndex: z ?? 0, pointerEvents: 'none' }

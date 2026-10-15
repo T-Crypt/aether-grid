@@ -534,9 +534,11 @@
   }
   .bl-fill-atm {
     background: linear-gradient(to right, rgb(var(--col)), rgb(var(--acc)));
+    transition: width 600ms ease;
   }
   .bl-fill-warn {
     background: linear-gradient(to right, rgb(var(--dat)), rgb(var(--col)));
+    transition: width 600ms ease;
   }
   .bl-flag {
     animation: bl-ed-flag 1.4s ease-in-out infinite;
@@ -637,7 +639,7 @@
     pointer-events: none;
     z-index: 20;
     mix-blend-mode: screen;
-    transition: opacity 900ms ease;
+    transition: opacity 450ms ease-out;
   }
   .cy-vignette {
     background: radial-gradient(ellipse 95% 90% at 50% 45%, transparent 50%, rgb(0 0 0 / 0.5) 100%);

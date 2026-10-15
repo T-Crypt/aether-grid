@@ -52,9 +52,12 @@ export function paintBioreactor(ctx, w, h, c) {
   // count sets the bloom density, tok/s runs the tank LEDs. A stale feed
   // parks all three at zero, so the loop settles to its dormant drift.
   const rs = (c.snap && c.snap.reasoning) || {}
-  const mtp = stale ? 0 : rs.mtp_accept_pct != null ? Math.min(1, Math.max(0, rs.mtp_accept_pct / 100)) : Math.min(1, c.reason)
-  const think = stale ? 0 : rs.thinking_tokens != null ? Math.min(1, Math.max(0, rs.thinking_tokens / 400)) : Math.min(1, c.reason)
-  const tpsRate = stale ? 0 : Math.min(1, Math.max(0, ((c.snap && c.snap.kpi && c.snap.kpi.tps) || 0) / 280))
+  // Quantised to 0.05 steps: raw feed ratios jitter every tick, which
+  // would retune every glow frequency and density each repaint. Steps hold.
+  const q = (v) => Math.round(Math.min(1, Math.max(0, v)) * 20) / 20
+  const mtp = stale ? 0 : rs.mtp_accept_pct != null ? q(rs.mtp_accept_pct / 100) : q(c.reason)
+  const think = stale ? 0 : rs.thinking_tokens != null ? q(rs.thinking_tokens / 400) : q(c.reason)
+  const tpsRate = stale ? 0 : q(((c.snap && c.snap.kpi && c.snap.kpi.tps) || 0) / 280)
   const performing = !stale && think > 0.5
 
   const cx = w / 2

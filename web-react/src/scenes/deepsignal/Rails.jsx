@@ -115,7 +115,7 @@ export function LeftRail({ snap, conductor }) {
       {strips.map((s) => (
         <Mod key={s.name} title={s.name} right={offline ? '—' : `${Math.round(s.fill * 100)}%`}>
           <div className="h-[5px] w-full overflow-hidden rounded-sm bg-acc/10" aria-hidden="true">
-            <div className={`h-full ${s.up ? 'bg-acc/70' : 'bg-alm/60'}`} style={{ width: `${Math.round(s.fill * 100)}%` }} />
+            <div className={`h-full ${s.up ? 'bg-acc/70' : 'bg-alm/60'} transition-[width] duration-300 ease-out`} style={{ width: `${Math.round(s.fill * 100)}%` }} />
           </div>
         </Mod>
       ))}
@@ -131,7 +131,7 @@ export function LeftRail({ snap, conductor }) {
             <div key={b.name} className="flex min-w-0 items-center gap-1.5">
               <span className="w-[74px] shrink-0 truncate text-[7.5px] tracking-[0.1em] text-ink-3">{b.name}</span>
               <div className="h-[4px] min-w-0 flex-1 overflow-hidden rounded-sm bg-acc/10" aria-hidden="true">
-                <div className={`h-full ${b.v > 80 ? 'bg-col/80' : 'bg-dat/70'}`} style={{ width: `${Math.round(offline ? 0 : b.v)}%` }} />
+                <div className={`h-full ${b.v > 80 ? 'bg-col/80' : 'bg-dat/70'} transition-[width] duration-300 ease-out`} style={{ width: `${Math.round(offline ? 0 : b.v)}%` }} />
               </div>
               <span className="w-[26px] shrink-0 text-right text-[8px] tabular-nums text-ink-2">{offline ? '—' : Math.round(b.v)}</span>
             </div>
@@ -170,7 +170,7 @@ export function RightRail({ snap }) {
     <aside className="hidden w-[232px] min-w-0 shrink-0 flex-col gap-1.5 overflow-y-auto overflow-x-hidden p-1.5 min-[769px]:flex" aria-label="Tracking and array modules">
       <Mod title="TRACK LOCK" right={offline ? 'HOLD' : `${lock}%`}>
         <div className="h-[5px] w-full overflow-hidden rounded-sm bg-acc/10" aria-hidden="true">
-          <div className="h-full bg-dat/80" style={{ width: `${lock}%` }} />
+          <div className="h-full bg-dat/80 transition-[width] duration-300 ease-out" style={{ width: `${lock}%` }} />
         </div>
       </Mod>
       <Mod title="AZIMUTH">
