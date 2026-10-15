@@ -2,12 +2,27 @@
    Observed reference traits recreated without copying assets:
    teal lab bg, cyan/amber/pink coding, L-brackets only (no box borders),
    dotted grid, vignette, scanlines, grain, mono micro-labels. */
+
+/* Self-hosted so `--font-mono`'s first family actually resolves. The stack
+   already named JetBrains Mono / IBM Plex Mono / Space Mono, but web/ shipped
+   no @font-face and no font files, so all three fell through to the generic
+   monospace on every load. Latin subset only (~40 KB); the variable axis
+   covers 100-800. JetBrains Mono is OFL-1.1 — see
+   web/fonts/OFL-JetBrains-Mono.txt. */
+@font-face {
+  font-family: "JetBrains Mono";
+  font-style: normal;
+  font-weight: 100 800;
+  font-display: swap;
+  src: url("fonts/jetbrains-mono-latin.woff2") format("woff2-variations");
+  unicode-range: U+0000-00FF,U+0131,U+0152-0153,U+02BB-02BC,U+02C6,U+02DA,U+02DC,U+0304,U+0308,U+0329,U+2000-206F,U+20AC,U+2122,U+2191,U+2193,U+2212,U+2215,U+FEFF,U+FFFD;
+}
 :root {
   color-scheme: dark;
   --p-bg: #060a14;
   --p-panel: #0c1226;
   --p-text: #dce6ff;
-  --p-dim: #647294;
+  --p-dim: #74809f; /* was #647294 — measured 4.03:1 on panel, below the 4.5 */
   --p-accent: #8f7bff;
   --p-data: #6fe7ad;
   --p-cool: #ff5c8a;
@@ -47,7 +62,7 @@
   --p-bg: #051820;
   --p-panel: #0a2632;
   --p-text: #d8f0f0;
-  --p-dim: #5a8488;
+  --p-dim: #648f93; /* was #5a8488 — measured 4.16:1 on panel */
   --p-accent: #00e0e0;
   --p-data: #f0dc50;
   --p-cool: #ff40c0;
@@ -65,12 +80,12 @@
   --acc: 183 240 225; --dat: 255 209 102; --col: 255 143 107; --pan: 10 32 29; --bgg: 6 20 18; --p-rule2: #143530;
 }
 :root[data-skin="isodose"] {
-  --p-bg: #140b08; --p-panel: #221009; --p-text: #f6e3dd; --p-dim: #8a6a63;
+  --p-bg: #140b08; --p-panel: #221009; --p-text: #f6e3dd; --p-dim: #9a7a72; /* dim was #8a6a63 — 3.93:1 */
   --p-accent: #ff5a4a; --p-data: #ffc55c; --p-cool: #59c3ff; --p-alarm: #c040e0;
   --acc: 255 90 74; --dat: 255 197 92; --col: 89 195 255; --pan: 34 16 9; --bgg: 20 10 8; --p-rule2: #3a1a12;
 }
 :root[data-skin="corvane"] {
-  --p-bg: #071120; --p-panel: #0c1a30; --p-text: #dceaff; --p-dim: #5f7d9e;
+  --p-bg: #071120; --p-panel: #0c1a30; --p-text: #dceaff; --p-dim: #6a89ab; /* dim was #5f7d9e — 4.32:1 */
   --p-accent: #59c3ff; --p-data: #6fe7ad; --p-cool: #ff5c8a; --p-alarm: #b06fe7;
   --acc: 89 195 255; --dat: 111 231 173; --col: 255 92 138; --pan: 12 26 48; --bgg: 7 17 32; --p-rule2: #1c3350;
 }
@@ -234,9 +249,10 @@ main.deck {
   color: var(--p-dim); background: var(--p-panel); padding: 0 8px; z-index: 3;
   border-radius: 1px;
 }
+/* 0.7 opacity measured 3.42 / 3.53 on the darkest skins — under 4.5. */
 .br-id {
   position: absolute; font-size: 9px; letter-spacing: 0.18em;
-  color: var(--p-accent); opacity: 0.7; text-transform: uppercase;
+  color: var(--p-accent); opacity: 0.92; text-transform: uppercase;
   pointer-events: none; z-index: 3; white-space: nowrap;
 }
 .br-id.tl { top: 4px; left: 28px; }
@@ -295,9 +311,11 @@ canvas.short { height: clamp(120px, 16vh, 170px); }
 .slot .bar i { display: block; height: 100%; background: var(--p-accent); opacity: 0.85; }
 .slot .meta { display: none; }
 .slot > div:first-child { font-size: 9.5px; padding: 2px 4px; color: var(--p-bg); }
-.slot.well-ok { background: rgb(var(--acc) / 0.55); border-color: rgb(var(--acc) / 0.95); }
-.slot.well-warn { background: rgb(var(--dat) / 0.55); border-color: rgb(var(--dat) / 0.95); }
-.slot.well-alert { background: rgb(var(--col) / 0.60); border-color: rgb(var(--col) / 1); }
+/* Fills raised so the dark well id clears 4.5:1 on every skin. At 0.55 the
+   composited chip was a mid-tone and `color: var(--p-bg)` landed at 2.7-4.4. */
+.slot.well-ok { background: rgb(var(--acc) / 0.88); border-color: rgb(var(--acc) / 0.95); }
+.slot.well-warn { background: rgb(var(--dat) / 0.88); border-color: rgb(var(--dat) / 0.95); }
+.slot.well-alert { background: rgb(var(--col) / 0.92); border-color: rgb(var(--col) / 1); }
 .slot.well-off { background: rgba(90,132,136,0.18); border-color: rgba(90,132,136,0.45); }
 .slot.well-off > div:first-child { color: var(--p-dim); }
 .slot.hl { box-shadow: 0 0 6px rgb(var(--col) / 0.55); outline: 1px solid rgb(var(--col) / 0.85); }
@@ -308,7 +326,10 @@ canvas.short { height: clamp(120px, 16vh, 170px); }
   letter-spacing: 0.18em; text-transform: uppercase; color: var(--p-dim);
 }
 .layer-row h3 b { color: var(--p-text); font-weight: 400; }
-.toggles { display: flex; gap: 8px; flex-wrap: wrap; padding-top: 10px; }
+/* flex-direction: row is load-bearing. This element also carries .panel-body,
+   whose `flex-direction: column` (declared earlier) otherwise wins and turns
+   every chip into a full-width row — 1494px wide against 133px intrinsic. */
+.toggles { display: flex; flex-direction: row; gap: 8px; flex-wrap: wrap; padding-top: 10px; }
 .toggles label {
   font-size: 11px; letter-spacing: 0.14em; text-transform: uppercase;
   padding: 5px 11px; color: var(--p-accent);
@@ -395,7 +416,7 @@ footer.foot .ft-right { color: var(--p-text); letter-spacing: 0.24em; }
   .panel { padding: 10px; }
   header.pills, .timecode-bar { padding-top: 12px; }
   ul.log { max-height: 140px; }
-  .skin-rail { gap: 3px; }
+  .timecode-bar { grid-template-columns: repeat(4, 1fr); }
 }
 @media (max-width: 480px) {
   main.deck { grid-template-columns: 1fr; gap: 8px; }
@@ -486,7 +507,8 @@ body { transition: background-color var(--morph) var(--ease-inout); }
 /* ---- visual enhancement: panel hover affordance (V1) ---- */
 .panel { cursor: default; }
 .panel .br::before, .panel .br::after { transition: background-color var(--morph) var(--ease-inout), box-shadow var(--morph) var(--ease-inout), opacity 160ms var(--ease-inout); }
-.panel:hover { border-color: rgb(var(--acc) / 0.28); }
+/* 0.28 was *lower* than the resting border, so hover read as a weaker panel. */
+.panel:hover { border-color: rgb(var(--acc) / 0.45); }
 .panel:hover .br::before, .panel:hover .br::after { opacity: 1; box-shadow: 0 0 6px currentColor; }
 
 /* ---- visual enhancement: skin rail active underline (V2) ---- */
@@ -511,3 +533,16 @@ canvas.field.short { border-color: rgb(var(--acc) / 0.08); }
 
 /* ---- visual enhancement: scrollbar styling for data panels (V4) ---- */
 ul.log { scrollbar-width: thin; scrollbar-color: rgb(var(--acc) / 0.35) transparent; }
+
+/* Mobile chrome rows scroll sideways instead of wrapping. Wrapped, the rail
+   (108px) + pills (203px) + timecode (91px) ate 403px of an 844px phone and
+   pushed the first panel to 49.5% of the viewport. This block sits at the
+   end of the file on purpose. The base .skin-rail rule re-declares
+   flex-wrap: wrap at equal specificity, and source order beats the media
+   query, so an earlier copy of these overrides silently lost. */
+@media (max-width: 700px) {
+  .skin-rail { gap: 3px; }
+  .skin-rail, header.pills { flex-wrap: nowrap; overflow-x: auto; scrollbar-width: none; }
+  .skin-rail::-webkit-scrollbar, header.pills::-webkit-scrollbar { display: none; }
+  .skin-rail > *, header.pills > * { flex: 0 0 auto; }
+}
