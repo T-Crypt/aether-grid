@@ -48,6 +48,20 @@ export const SCENES = [
       gullet: { acc: '107 232 164', dat: '240 192 96', col: '125 216 196', alm: '240 155 170' },
     },
   },
+  {
+    // Reference palette (uispace.org/cinder-pass): lamp amber #FFAD3B, data
+    // cream #FFD99F, cool violet #A87BFF, held alarm #FFDC2B. Sounding's base
+    // accent (#FFB000) is the closest base scheme, so it carries the native
+    // table; the other six keep their base role colours on the scene's
+    // rust-plate surfaces.
+    id: 'cinder-pass',
+    label: 'Cinder-Pass',
+    defaultScheme: 'sounding',
+    schemes: SKIN_IDS,
+    palettes: {
+      sounding: { acc: '255 173 59', dat: '255 217 159', col: '168 123 255', alm: '255 220 43' },
+    },
+  },
 ]
 
 export const SCENE_IDS = SCENES.map((s) => s.id)
