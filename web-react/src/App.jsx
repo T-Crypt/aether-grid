@@ -17,7 +17,7 @@ import { DEFAULT_SKIN, SKIN_IDS, skinById, faviconFor } from './lib/skins'
 const SKIN_KEY = 'aether.console.skin'
 
 export default function App() {
-  const { snap, tick, paused, setPaused, stepOnce, reduced } = useTelemetry()
+  const { snap, tick, paused, setPaused, stepOnce, reduced, demo } = useTelemetry()
   const [skin, setSkin] = useState(() => {
     const s = document.documentElement.dataset.skin
     return SKIN_IDS.includes(s) ? s : DEFAULT_SKIN
@@ -62,9 +62,19 @@ export default function App() {
         onTogglePause={() => setPaused((p) => !p)}
         onStep={stepOnce}
         tick={tick}
+        demo={demo}
       />
 
       <div className="relative z-10 mx-auto max-w-[1760px] px-3 pb-8 sm:px-5">
+        {snap.mode === 'offline' ? (
+          <div
+            role="status"
+            className="mb-3 flex items-center gap-2 rounded-md border border-col/45 bg-col/10 px-3 py-2 text-2xs text-ink-1"
+          >
+            <span className="h-1.5 w-1.5 shrink-0 animate-pulseDot rounded-full bg-col" aria-hidden="true" />
+            collector unreachable — retrying
+          </div>
+        ) : null}
         <TimecodeStrip snap={snap} />
 
         <main className="grid gap-3 lg:grid-cols-[1.15fr_1.5fr_1fr]">
