@@ -4,6 +4,7 @@ __pycache__/
 *.db
 .router/
 node_modules/
+web-react/dist/
 
 # [ome]: local hydrated state is never committed
 .ome/events/
