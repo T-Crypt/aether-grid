@@ -116,6 +116,27 @@ export default function SceneRoot({ children }) {
     conductor.layers = layers
   }, [layers, conductor])
 
+  // Switching scenes enters the scene on its own scheme: the scheme the
+  // user last chose in that scene, else its native default scheme.
+  const switchScene = useCallback((id) => {
+    if (!SCENE_IDS.includes(id)) return
+    let stored = null
+    try {
+      stored = localStorage.getItem('aether.console.skin.' + id)
+    } catch {
+      /* storage blocked */
+    }
+    if (!stored && id === DEFAULT_SCENE) {
+      try {
+        stored = localStorage.getItem('aether.console.skin')
+      } catch {
+        /* storage blocked */
+      }
+    }
+    setScene(id)
+    setSkin(stored && SKIN_IDS.includes(stored) ? stored : sceneById(id).defaultScheme)
+  }, [])
+
   useEffect(() => {
     const meta = sceneById(scene)
     document.documentElement.dataset.scene = scene
@@ -133,9 +154,16 @@ export default function SceneRoot({ children }) {
       /* storage blocked */
     }
     try {
-      localStorage.setItem('aether.console.skin', skin)
+      localStorage.setItem('aether.console.skin.' + scene, skin)
     } catch {
       /* storage blocked */
+    }
+    if (scene === DEFAULT_SCENE) {
+      try {
+        localStorage.setItem('aether.console.skin', skin)
+      } catch {
+        /* storage blocked */
+      }
     }
   }, [scene, skin, conductor])
 
@@ -153,7 +181,7 @@ export default function SceneRoot({ children }) {
       layers,
       setLayer,
       scene,
-      setScene,
+      setScene: switchScene,
       skin,
       setSkin,
       mode: snap?.mode || 'boot',
