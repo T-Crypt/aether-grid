@@ -1545,7 +1545,7 @@ def main():
     ap.add_argument("--port", type=int, default=None)
     ap.add_argument("--host", default=None,
                     help="bind address (default: server.host or 127.0.0.1; "
-                         "use 0.0.0.0 behind the compose nginx proxy)")
+                         "use 0.0.0.0 to expose the console on the LAN)")
     ap.add_argument("--config", default=None,
                     help="speculum.toml path (default: repo root, then "
                          "~/.config/speculum/speculum.toml)")

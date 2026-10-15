@@ -24,7 +24,7 @@ export function Pill({ label, value, tone = 'ok', pulse = false }) {
   )
 }
 
-/** Derive the pill row from one snapshot, mirroring renderPills() in web/app.js. */
+/** Derive the pill row from one snapshot. */
 export function derivePills(snap) {
   const engines = snap.engines || []
   const up = engines.filter((e) => e.up).length
