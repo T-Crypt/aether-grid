@@ -16,10 +16,9 @@ export default function SpeciesStrip() {
   const stale = staleOf(snap)
   const alert = stale ? 0 : Math.min(1, conductor.alert)
   const heat = stale ? 0 : Math.min(1, conductor.heat)
-  // MTP accept hurries the P23 bloom tick: an accepting run throbs faster
-  // than a merely hot one (greenhouse rhythm, deterministic in the feed).
-  const rs = (snap && snap.reasoning) || {}
-  const mtp = stale ? 0 : rs.mtp_accept_pct != null ? Math.min(1, Math.max(0, rs.mtp_accept_pct / 100)) : 0
+  // The P23 bloom tick throbs with heat alone. The reasoning accept rate
+  // belongs to the detection scene, so the strip no longer reads it. Heat
+  // already carries the load signal the pulse needs.
 
   const tickOf = (i) => {
     const sp = SPECIES[i]
@@ -55,7 +54,7 @@ export default function SpeciesStrip() {
             key={sp.id}
             title={title}
             className={`h-1.5 min-w-0 flex-1 ${cls} ${hot ? 'bl-tick-live' : ''}`}
-            style={hot ? { animationDuration: `${Math.max(0.45, 1.8 - heat * 0.6 - mtp * 0.8).toFixed(2)}s` } : undefined}
+            style={hot ? { animationDuration: `${Math.max(0.45, 1.8 - heat * 1.2).toFixed(2)}s` } : undefined}
           />
         )
       })}
