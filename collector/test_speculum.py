@@ -129,6 +129,86 @@ class TestNinferLogMapping(unittest.TestCase):
         self.assertFalse(speculum.engine_active(e))
 
 
+class TestKpiPassQueue(unittest.TestCase):
+    """NInfer serves no /metrics, so it reports no queue at all. The KPI must
+    stay absent when nothing reports one, instead of summing a fabricated 0."""
+
+    def setUp(self):
+        _reset_kpi_state()
+
+    def test_no_engine_reports_a_queue(self):
+        S = speculum.S
+        llama = S.engine("llama", "llama-3.3-70b", "llama-swap")
+        llama["up"] = True
+        ninfer = S.engine("ninfer", "NInfer-Qwen3-8B", "ninfer")
+        ninfer["up"] = True
+        speculum.kpi_pass()
+        self.assertIsNone(S.kpi["last"]["queue"])
+
+    def test_single_engine_queue(self):
+        S = speculum.S
+        ninfer = S.engine("ninfer", "NInfer-Qwen3-8B", "ninfer")
+        ninfer["up"] = True
+        ninfer["queue"] = 3
+        speculum.kpi_pass()
+        self.assertEqual(S.kpi["last"]["queue"], 3)
+
+    def test_two_engine_queues_sum(self):
+        S = speculum.S
+        llama = S.engine("llama", "llama-3.3-70b", "llama-swap")
+        llama["up"] = True
+        llama["queue"] = 2
+        ninfer = S.engine("ninfer", "NInfer-Qwen3-8B", "ninfer")
+        ninfer["up"] = True
+        ninfer["queue"] = 5
+        speculum.kpi_pass()
+        self.assertEqual(S.kpi["last"]["queue"], 7)
+
+    def test_engine_without_queue_does_not_add_zero(self):
+        S = speculum.S
+        llama = S.engine("llama", "llama-3.3-70b", "llama-swap")
+        llama["up"] = True
+        llama["queue"] = 4
+        ninfer = S.engine("ninfer", "NInfer-Qwen3-8B", "ninfer")
+        ninfer["up"] = True
+        speculum.kpi_pass()
+        self.assertEqual(S.kpi["last"]["queue"], 4)
+
+    def test_reported_zero_is_a_real_zero(self):
+        S = speculum.S
+        llama = S.engine("llama", "llama-3.3-70b", "llama-swap")
+        llama["up"] = True
+        llama["queue"] = 0
+        speculum.kpi_pass()
+        self.assertEqual(S.kpi["last"]["queue"], 0)
+
+
+class TestTickQueue(unittest.TestCase):
+    """The 1 Hz tick feeds the screen, and it read the history tail. History
+    fills a missing value with 0 for the sparklines, so a queue nobody reports
+    reached the console as a measured 0 even once the snapshot read null."""
+
+    def setUp(self):
+        _reset_kpi_state()
+
+    def test_tick_reports_absent_queue_as_absent(self):
+        S = speculum.S
+        e = S.engine("ninfer", "NInfer-Qwen3-8B", "ninfer")
+        e["up"] = True
+        speculum.kpi_pass()
+        self.assertIsNone(S.kpi["last"]["queue"])
+        self.assertEqual(S.kpi["hist"]["queue"][-1], 0)  # series stays drawable
+        self.assertIsNone(speculum.tick()["kpi"]["queue"])
+
+    def test_tick_reports_a_reported_queue(self):
+        S = speculum.S
+        e = S.engine("llama", "llama-3.3-70b", "llama-swap")
+        e["up"] = True
+        e["queue"] = 4
+        speculum.kpi_pass()
+        self.assertEqual(speculum.tick()["kpi"]["queue"], 4)
+
+
 class TestBuiltinEndpoints(unittest.TestCase):
     """llama-swap and Strata can be moved off their stock ports, by url or by
     the host/port shorthand, since the built-in threads are not discovery."""

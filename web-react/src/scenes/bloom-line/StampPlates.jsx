@@ -66,7 +66,7 @@ export function StampData() {
     ['SPECIES', `${upEng}/${engines.length || 47} NOM.`],
     ['DRONES', `${Math.min(28, sessions.length || 0)} / 28 DOC.`],
     ['CYCLE', `DAY ${snap ? `${187 + Math.floor((snap.t || 0) / 90)} / 240` : '— / 240'}`],
-    ['NEXT SHIP', `4d · ${((k.queue || 0) * 0.32).toFixed(1)} kg`],
+    ['NEXT SHIP', k.queue != null ? `4d · ${(k.queue * 0.32).toFixed(1)} kg` : '4d · — kg'],
     ['YIELD/MO', `~${Math.round(120 + heat * 40)} kg`],
     ['P23 BLOOM', '★ TASHKENT YEL.'],
   ]

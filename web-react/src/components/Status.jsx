@@ -32,7 +32,7 @@ export function derivePills(snap) {
   const gpu = snap.gpu || {}
   const tmp = tempState(gpu.temp)
   const tmpTone = tmp === 'alert' ? 'crit' : tmp === 'warn' ? 'warn' : tmp === 'ok' ? 'ok' : 'idle'
-  const q = kpi.queue || 0
+  const q = kpi.queue // null when no engine reports a queue; the pill prints a dash
   const link =
     {
       live: { value: 'live', tone: 'live' },
@@ -45,7 +45,7 @@ export function derivePills(snap) {
     { key: 'link', label: 'link', value: link.value, tone: link.tone, pulse: true },
     { key: 'eng', label: 'engines', value: `${up}/${engines.length}`, tone: up ? 'ok' : 'crit' },
     { key: 'tps', label: 'tok/s', value: fmtKpi('tps', kpi.tps) ?? '—', tone: 'live' },
-    { key: 'queue', label: 'queue', value: fmtKpi('queue', q) ?? '—', tone: q >= 10 ? 'warn' : 'ok' },
+    { key: 'queue', label: 'queue', value: fmtKpi('queue', q) ?? '—', tone: q == null ? 'idle' : q >= 10 ? 'warn' : 'ok' },
     { key: 'vram', label: 'vram', value: fmtKpi('vram', kpi.vram) ?? '—', tone: 'data' },
     {
       key: 'tmp',

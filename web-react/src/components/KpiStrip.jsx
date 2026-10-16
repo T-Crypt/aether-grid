@@ -6,7 +6,7 @@
 
 import { useId } from 'react'
 import { ArrowDownRight, ArrowUpRight, Minus } from 'lucide-react'
-import { KPI_KEYS, KPI_LABEL, KPI_PRIMARY, KPI_FMT, clamp01 } from '../lib/format'
+import { KPI_KEYS, KPI_LABEL, KPI_PRIMARY, fmtKpi, clamp01 } from '../lib/format'
 import { useScene } from '../scene/SceneRoot'
 import useAnchor from '../scene/useAnchor'
 
@@ -118,7 +118,8 @@ export default function KpiStrip() {
       <div className="strip grid grid-cols-2 lg:grid-cols-4">
         {PRIMARY.map((m) => {
           const hist = snap.kpiHist?.[m.key] || []
-          const val = KPI_FMT[m.key](k[m.key] ?? 0)
+          // a key with no source prints a dash; a reported 0 still prints as 0
+          const val = fmtKpi(m.key, k[m.key]) ?? '—'
           return (
             <div key={m.key} className={`relative px-3 py-2 ${m.key === 'queue' ? '' : ''}`}>
               {m.key === 'queue' ? <span ref={queueRef} className="absolute inset-0" aria-hidden="true" /> : null}
@@ -149,7 +150,7 @@ export default function KpiStrip() {
       </div>
       <div className="strip grid grid-cols-3 sm:grid-cols-6">
         {secondary.map((key) => {
-          const val = KPI_FMT[key](k[key] ?? 0)
+          const val = fmtKpi(key, k[key]) ?? '—'
           return (
             <div key={key} className="px-3 py-1.5">
               <div className="micro">{KPI_LABEL[key]}</div>

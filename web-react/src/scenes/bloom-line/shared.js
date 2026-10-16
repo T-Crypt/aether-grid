@@ -247,7 +247,7 @@ export function ringStats(snap, heat) {
   return {
     pct,
     rows: [
-      ['CARGO', `${((k.queue || 0) * 0.32).toFixed(1)} / 6.6 t`],
+      ['CARGO', k.queue != null ? `${(k.queue * 0.32).toFixed(1)} / 6.6 t` : '— / 6.6 t'],
       ['STRAINS', '38 / 47'],
       ['LAUNCH', '2218-04'],
       ['D-LEFT', '2 yr · 11 mo'],
