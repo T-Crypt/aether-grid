@@ -29,7 +29,7 @@ The collector serves `/api/snapshot` and `/api/stream` on that port. The long-ra
 
 The console ships five scenes, and each one is a complete visual program over the same telemetry. The registry is `web-react/src/lib/scenes.js`, and the root components map in `web-react/src/App.jsx`. The scene dock, pinned bottom right, switches scene and scheme. The choice persists in `localStorage`, and `?scene=` deep-links a scene.
 
-Every frame comes from the built console. The six below are 1600x900 from the demo feed, except the last one, which is the same console on the live feed.
+Every frame comes from the built console. The six below are 1000x563 from the demo feed, except the last one, which is the same console on the live feed.
 
 | <img src="docs/shots/gallery/scene-hexlab.png" width="440" alt="Hex-Lab"> | <img src="docs/shots/gallery/scene-safehouse.png" width="440" alt="Safehouse"> |
 | --- | --- |
@@ -45,7 +45,7 @@ Every frame comes from the built console. The six below are 1600x900 from the de
 
 The phone layout at 390 px, where the rails hide and the panes stack.
 
-Each scene keeps its own nouns for the same telemetry. Safehouse reads `SIG model · DECODE tps TOK/S · ENG engine · ON AIR`, Bloom-Line reads `FLOWERED · model · tps TOK/S · MTP mtp% · THINK think`, Cyber-Pass stamps probes with `LAST · SEQ · LAMP · model · tps TOK/S · P95 p95`, and Deepsignal runs a `RUNTIME model · tps TOK/S · ENG engine · tempC` span. Hex-Lab is the base console, with the hero helix, the terrain mesh, the GPU block, the KV cohort, the log and the data band.
+Each scene keeps its own nouns for the same telemetry. Safehouse reads `SIG model · DECODE tps TOK/S · ENG engine · ON AIR`, Bloom-Line reads `FLOWERED · model · tps TOK/S · MTP mtp% · THINK think`, Cyber-Pass stamps probes with `LAST · SEQ · LAMP · model · tps TOK/S · ENG engine · Q queue`, and Deepsignal runs a `RUNTIME model · ENG engine · candidates` span. Hex-Lab is the base console, with the hero helix, the terrain mesh, the GPU block, the KV cohort, the log and the data band.
 
 ## Scene architecture
 
@@ -98,7 +98,7 @@ Run the collector suite from the repo root.
 python3 -m pytest collector/ -q
 ```
 
-The last run printed `115 passed, 3 skipped in 8.18s`.
+The suite is `127 passed, 3 skipped`; the three skips are the Windows-only hostinfo backends.
 
 ## Sources
 
