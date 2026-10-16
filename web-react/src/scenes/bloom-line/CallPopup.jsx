@@ -25,7 +25,7 @@ export default function CallPopup() {
   return (
     <div
       role="status"
-      className="bl-call absolute right-[216px] top-[142px] z-[8] hidden w-[220px] border border-col bg-bgg/95 px-3 py-2.5 shadow-[0_6px_22px_rgb(0_0_0_/_0.5),0_0_16px_rgb(var(--col)_/_0.25)] min-[769px]:block"
+      className="bl-call absolute right-[216px] top-[172px] z-[22] hidden w-[220px] border border-col bg-bgg/95 px-3 py-2.5 shadow-[0_6px_22px_rgb(0_0_0_/_0.5),0_0_16px_rgb(var(--col)_/_0.25)] min-[769px]:block"
     >
       <div className="text-[8px] tracking-[0.2em] text-col">INCOMING · L2 · LAGOS RELAY</div>
       <div className="bl-serif mt-1 text-[15px] italic leading-tight tracking-normal text-ink-1">{call.name}</div>
@@ -35,14 +35,14 @@ export default function CallPopup() {
         <button
           type="button"
           onClick={dismiss}
-          className="flex-1 border border-acc/40 px-1.5 py-1 text-[7.5px] tracking-[0.18em] text-ink-2 hover:border-acc/70"
+          className="min-h-[26px] flex-1 border border-acc/40 px-1.5 py-1 text-[7.5px] tracking-[0.18em] text-ink-2 hover:border-acc/70"
         >
           POSTPONE
         </button>
         <button
           type="button"
           onClick={dismiss}
-          className="flex-1 border border-acc px-1.5 py-1 text-[7.5px] tracking-[0.18em] text-acc hover:bg-acc/10"
+          className="min-h-[26px] flex-1 border border-acc px-1.5 py-1 text-[7.5px] tracking-[0.18em] text-acc hover:bg-acc/10"
         >
           ANSWER
         </button>

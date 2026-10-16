@@ -3,6 +3,8 @@
 // to the session pool (flagged = anomalous sessions); ENV/ATMOS/ROT rows are
 // host/gpu proxies (the card flags them "best-fit, no 1:1 data"); STRAINS
 // binds to the model list. Offline: the frames stay, bodies show "no source".
+// The stack runs taller than an 800 px viewport, so the strip scrolls rather
+// than dropping its footer row off the bottom edge.
 
 import { useScene } from '../../scene/SceneRoot'
 import { tankZones, droneCells, envRows, germChips, det, hashCode } from './shared'
@@ -35,7 +37,7 @@ export default function LeftRail() {
 
   return (
     <aside
-      className="hidden min-w-0 flex-col overflow-hidden border-r border-ink-3/20 bg-gradient-to-r from-bgg/70 to-bgg/40 text-[9px] min-[769px]:flex min-[769px]:w-[156px]"
+      className="scrollbar-thin-x hidden min-w-0 flex-col overflow-x-hidden overflow-y-auto border-r border-ink-3/20 bg-gradient-to-r from-bgg/70 to-bgg/40 text-[9px] min-[769px]:flex min-[769px]:w-[156px]"
       aria-label="Left instrument rail"
     >
       {/* TANKS */}

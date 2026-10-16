@@ -54,24 +54,27 @@ const VBY = 834
 const pct = (x, y) => ({ x: (x / VBX) * 100, y: (y / VBY) * 100 })
 
 // One entry per leader-line callout (18). `side` is the label anchor side.
+// Label anchors are chosen so no two chips in the same column collide: a chip
+// is three lines tall (~40 px in the 834 px viewBox), so same-column anchors
+// need that much separation.
 export const CALLOUTS = [
-  { a: pct(740.9, 623.0), l: pct(324.3, 751.5), side: 'left', cyr: 'ДЫНЯ ТАШКЕНТ', lat: 'P23 · TASHKENT MELON 2178', bind: 'bloom' },
-  { a: pct(622.0, 179.1), l: pct(324.3, 30.7), side: 'left', cyr: 'ТОМАТ', lat: 'SAN MARZANO · P07', bind: 'harv' },
-  { a: pct(828.0, 298.1), l: pct(324.3, 223.9), side: 'left', cyr: 'САЛАТ', lat: 'SPOTTED TROUT · P14', bind: 'nom' },
-  { a: pct(622.0, 654.9), l: pct(919.7, 786.0), side: 'right', cyr: 'КЛУБНИКА', lat: 'MARA DES BOIS · P28', bind: 'nom' },
+  { a: pct(740.9, 623.0), l: pct(560.0, 726.0), side: 'left', cyr: 'ДЫНЯ ТАШКЕНТ', lat: 'P23 · TASHKENT MELON 2178', bind: 'bloom' },
+  { a: pct(622.0, 179.1), l: pct(324.3, 130.0), side: 'left', cyr: 'ТОМАТ', lat: 'SAN MARZANO · P07', bind: 'harv' },
+  { a: pct(828.0, 298.1), l: pct(324.3, 314.0), side: 'left', cyr: 'САЛАТ', lat: 'SPOTTED TROUT · P14', bind: 'nom' },
+  { a: pct(622.0, 654.9), l: pct(919.7, 738.0), side: 'right', cyr: 'КЛУБНИКА', lat: 'MARA DES BOIS · P28', bind: 'nom' },
   { a: pct(416.0, 535.9), l: pct(919.7, 610.1), side: 'right', cyr: 'БАЗИЛИК', lat: 'GENOVESE DOP · P36', bind: 'warn' },
   { a: pct(384.1, 417.0), l: pct(919.7, 417.0), side: 'right', cyr: 'ЦВЕТЫ', lat: 'NASTURTIUM · P41', bind: 'nom' },
   { a: pct(503.1, 211.0), l: pct(919.7, 82.5), side: 'right', cyr: 'ПШЕНИЦА', lat: 'KHORASAN · P47', bind: 'nom' },
-  { a: pct(441.7, 351.4), l: pct(239.0, 284.9), side: 'left', cyr: 'ГИДРОПОН.', lat: 'HYDROPONIC LOOP', bind: 'hydro' },
-  { a: pct(475.1, 293.7), l: pct(306.1, 168.7), side: 'left', cyr: 'pH-БАЛАНС', lat: 'pH AVG', bind: 'ph' },
-  { a: pct(622.0, 117.8), l: pct(324.3, 60.7), side: 'left', cyr: 'ЗЕРКАЛО', lat: 'MIRROR ARRAY', bind: 'nom' },
+  { a: pct(441.7, 351.4), l: pct(239.0, 360.0), side: 'left', cyr: 'ГИДРОПОН.', lat: 'HYDROPONIC LOOP', bind: 'hydro' },
+  { a: pct(475.1, 293.7), l: pct(306.1, 268.0), side: 'left', cyr: 'pH-БАЛАНС', lat: 'pH AVG', bind: 'ph' },
+  { a: pct(622.0, 117.8), l: pct(324.3, 222.0), side: 'left', cyr: 'ЗЕРКАЛО', lat: 'MIRROR ARRAY', bind: 'nom' },
   { a: pct(768.9, 293.7), l: pct(937.9, 168.7), side: 'right', cyr: 'CO₂ АТМ.', lat: 'CO₂ ATMOSPHERE', bind: 'co2' },
   { a: pct(802.3, 351.4), l: pct(1005.0, 284.9), side: 'right', cyr: 'КИСЛОРОД', lat: 'O₂ ATMOSPHERE', bind: 'o2' },
   { a: pct(622.0, 716.2), l: pct(919.7, 786.0), side: 'right', cyr: 'РОЙ · 28', lat: 'DRONE BAY · 28/28', bind: 'drones' },
   { a: pct(903.2, 519.3), l: pct(1005.0, 549.1), side: 'right', cyr: 'ОБИТ. БЛОК', lat: 'HABITAT · YUMI', bind: 'hab' },
   { a: pct(322.8, 417.0), l: pct(215.7, 417.0), side: 'left', cyr: 'L2 ↔ ЗЕМЛЯ', lat: 'COMM · LAGOS RELAY', bind: 'comm' },
   { a: pct(441.7, 482.6), l: pct(239.0, 549.1), side: 'left', cyr: 'ФОНД · X-H', lat: 'FOUND. XENO-HERIT.', bind: 'nom' },
-  { a: pct(368.6, 265.0), l: pct(239.0, 150.0), side: 'left', cyr: 'СВЕЧЕНИЕ', lat: 'GROW-LIGHT ARRAY', bind: 'nom' },
+  { a: pct(368.6, 265.0), l: pct(239.0, 176.0), side: 'left', cyr: 'СВЕЧЕНИЕ', lat: 'GROW-LIGHT ARRAY', bind: 'nom' },
   { a: pct(875.4, 569.0), l: pct(1005.0, 675.0), side: 'right', cyr: 'ВОДА · ЦИКЛ', lat: 'WATER LOOP · NUTRIENT', bind: 'water' },
 ]
 
@@ -149,7 +152,7 @@ export function telemRows(snap, heat, alert, flow) {
     ['O₂ АТМ.', 'O₂', `${f(20.9 - heat * 0.4, 2)} %`],
     ['pH СРЕД.', 'pH avg', f(6.2 + det(hashCode((snap && snap.kpi && snap.kpi.tps) || 0)) * 0.1, 2)],
     ['ВЛАЖНОСТЬ', 'soil moist.', host ? `${Math.round(40 + host.cpu * 0.2)} %` : '—'],
-    ['СВЕТ · ФОТО', 'photoperiod', '14h 00m · ON'],
+    ['СВЕТ · ФОТО', 'photoper.', '14h 00m · ON'],
     ['P23 · ТАШКЕНТ', 'P23 bloom', '★ FLAGGED', bloom ? 'bloom' : ''],
     ['P07 · САН-МАРЦ.', 'P07 tomato', 'HARV. 4d', ''],
     ['P28 · MARA DES B', 'P28 berry', 'FRUITING', ''],
@@ -158,7 +161,7 @@ export function telemRows(snap, heat, alert, flow) {
     ['РОЙ · ДОК', 'drones dock', `${Math.min(28, sessions.length || 0)} / 28`],
     ['РОЙ · ЗАВТ.', 'drones flag', flagged ? `${flagged} → P23` : '0 → P23', flagged ? 'bloom' : ''],
     ['СВЯЗЬ ЗЕМЛЯ', 'earth comm', (snap && snap.mode === 'offline') ? 'NO LINK' : 'OPEN · 5.0s', snap && snap.mode === 'offline' ? 'warn' : ''],
-    ['ОПЫЛЕН. ЦИКЛ', 'pollination', flow > 0.5 ? '09:14 → P23 · 3 BEES' : 'IDLE', flow > 0.5 ? 'bloom' : ''],
+    ['ОПЫЛЕН. ЦИКЛ', 'pollin.', flow > 0.5 ? '09:14 → P23' : 'IDLE', flow > 0.5 ? 'bloom' : ''],
     ['СБОР · ETA', 'harvest ETA', heat > 0.5 ? 'P36 · 1d 04h' : 'P36 · 2d 04h', heat > 0.5 ? 'warn' : ''],
   ]
   // keep the row shape [cyr, lat, val, state]

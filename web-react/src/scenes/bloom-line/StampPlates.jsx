@@ -8,13 +8,15 @@
 import { useScene } from '../../scene/SceneRoot'
 
 function plateBase() {
-  return 'border border-ink-3/25 bg-bgg/95 shadow-[0_4px_14px_rgb(0_0_0_/_0.4),inset_0_1px_0_rgb(var(--acc)_/_0.08)]'
+  // z above the stage row (z-10) so a plate stays hit-testable, below the
+  // vignette (z-60) so the edge shading still falls over it.
+  return 'z-[20] border border-ink-3/25 bg-bgg/95 shadow-[0_4px_14px_rgb(0_0_0_/_0.4),inset_0_1px_0_rgb(var(--acc)_/_0.08)]'
 }
 
 export function StampTitle() {
   return (
     <div
-      className={`${plateBase()} z-[7] px-3 py-2 min-[769px]:absolute min-[769px]:left-[172px] min-[769px]:top-[56px] min-[769px]:max-w-[360px]`}
+      className={`${plateBase()} px-3 py-2 min-[769px]:absolute min-[769px]:left-[172px] min-[769px]:top-[56px] min-[769px]:max-w-[360px]`}
       aria-label="Facility title block"
     >
       <span className="block text-[8.5px] tracking-[0.3em] text-acc">BLOOM-LINE · L2 · 14m × 6m</span>
@@ -72,14 +74,14 @@ export function StampData() {
   ]
   return (
     <div
-      className={`${plateBase()} px-3 py-2 min-[769px]:absolute min-[769px]:bottom-[198px] min-[769px]:left-[172px] min-[769px]:max-w-[360px]`}
+      className={`${plateBase()} px-3 py-2 min-[769px]:absolute min-[769px]:bottom-[250px] min-[769px]:left-[172px] min-[769px]:w-[360px]`}
       aria-label="Data plate"
     >
       <div className="grid grid-cols-[auto_minmax(0,1fr)_auto_minmax(0,1fr)] gap-x-3 gap-y-0.5 text-[8.5px] min-[769px]:text-[8.5px]">
         {cells.map(([k, v]) => (
           <span key={k} className="contents">
-            <span className="text-[7.5px] uppercase tracking-[0.14em] text-ink-3">{k}</span>
-            <span className="tabular-nums tracking-[0.04em] text-ink-2">{v}</span>
+            <span className="text-[7.5px] uppercase tracking-[0.14em] whitespace-nowrap text-ink-3">{k}</span>
+            <span className="truncate tabular-nums tracking-[0.04em] text-ink-2" title={v}>{v}</span>
           </span>
         ))}
       </div>
