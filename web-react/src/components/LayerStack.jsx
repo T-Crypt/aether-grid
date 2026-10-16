@@ -1,13 +1,14 @@
-// The four field layers, out of the boxed "Field Layers" row and onto the
-// scene itself:
+// The three full-bleed field layers, out of the boxed "Field Layers" row and
+// onto the scene itself:
 //
 //   DECLINATION  full-screen backdrop behind everything (z 1)
 //   LOOM-9       router cables crossing panel boundaries (z 2)
 //   SCOPE-OMEGA  anomaly scatter over the whole frame (z 3)
-//   SAFEHOUSE    pinned corner overlay, its own hairline scope (z 30)
 //
-// The switch cluster (bottom-left, small, always reachable) still controls
-// all four; turning one off hides its canvas and stops its paint.
+// The switch cluster (bottom-left, on the chrome band, always reachable)
+// still controls them. The fourth layer, SAFEHOUSE, reports through the
+// reasoning dial beside those switches (the same radar, sized to the band),
+// so it reads without a panel floating over the log and the data band.
 
 import { Layers } from 'lucide-react'
 import SceneCanvas from '../scene/Canvas'
@@ -20,6 +21,8 @@ function Switch({ id, label, on, onToggle }) {
       type="button"
       role="switch"
       aria-checked={on}
+      aria-label={label}
+      title={label}
       onClick={() => onToggle(id)}
       className={`inline-flex min-h-[26px] items-center gap-2 border px-2 py-1 text-2xs transition-colors focus-visible:outline focus-visible:outline-1 focus-visible:outline-offset-2 focus-visible:outline-acc ${
         on ? 'border-acc/60 bg-acc/[0.12] text-ink-1' : 'border-ink-3/30 bg-transparent text-ink-3 hover:text-ink-2'
@@ -32,8 +35,32 @@ function Switch({ id, label, on, onToggle }) {
           }`}
         />
       </span>
-      {label}
+      <span className="hidden sm:inline">{label}</span>
     </button>
+  )
+}
+
+// The reasoning dial: the SAFEHOUSE layer's read, in the chrome band. It is
+// the radar that layer used to draw in a panel pinned over the log
+// (paintScope: sweep angle, per-slot blips, pressure ring), sized to the band
+// with the load figure beside it. The switch next to it gates the painter, so
+// an off layer paints nothing and the dial dims.
+function ReasoningDial({ on, tps }) {
+  const load = Math.round((tps || 0) / 2.8)
+  return (
+    <span className={`ml-1 flex items-center gap-2 border-l pl-2 transition-opacity duration-300 ${on ? 'border-acc/25 opacity-100' : 'border-acc/10 opacity-40'}`}>
+      <span className="relative block h-[32px] w-[32px]">
+        <SceneCanvas draw={(ctx, w, h, c) => paintScope(ctx, w, h, c)} label="Safehouse reasoning dial" className="h-full w-full" />
+      </span>
+      <span className="micro hidden tabular-nums text-ink-3 xl:inline-flex xl:flex-col">
+        <span>
+          load <span className="text-acc">{on ? `${load}%` : 'held'}</span>
+        </span>
+        <span className="mt-0.5">
+          sweep <span className="text-col">1.0x</span>
+        </span>
+      </span>
+    </span>
   )
 }
 
@@ -59,51 +86,24 @@ export default function LayerStack() {
         </div>
       </div>
 
-      {/* SAFEHOUSE: pinned corner scope, always on unless toggled off.
-          bottom-[64px] clears the app-level scene dock (bottom-3, 44px). */}
-      <div
-        aria-hidden={layers.safehouse ? undefined : 'true'}
-        className={`fixed bottom-[64px] right-3 z-30 w-[118px] transition-opacity duration-300 sm:w-[clamp(150px,13vw,210px)] lg:right-5 ${
-          layers.safehouse ? 'opacity-100' : 'opacity-0'
-        }`}
-      >
-        <div className="scope relative pb-2">
-          <span aria-hidden="true" className="pointer-events-none absolute inset-0 z-10">
-            <i className="scope-tick left-0 top-0 border-l border-t" />
-            <i className="scope-tick right-0 top-0 border-r border-t" />
-            <i className="scope-tick bottom-0 left-0 border-b border-l" />
-            <i className="scope-tick bottom-0 right-0 border-b border-r" />
-          </span>
-          <div className="flex items-center justify-between px-3 pt-2">
-            <span className="micro">reasoning scope</span>
-            <h2 className="label-eyebrow text-col">SAFEHOUSE</h2>
-          </div>
-          <div className="relative mx-3 mt-1" style={{ aspectRatio: '1' }}>
-            <SceneCanvas draw={(ctx, w, h, c) => paintScope(ctx, w, h, c)} label="Safehouse reasoning scope" />
-          </div>
-          <div className="mt-1.5 px-3 text-2xs text-ink-3">
-            <span className="tabular-nums">
-              LOAD <span className="text-acc">{Math.round((snap.kpi?.tps || 0) / 2.8)}%</span>
-            </span>
-            <span className="ml-2 tabular-nums">
-              SWEEP <span className="text-col">1.0x</span>
-            </span>
-          </div>
-        </div>
-      </div>
-
-      {/* Switch cluster: the four layer toggles, small and pinned. */}
-      <div className="fixed bottom-10 left-3 z-30 max-w-[46vw] lg:left-5">
+      {/* Switch cluster and the reasoning dial: the four layer toggles plus
+          the state the SAFEHOUSE layer shows. They live on the chrome band
+          with the scene dock, so the scope reads without a panel floating
+          over the log and the data band. */}
+      <div className="fixed bottom-3 left-3 z-30 max-w-[calc(100vw-24px)] lg:left-5">
         <div className="scope flex flex-wrap items-center gap-1.5 px-2.5 py-1.5">
           <span className="micro mr-1 inline-flex items-center gap-1.5 text-ink-3">
             <Layers size={11} aria-hidden="true" />
-            field layers
+            <span className="hidden sm:inline">field layers</span>
           </span>
           <Switch id="declination" label="declination" on={layers.declination} onToggle={setLayer} />
           <Switch id="scopeOmega" label="scope-omega" on={layers.scopeOmega} onToggle={setLayer} />
           <Switch id="loom9" label="loom-9" on={layers.loom9} onToggle={setLayer} />
           <Switch id="safehouse" label="safehouse" on={layers.safehouse} onToggle={setLayer} />
-          <span className="micro tabular-nums text-ink-3">{Object.values(layers).filter(Boolean).length}/4 on</span>
+          <span className="micro hidden tabular-nums text-ink-3 sm:inline">
+            {Object.values(layers).filter(Boolean).length}/4 on
+          </span>
+          <ReasoningDial on={layers.safehouse} tps={snap && snap.kpi ? snap.kpi.tps : null} />
         </div>
       </div>
     </>
