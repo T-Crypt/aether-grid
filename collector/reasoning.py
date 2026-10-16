@@ -23,7 +23,7 @@ REQS_MAX = 500
 
 THINK_RE = re.compile(r"thinking\s+([\d,]+)\s*/", re.IGNORECASE)
 REASON_RE = re.compile(r"reason(?:ing)?[\s_]*tokens?\s*[:=]?\s*([\d,]+)", re.IGNORECASE)
-MTP_RE = re.compile(r"mtp accepted\s+(\d+)\s*/\s*(\d+)", re.IGNORECASE)
+MTP_RE = re.compile(r"mtp accepted\s+([\d,]+)\s*/\s*([\d,]+)", re.IGNORECASE)
 TTFT_RE = re.compile(r"TTFT\s+([\d.]+\s*(?:ms|s|m|h)?)", re.IGNORECASE)
 TOTAL_RE = re.compile(r"(?<!\S)total\s+([\d.]+\s*(?:ms|s|m|h)?)", re.IGNORECASE)
 
