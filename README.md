@@ -41,9 +41,9 @@ Every frame comes from the built console. The six below are 1600x900 from the de
 | --- | --- |
 | Deepsignal, the night-watch CRT and its waterfall. Native scheme Hex-Lab. | Hex-Lab on the live feed, reading this machine's GPU, host and llama-swap sources. |
 
-<img src="docs/shots/gallery/mobile.png" width="300" alt="The console at 390 px">
+<img src="docs/shots/gallery/mobile-pane.png" alt="The console at 390 px, centered in a pane">
 
-That last one is the phone layout at 390 px, where the rails hide and the panes stack.
+The phone layout at 390 px, where the rails hide and the panes stack.
 
 Each scene keeps its own nouns for the same telemetry. Safehouse reads `SIG model · DECODE tps TOK/S · ENG engine · ON AIR`, Bloom-Line reads `FLOWERED · model · tps TOK/S · MTP mtp% · THINK think`, Cyber-Pass stamps probes with `LAST · SEQ · LAMP · model · tps TOK/S · P95 p95`, and Deepsignal runs a `RUNTIME model · tps TOK/S · ENG engine · tempC` span. Hex-Lab is the base console, with the hero helix, the terrain mesh, the GPU block, the KV cohort, the log and the data band.
 
