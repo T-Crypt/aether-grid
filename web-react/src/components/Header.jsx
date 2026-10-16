@@ -15,7 +15,7 @@ function Sigil({ color }) {
 }
 
 const BTN =
-  'inline-flex items-center gap-1.5 rounded-none border border-acc/25 bg-acc/[0.08] px-2 py-1 text-2xs text-ink-2 ' +
+  'inline-flex min-h-[24px] items-center gap-1.5 rounded-none border border-acc/25 bg-acc/[0.08] px-2 py-1 text-2xs text-ink-2 ' +
   'transition-colors hover:border-acc/50 hover:text-ink-1 focus-visible:outline focus-visible:outline-1 ' +
   'focus-visible:outline-offset-2 focus-visible:outline-acc'
 

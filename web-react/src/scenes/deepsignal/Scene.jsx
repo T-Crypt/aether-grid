@@ -94,7 +94,7 @@ function Viewport({ snap, conductor }) {
 export default function DeepsignalScene() {
   const { snap, conductor } = useScene()
   return (
-    <div className="ds-stage relative flex min-h-dvh flex-col overflow-x-hidden font-mono text-ink-1 min-[769px]:h-dvh min-[769px]:min-h-0 min-[769px]:overflow-hidden">
+    <div className="ds-stage relative flex min-h-dvh flex-col overflow-x-hidden pb-[var(--chrome-h)] font-mono text-ink-1 min-[769px]:h-dvh min-[769px]:min-h-0 min-[769px]:overflow-hidden">
       <EdgeTop snap={snap} />
       <div className="mx-auto flex min-h-0 w-full max-w-[1920px] min-[769px]:flex-1 min-[769px]:flex-row">
         <LeftRail snap={snap} conductor={conductor} />

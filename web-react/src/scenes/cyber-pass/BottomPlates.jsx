@@ -102,7 +102,7 @@ export function PostLogPlate() {
   return (
     <section aria-label="Post log" className="cy-plate flex min-h-0 min-w-0 flex-col overflow-hidden">
       <PlateHead letter="D" t="POST LOG" sub={offline ? 'NO SOURCE' : `SHIFT ${shift} · T-2 · REPLAY ×15`} />
-      <div className="flex min-h-0 flex-1 flex-col justify-end gap-[1.5px] overflow-hidden px-2 pb-1.5">
+      <div className="flex min-h-0 flex-1 flex-col justify-end gap-[1.5px] overflow-hidden px-2 pb-1.5 [mask-image:linear-gradient(to_bottom,transparent_0,#000_14px)]">
         {entries.length === 0 && (
           <div className="flex h-full items-center justify-center text-[9px] tracking-[0.12em] text-ink-3">NO SOURCE · LOG HELD</div>
         )}

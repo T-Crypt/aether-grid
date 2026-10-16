@@ -118,13 +118,13 @@ export function LeftRail({ snap, conductor }) {
           </div>
         </Mod>
       ))}
-      <Mod title="RFI · INTERFERENCE LOG" right={rfi.suppressed ? 'SUPP' : '↑12/HR'}>
+      <Mod title="RFI · INTERFERENCE" right={rfi.suppressed ? 'SUPP' : '↑12/HR'}>
         <BigVal v={offline ? '—' : rfi.hits} unit="/ HR" tone={rfi.suppressed ? '' : 'amber'} />
       </Mod>
       <Mod title="BAND SWEEP · MINISPEC" right="140">
         <SceneCanvas draw={paintMiniSpec} label="Mini spectrum, band overview" className="h-[28px] w-full" />
       </Mod>
-      <Mod title="CLASSIFIER · SIGNAL VOTE" right="PLEX">
+      <Mod title="CLASSIFIER · SIGNAL" right="PLEX">
         <div className="flex min-w-0 flex-col gap-[3px]">
           {bars.map((b) => (
             <div key={b.name} className="flex min-w-0 items-center gap-1.5">
@@ -137,7 +137,7 @@ export function LeftRail({ snap, conductor }) {
           ))}
         </div>
       </Mod>
-      <Mod title="CANDIDATE LOG · LAST 12" right="LAST 12">
+      <Mod title="CANDIDATE LOG" right="LAST 12">
         <div className="flex min-w-0 flex-col">
           {hist.length === 0 && <span className="truncate text-[8.5px] text-ink-3">NO EVENTS · NOISE FLOOR</span>}
           {hist.map((e) => (

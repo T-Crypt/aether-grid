@@ -221,7 +221,7 @@ export default function BloomLineScene() {
   const stale = staleOf(snap)
 
   return (
-    <div className="bl-stage relative flex min-h-dvh flex-col overflow-x-hidden font-mono text-ink-1 min-[769px]:h-dvh min-[769px]:min-h-0 min-[769px]:overflow-hidden">
+    <div className="bl-stage relative flex min-h-dvh flex-col overflow-x-hidden pb-[var(--chrome-h)] font-mono text-ink-1 min-[769px]:h-dvh min-[769px]:min-h-0 min-[769px]:overflow-hidden">
       {/* stage atmosphere: engineering grid, wash, vignette, grain */}
       <div className="bl-wash pointer-events-none absolute inset-0" aria-hidden="true" />
       <div className="bl-grid pointer-events-none absolute inset-0" aria-hidden="true" />
@@ -231,9 +231,11 @@ export default function BloomLineScene() {
       <div className="relative z-10 flex min-h-0 flex-1 flex-col min-[769px]:flex-row">
         <LeftRail />
 
-        {/* the stage: between the rails on desktop, 55 vh hero on phones */}
+        {/* the stage: between the rails on desktop, 55 vh hero on phones.
+            It has to hold its own flex slot: taken out of flow, the right
+            rail slides into its place and paints underneath it. */}
         <section
-          className="relative h-[55vh] min-h-[320px] overflow-hidden min-[769px]:absolute min-[769px]:inset-y-0 min-[769px]:left-[156px] min-[769px]:right-[200px] min-[769px]:h-auto min-[769px]:min-h-0"
+          className="relative h-[55vh] min-h-[320px] overflow-hidden min-[769px]:h-auto min-[769px]:min-h-0 min-[769px]:min-w-0 min-[769px]:flex-1"
           aria-label="Bioreactor schematic stage"
         >
           <SceneCanvas draw={paintBioreactor} label="Bioreactor schematic, orbital greenhouse" className={`absolute inset-0 h-full w-full transition-opacity duration-500 ${stale ? 'opacity-60' : ''}`} />

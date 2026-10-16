@@ -202,6 +202,15 @@
     --flow: 0;
   }
 
+  /* Bottom chrome band. The scene dock is pinned to the viewport's bottom
+     right and the field-layer cluster (hex-lab) to its bottom left; both
+     float over a scrolling scene. Every scene root reserves this much
+     padding at the end (`pb-[var(--chrome-h)]`) so its last row of real
+     content stops above them. 44 px dock + 12 px margin. */
+  :root {
+    --chrome-h: 56px;
+  }
+
   /* A skin swap should crossfade, not snap. */
   body,
   .scope {

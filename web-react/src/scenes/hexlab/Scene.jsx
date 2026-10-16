@@ -20,7 +20,7 @@ export default function HexlabScene() {
   const { mode } = useScene()
 
   return (
-    <div className="relative min-h-screen">
+    <div className="relative min-h-screen pb-[var(--chrome-h)]">
       <Atmosphere />
       <LayerStack />
       <Header />
@@ -41,7 +41,7 @@ export default function HexlabScene() {
 
         <main
           aria-label="Scene"
-          className="mt-2 grid grid-cols-1 gap-2 lg:grid-cols-[minmax(240px,330px)_minmax(0,1fr)_minmax(270px,390px)] lg:h-[calc(100dvh-332px)] lg:min-h-[560px]"
+          className="mt-2 grid grid-cols-1 gap-2 lg:grid-cols-[minmax(240px,330px)_minmax(0,1fr)_minmax(270px,390px)] lg:h-[calc(100dvh-353px-var(--chrome-h))] lg:min-h-[480px]"
         >
           <div className="flex min-h-0 flex-col gap-2 lg:order-1">
             <TerrainScope className="flex-[5]" />

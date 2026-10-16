@@ -119,10 +119,10 @@ function RHeader() {
       <div className="mt-1 truncate text-[6.5px] uppercase tracking-[0.14em] text-ink-3">
         <span>DEPLOY </span>
         <span className="tabular-nums text-dat">03</span>
-        <span className="mx-1 text-acc/40">·</span>
+        <span className="mx-1 text-acc/70">·</span>
         <span>DAY </span>
         <span className="tabular-nums text-dat">07</span>
-        <span className="mx-1 text-acc/40">·</span>
+        <span className="mx-1 text-acc/70">·</span>
         <span>WK </span>
         <span className="tabular-nums text-dat">14</span>
         <span> OBS · </span>
@@ -261,7 +261,7 @@ export default function SafehouseScene() {
   const noEngines = engines.length === 0
 
   return (
-    <div className="sh-stage relative flex min-h-dvh flex-col overflow-x-hidden font-mono md:h-dvh md:min-h-0 md:overflow-hidden">
+    <div className="sh-stage relative flex min-h-dvh flex-col overflow-x-hidden pb-[var(--chrome-h)] font-mono md:h-dvh md:min-h-0 md:overflow-hidden">
       {/* stage layers: engineering grid, vignette, static film grain */}
       <div className="sh-grid pointer-events-none absolute inset-0" aria-hidden="true" />
       <div className="sh-vignette pointer-events-none absolute inset-0 z-[60]" aria-hidden="true" />
@@ -317,7 +317,7 @@ export default function SafehouseScene() {
               <WavePanels ghosted={offline} />
 
               <div className="grid min-h-[130px] flex-[120] grid-cols-1 gap-1 sm:grid-cols-[124px_minmax(0,1fr)] md:min-h-0">
-                <div className="flex min-w-0 flex-col">
+                <div className="scrollbar-thin-x flex min-w-0 flex-col overflow-x-hidden overflow-y-auto">
                   <Toggles />
                 </div>
                 <TimecodeCells />

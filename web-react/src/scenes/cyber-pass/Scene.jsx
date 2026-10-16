@@ -37,7 +37,7 @@ export default function CyberPassScene() {
       : 'none'
 
   return (
-    <div className="cy-stage relative flex min-h-dvh flex-col overflow-x-hidden font-mono text-ink-1 min-[769px]:h-dvh min-[769px]:min-h-0 min-[769px]:overflow-hidden">
+    <div className="cy-stage relative flex min-h-dvh flex-col overflow-x-hidden pb-[var(--chrome-h)] font-mono text-ink-1 min-[769px]:h-dvh min-[769px]:min-h-0 min-[769px]:overflow-hidden">
       {/* stage atmosphere: bulb wash + vignette + static rust grain */}
       <div
         className="cy-light hidden min-[769px]:block"

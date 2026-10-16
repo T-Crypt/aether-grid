@@ -43,7 +43,7 @@ export default function ClfLog() {
         <span>KEYWORD HIT</span>
         <span className="text-right">TIER</span>
       </div>
-      <div className="h-full overflow-hidden">
+      <div className="scrollbar-thin-x h-full overflow-x-hidden overflow-y-auto">
         {events.map((e, i) => {
           const level = e.level || 'info'
           const flag = level === 'err' || level === 'alert'
