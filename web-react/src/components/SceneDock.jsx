@@ -12,7 +12,7 @@ import { SCENES, sceneById, resolvePalette } from '../lib/scenes'
 import { useScene } from '../scene/SceneRoot'
 
 const BTN =
-  'inline-flex items-center gap-2 border border-acc/30 bg-space-950/85 px-3 py-2 text-2xs ' +
+  'inline-flex min-h-11 items-center gap-2 border border-acc/30 bg-space-950/85 px-3 py-2 text-2xs ' +
   'text-ink-2 backdrop-blur-md transition-colors hover:border-acc/60 hover:text-ink-1 ' +
   'focus-visible:outline focus-visible:outline-1 focus-visible:outline-offset-2 focus-visible:outline-acc'
 
@@ -45,7 +45,12 @@ export default function SceneDock() {
   }, [open])
 
   const chip = (active) =>
-    `inline-flex items-center gap-1.5 px-2 py-1 text-2xs whitespace-nowrap transition-colors ` +
+    `flex min-h-9 w-full items-center gap-1.5 px-2 py-1.5 text-left text-2xs whitespace-nowrap transition-colors ` +
+    `focus-visible:outline focus-visible:outline-1 focus-visible:outline-offset-2 focus-visible:outline-acc ` +
+    (active ? 'bg-acc/[0.14] text-ink-1' : 'text-ink-3 hover:bg-acc/[0.07] hover:text-ink-1')
+
+  const schemeChip = (active) =>
+    `inline-flex min-h-9 items-center gap-1.5 px-2 py-1.5 text-2xs whitespace-nowrap transition-colors ` +
     `focus-visible:outline focus-visible:outline-1 focus-visible:outline-offset-2 focus-visible:outline-acc ` +
     (active ? 'bg-acc/[0.14] text-ink-1' : 'text-ink-3 hover:bg-acc/[0.07] hover:text-ink-1')
 
@@ -67,16 +72,16 @@ export default function SceneDock() {
                   type="button"
                   aria-pressed={isActive}
                   onClick={() => {
-                    setScene(s.id)
-                    if (isActive) setOpen(false)
+                    if (!isActive) setScene(s.id)
                   }}
+                  title={s.purpose}
                   className={chip(isActive)}
                 >
                   <Swatch rgb={resolvePalette(s.id, s.defaultScheme).acc} />
-                  {s.label}
-                  {isActive ? null : (
-                    <span className="micro ml-auto text-ink-3">{s.schemes.length} schemes</span>
-                  )}
+                  <span className="flex min-w-0 flex-col">
+                    <span>{s.label}</span>
+                    <span className="micro truncate text-ink-3">{s.purpose}</span>
+                  </span>
                 </button>
               )
             })}
@@ -93,7 +98,7 @@ export default function SceneDock() {
                   aria-pressed={isActive}
                   onClick={() => setSkin(k.id)}
                   title={k.label}
-                  className={chip(isActive)}
+                  className={schemeChip(isActive)}
                 >
                   <Swatch rgb={resolvePalette(scene, k.id).acc} />
                   {k.label}
@@ -108,13 +113,18 @@ export default function SceneDock() {
         type="button"
         className={BTN}
         aria-expanded={open}
-        aria-label="Switch scene and scheme"
-        title="Switch scene and scheme"
+        aria-label={`Switch scene and scheme. ${meta.label}, ${meta.purpose}`}
+        title={`Switch scene and scheme. ${meta.label}, ${meta.purpose}`}
         onClick={() => setOpen((o) => !o)}
       >
         <Layers size={12} aria-hidden="true" className="text-acc" />
-        <span className="micro text-ink-3">scene</span>
-        <span className="text-ink-1">{meta.label}</span>
+        <span className="flex min-w-0 flex-col items-start">
+          <span className="flex items-baseline gap-1.5">
+            <span className="micro text-ink-3">scene</span>
+            <span className="text-ink-1">{meta.label}</span>
+          </span>
+          <span className="micro truncate text-ink-3">{meta.purpose}</span>
+        </span>
         <Swatch rgb={palette.acc} />
         <ChevronDown size={12} aria-hidden="true" className={`text-ink-3 transition-transform ${open ? '' : 'rotate-180'}`} />
       </button>
