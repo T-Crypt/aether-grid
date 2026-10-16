@@ -28,7 +28,7 @@ export default function ExchangePlate() {
   const pr = priceStats(snap, gpu)
   const k = (snap && snap.kpi) || {}
   const qHist = ((snap && snap.kpiHist && snap.kpiHist.queue) || []).slice(-48)
-  const tin = tinSpentOf(snap, pr.price)
+  const tin = tinSpentOf(snap)
   const spent = 2000 - tin
   const box = qHist.length ? Math.round(qHist[qHist.length - 1] * 52) : 0
   const litres =

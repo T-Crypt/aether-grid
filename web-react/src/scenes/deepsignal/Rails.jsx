@@ -6,7 +6,6 @@
 import SceneCanvas from '../../scene/Canvas'
 import { paintMiniSpec, paintLatencySpark, paintDishes } from './painters'
 import {
-  pad,
   candScore,
   gaugeVals,
   bandStrips,
@@ -240,5 +239,3 @@ export function RightRail({ snap }) {
     </aside>
   )
 }
-
-export { pad }

@@ -4,7 +4,6 @@
 // with the token rate via CSS --flow.
 
 import { useState } from 'react'
-import { ScrollText } from 'lucide-react'
 import Scope from '../scene/Scope'
 import { fmtKpi, relAge } from '../lib/format'
 import { useScene } from '../scene/SceneRoot'

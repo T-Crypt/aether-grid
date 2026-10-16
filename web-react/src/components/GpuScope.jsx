@@ -2,7 +2,6 @@
 // power). SVG, updated at feed rate, eased by a CSS transition between
 // ticks so a load spike sweeps the needles on the same beat as the scene.
 
-import { Gauge as GaugeIcon } from 'lucide-react'
 import Scope from '../scene/Scope'
 import { clamp01, tempState } from '../lib/format'
 import { useScene } from '../scene/SceneRoot'

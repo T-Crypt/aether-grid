@@ -1269,7 +1269,7 @@ export function paintTin(ctx, w, h, c) {
   const p = c.palette
   const snap = c.snap
   const pr = priceStats(snap)
-  const tin = tinSpentOf(snap, pr.price)
+  const tin = tinSpentOf(snap)
   const cols = 25
   const rows = 8
   const cell = Math.min((w - 1) / cols, (h - 1) / rows)

@@ -38,13 +38,10 @@
 // (conductor.palette, "R G B" strings) and never hard-code a colour except
 // the absolute alarm red (ALM).
 
-export const EVENT_TYPES = [
-  'request_arrived',
-  'token_generated',
-  'kv_slot_changed',
-  'vram_pressure',
-  'anomaly',
-]
+// The five canonical events translateSnap emits: request_arrived,
+// token_generated, kv_slot_changed, vram_pressure, anomaly. Subscribers
+// name them as string literals at the `conductor.on(type, fn)` call site;
+// there is no enum to keep in sync.
 
 // Absolute alarm red. Severity must never follow the skin accent, the same
 // rule Status.jsx applies to pills and gauges.
