@@ -66,12 +66,15 @@ export default function AssayPlate() {
   const hm = clockHms(tick)
   const scansCount = 3928 + ((snap && snap.requests) || []).length
   const act = activeModelOf(snap)
+  // The device face prints the booth's own line: lamp, sequence, model,
+  // decode rate, engine and queue. Temp stays on the capacity scene and
+  // p95 stays on the latency scene.
   const screenLineShort = offline
     ? 'NO SOURCE'
-    : `${act.model || 'NO MODEL'} · ${act.tps != null ? `${Math.round(act.tps)} TOK/S` : '— TOK/S'} · ${act.temp != null ? `${Math.round(act.temp)}°C` : '—'} · ENG ${act.engine || '—'}`
+    : `${act.model || 'NO MODEL'} · ${act.tps != null ? `${Math.round(act.tps)} TOK/S` : '— TOK/S'} · ENG ${act.engine || '—'}`
   const screenLine = offline
     ? 'NO SOURCE'
-    : `LAST ${hm} · SEQ ${dk} · LAMP ${word} · ${act.model || 'NO MODEL'} · ${act.tps != null ? `${Math.round(act.tps)} TOK/S` : '— TOK/S'} · ${act.temp != null ? `${Math.round(act.temp)}°C` : '—'} · ENG ${act.engine || '—'} · Q ${act.queue != null ? Math.round(act.queue) : '—'} · P95 ${act.p95 != null ? Math.round(act.p95) : '—'}`
+    : `LAST ${hm} · SEQ ${dk} · LAMP ${word} · ${act.model || 'NO MODEL'} · ${act.tps != null ? `${Math.round(act.tps)} TOK/S` : '— TOK/S'} · ENG ${act.engine || '—'} · Q ${act.queue != null ? Math.round(act.queue) : '—'}`
 
   return (
     <section aria-label="The Assay" className="cy-plate flex min-h-0 min-w-0 flex-col overflow-hidden">

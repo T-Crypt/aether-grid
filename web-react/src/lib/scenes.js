@@ -16,8 +16,12 @@
 //   hexlab       throughput and latency        kpi.tps, kpi.hist.tps, kpi.p95, kpi.ttft
 //   safehouse    engines and sessions          engines, sessions
 //   bloom-line   capacity and pressure         sessions.kv, gpu, kpi.vram, host
-//   cyber-pass   requests and the economy      requests, kpi.queue, kpi.tps
+//   cyber-pass   requests and the economy      requests, kpi.queue, kpi.vram as price
 //   deepsignal   detection and reasoning       alerts, events, reasoning
+//
+// Two scenes may read one key for different ends. The booth reads vram as
+// price. The greenhouse reads it as capacity. Neither prints the other's
+// figure.
 //
 // The DOM tokens (pan, bgg, text tiers) resolve in src/index.css through
 // [data-scene][data-skin] blocks on <html>; this table mirrors only the
@@ -75,7 +79,7 @@ export const SCENES = [
     id: 'cyber-pass',
     label: 'Cyber-Pass',
     purpose: 'Requests and the economy',
-    channels: ['requests', 'kpi.queue', 'kpi.tps'],
+    channels: ['requests', 'kpi.queue', 'kpi.vram'],
     defaultScheme: 'sounding',
     schemes: SKIN_IDS,
     palettes: {

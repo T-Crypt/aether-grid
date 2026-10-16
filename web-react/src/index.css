@@ -743,6 +743,15 @@
     vertical-align: 0.08em;
     margin-left: 0.3em;
   }
+  /* the small coin: one tally mark per token served, nothing labelled */
+  .cy-coin {
+    display: inline-block;
+    width: 8px;
+    height: 8px;
+    border-radius: 9999px;
+    background: rgb(var(--dat));
+    box-shadow: 0 0 6px rgb(var(--dat) / 0.8);
+  }
   /* co-cards on the device plate */
   .cy-co {
     display: flex;
