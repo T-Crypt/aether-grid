@@ -1,4 +1,4 @@
-import { KPI_KEYS, KPI_FMT } from '../lib/format'
+import { KPI_KEYS, fmtKpi } from '../lib/format'
 import { useScene } from '../scene/SceneRoot'
 
 const TONE = ['text-acc', 'text-acc', 'text-dat', 'text-col']
@@ -14,7 +14,7 @@ export default function DataBand() {
   ]
 
   const cells = [
-    ...KPI_KEYS.map((key, i) => ({ k: key.toUpperCase(), v: KPI_FMT[key](k[key] ?? 0), tone: TONE[i % 4] })),
+    ...KPI_KEYS.map((key, i) => ({ k: key.toUpperCase(), v: fmtKpi(key, k[key]) ?? '—', tone: TONE[i % 4] })),
     ...aux.map((a, i) => ({ ...a, tone: TONE[i % 4] })),
   ]
 

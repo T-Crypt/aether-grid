@@ -1070,7 +1070,11 @@ def kpi_pass():
         cache_pct = round(100.0 * cache / (cache + fresh), 1) if (cache + fresh) else None
         reingest = round(100.0 * fresh / (cache + fresh), 1) if (cache + fresh) else None
         mtp = round(100.0 * mtp_acc / mtp_tot, 1) if mtp_tot else None
-        queue = sum((e.get("queue") or 0) for e in engines.values())
+        # queue: only the engines that actually report a queue contribute; an
+        # engine with no queue source (no /metrics, or idle) leaves the total
+        # absent rather than adding a fabricated 0
+        queues = [e["queue"] for e in engines.values() if e.get("queue") is not None]
+        queue = sum(queues) if queues else None
         # TPOT: per-token generation time from recent requests
         tpot = None
         if reqs:
@@ -1192,8 +1196,11 @@ def tick():
         gpu_last = S.gpu.get("last")
         host_last = S.host["last"] or {}
         kpi = dict(S.kpi["last"])
-        # 1 Hz hot values for the tick
-        kpi_hot = {k: (S.kpi["hist"][k][-1] if S.kpi["hist"][k] else None) for k in KPI_KEYS}
+        # 1 Hz hot values for the tick, read from the live reading rather than
+        # the history tail: the history series fills a missing value with 0 so
+        # the sparklines stay drawable, and that 0 would reach the screen as a
+        # measurement of a queue nobody reported.
+        kpi_hot = {k: kpi.get(k) for k in KPI_KEYS}
         # model attribution rides the tick too, so the label tracks the feed
         kpi_hot["tps_models"] = kpi.get("tps_models")
         data = {

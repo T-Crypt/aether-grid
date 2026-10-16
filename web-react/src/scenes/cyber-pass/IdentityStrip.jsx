@@ -102,7 +102,7 @@ export default function IdentityStrip() {
           PROBE SEQ <b className="font-bold text-[rgb(var(--col))] [text-shadow:0_0_8px_rgb(var(--col)_/_0.55)]">{dk || '—'}</b> · IN POST
         </span>
         <span className="min-w-[31ch] text-[8px] tracking-[0.08em] text-ink-3 tabular-nums">
-          {offline ? 'NO SOURCE · SEQ HELD' : `VIOLET · SESSION GREY · Q ${Math.round(k.queue || 0)}`}
+          {offline ? 'NO SOURCE · SEQ HELD' : `VIOLET · SESSION GREY · Q ${k.queue != null ? Math.round(k.queue) : '—'}`}
         </span>
       </Cell>
 
