@@ -29,21 +29,21 @@ The collector serves `/api/snapshot` and `/api/stream` on that port. The long-ra
 
 The console ships five scenes, and each one is a complete visual program over the same telemetry. The registry is `web-react/src/lib/scenes.js`, and the root components map in `web-react/src/App.jsx`. The scene dock, pinned bottom right, switches scene and scheme. The choice persists in `localStorage`, and `?scene=` deep-links a scene.
 
-Every frame below comes from the built console. The five scenes and the phone layout run the demo feed. The last frame is the same console on the live collector feed.
+Every frame comes from the built console. The six below are 1600x900 from the demo feed, except the last one, which is the same console on the live feed.
 
-| ![Hex-Lab](docs/shots/gallery/scene-hexlab.png) | ![Safehouse](docs/shots/gallery/scene-safehouse.png) |
+| <img src="docs/shots/gallery/scene-hexlab.png" width="440" alt="Hex-Lab"> | <img src="docs/shots/gallery/scene-safehouse.png" width="440" alt="Safehouse"> |
 | --- | --- |
 | Hex-Lab, the base layout. Native scheme Hex-Lab. | Safehouse, the two-pane SIGINT workstation. Native scheme Corvane. |
-| ![Bloom-Line](docs/shots/gallery/scene-bloom-line.png) | ![Cyber-Pass](docs/shots/gallery/scene-cyber-pass.png) |
+| <img src="docs/shots/gallery/scene-bloom-line.png" width="440" alt="Bloom-Line"> | <img src="docs/shots/gallery/scene-cyber-pass.png" width="440" alt="Cyber-Pass"> |
 | --- | --- |
 | Bloom-Line, the orbital greenhouse stage. Native scheme Gullet. | Cyber-Pass, the plate wall under its bulb rail. Native scheme Sounding. |
-| ![Deepsignal](docs/shots/gallery/scene-deepsignal.png) | ![Phone layout](docs/shots/gallery/mobile.png) |
+| <img src="docs/shots/gallery/scene-deepsignal.png" width="440" alt="Deepsignal"> | <img src="docs/shots/gallery/live-hexlab.png" width="440" alt="Hex-Lab on the live feed"> |
 | --- | --- |
-| Deepsignal, the night-watch CRT and its waterfall. Native scheme Hex-Lab. | The phone layout at 390 px, rails hidden. Native scheme Hex-Lab. |
+| Deepsignal, the night-watch CRT and its waterfall. Native scheme Hex-Lab. | Hex-Lab on the live feed, reading this machine's GPU, host and llama-swap sources. |
 
-![Live feed](docs/shots/gallery/live-hexlab.png)
+<img src="docs/shots/gallery/mobile.png" width="300" alt="The console at 390 px">
 
-Hex-Lab on the live feed, reading this machine's GPU, host and llama-swap sources.
+That last one is the phone layout at 390 px, where the rails hide and the panes stack.
 
 Each scene keeps its own nouns for the same telemetry. Safehouse reads `SIG model · DECODE tps TOK/S · ENG engine · ON AIR`, Bloom-Line reads `FLOWERED · model · tps TOK/S · MTP mtp% · THINK think`, Cyber-Pass stamps probes with `LAST · SEQ · LAMP · model · tps TOK/S · P95 p95`, and Deepsignal runs a `RUNTIME model · tps TOK/S · ENG engine · tempC` span. Hex-Lab is the base console, with the hero helix, the terrain mesh, the GPU block, the KV cohort, the log and the data band.
 
