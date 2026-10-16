@@ -1,5 +1,5 @@
 # Aether Grid
-![Aether Grid](banner.png)
+![Aether Grid](docs/banner.png)
 
 Aether Grid watches local inference engines and shows what they are doing, live and from stored history. It reads the GPU, the host, llama-swap, NInfer and Strata, and treats every source as optional, so a missing one leaves its panels empty instead of breaking the page. One process on one port is the whole app, because the collector serves the API and the console build that Vite produces.
 

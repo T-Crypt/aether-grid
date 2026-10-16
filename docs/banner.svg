@@ -16,6 +16,9 @@
        page #04060d (Tailwind space-950), text tiers #d8f0f0 / #b3d2d2 / #93bdc0
          <- web-react/src/lib/skins.js hex-lab token block and src/index.css
        hex lattice and footer rule #00e0e0 <- skins.js skin 'hexlab' acc
+       panel labels / subtitles <- scenes.js scene `label` and `purpose`
+       panel foot line `scheme · <label>` <- skins.js skin `label`
+       panel 4 coin = dat circle r 8 + r 12 glow at 0.8 <- src/index.css .cy-coin
        per-panel helix strand 2 = mix(acc, col, 0.4) <- web-react/src/scene/paint.js
          reasonColor at rest, through export function mix()
      -->
@@ -27,6 +30,7 @@
 <linearGradient id="wash3" gradientUnits="userSpaceOnUse" x1="0" y1="170" x2="0" y2="500"><stop offset="0" stop-color="#ffad3b" stop-opacity="0.05"/><stop offset="1" stop-color="#ffad3b" stop-opacity="0"/></linearGradient>
 <linearGradient id="wash4" gradientUnits="userSpaceOnUse" x1="0" y1="170" x2="0" y2="500"><stop offset="0" stop-color="#7db8c4" stop-opacity="0.05"/><stop offset="1" stop-color="#7db8c4" stop-opacity="0"/></linearGradient>
 <radialGradient id="bulb3"><stop offset="0" stop-color="#ffad3b" stop-opacity="0.25"/><stop offset="1" stop-color="#ffad3b" stop-opacity="0"/></radialGradient>
+<radialGradient id="coinglow3"><stop offset="0" stop-color="#ffd99f" stop-opacity="0.8"/><stop offset="0.6667" stop-color="#ffd99f" stop-opacity="0.8"/><stop offset="1" stop-color="#ffd99f" stop-opacity="0"/></radialGradient>
 </defs>
 <g>
 <rect x="0" y="0" width="1600" height="560" fill="#04060d"/>
@@ -869,8 +873,8 @@
 <line x1="315" y1="500" x2="301" y2="500" stroke="#00e0e0" stroke-opacity="0.90" stroke-width="1.5"/>
 <line x1="315" y1="500" x2="315" y2="486" stroke="#00e0e0" stroke-opacity="0.90" stroke-width="1.5"/>
 <text x="38" y="202" font-size="24" fill="#d8f0f0">Hex-Lab</text>
-<text x="38" y="218" font-size="14" fill="#93bdc0">scheme · Hex-Lab</text>
-<text x="38" y="486" font-size="14" letter-spacing="0.06em" fill="#93bdc0">TOK/S · VRAM · QUEUE</text>
+<text x="38" y="218" font-size="15" fill="#b3d2d2">Throughput and latency</text>
+<text x="38" y="486" font-size="14" letter-spacing="0.06em" fill="#93bdc0">scheme · Hex-Lab</text>
 <g transform="translate(24 170)">
 <polygon points="91.8,123.5 80.5,130.0 69.2,123.5 69.2,110.5 80.5,104.0 91.8,110.5" fill="none" stroke="#00e0e0" stroke-opacity="0.10" stroke-width="1"/>
 <polygon points="117.8,123.5 106.5,130.0 95.2,123.5 95.2,110.5 106.5,104.0 117.8,110.5" fill="none" stroke="#00e0e0" stroke-opacity="0.10" stroke-width="1"/>
@@ -946,8 +950,8 @@
 <line x1="630" y1="500" x2="616" y2="500" stroke="#50c0e0" stroke-opacity="0.90" stroke-width="1.5"/>
 <line x1="630" y1="500" x2="630" y2="486" stroke="#50c0e0" stroke-opacity="0.90" stroke-width="1.5"/>
 <text x="353" y="202" font-size="24" fill="#d8f0f0">Safehouse</text>
-<text x="353" y="218" font-size="14" fill="#93bdc0">scheme · Corvane</text>
-<text x="353" y="486" font-size="14" letter-spacing="0.06em" fill="#93bdc0">SIG · DECODE · ENG</text>
+<text x="353" y="218" font-size="15" fill="#b3d2d2">Engines and sessions</text>
+<text x="353" y="486" font-size="14" letter-spacing="0.06em" fill="#93bdc0">scheme · Corvane</text>
 <g transform="translate(339 170)">
 <rect x="12" y="58" width="86" height="238" fill="none" stroke="#50c0e0" stroke-opacity="0.30" stroke-width="1"/>
 <rect x="104" y="58" width="175" height="238" fill="none" stroke="#50c0e0" stroke-opacity="0.30" stroke-width="1"/>
@@ -1017,8 +1021,8 @@
 <line x1="945" y1="500" x2="931" y2="500" stroke="#6be8a4" stroke-opacity="0.90" stroke-width="1.5"/>
 <line x1="945" y1="500" x2="945" y2="486" stroke="#6be8a4" stroke-opacity="0.90" stroke-width="1.5"/>
 <text x="668" y="202" font-size="24" fill="#d8f0f0">Bloom-Line</text>
-<text x="668" y="218" font-size="14" fill="#93bdc0">scheme · Gullet</text>
-<text x="668" y="486" font-size="14" letter-spacing="0.06em" fill="#93bdc0">FLOWERED · MTP · THINK</text>
+<text x="668" y="218" font-size="15" fill="#b3d2d2">Capacity and pressure</text>
+<text x="668" y="486" font-size="14" letter-spacing="0.06em" fill="#93bdc0">scheme · Gullet</text>
 <g transform="translate(654 170)">
 <circle cx="104.0" cy="168.0" r="74.0" fill="none" stroke="#6be8a4" stroke-opacity="0.8" stroke-width="1.5"/>
 <circle cx="104.0" cy="168.0" r="26" fill="none" stroke="#7dd8c4" stroke-opacity="0.9" stroke-width="1"/>
@@ -1078,8 +1082,8 @@
 <line x1="1260" y1="500" x2="1246" y2="500" stroke="#ffad3b" stroke-opacity="0.90" stroke-width="1.5"/>
 <line x1="1260" y1="500" x2="1260" y2="486" stroke="#ffad3b" stroke-opacity="0.90" stroke-width="1.5"/>
 <text x="983" y="202" font-size="24" fill="#d8f0f0">Cyber-Pass</text>
-<text x="983" y="218" font-size="14" fill="#93bdc0">scheme · Sounding</text>
-<text x="983" y="486" font-size="14" letter-spacing="0.06em" fill="#93bdc0">SEQ · LAMP · P95</text>
+<text x="983" y="218" font-size="15" fill="#b3d2d2">Requests and the economy</text>
+<text x="983" y="486" font-size="14" letter-spacing="0.06em" fill="#93bdc0">scheme · Sounding</text>
 <g transform="translate(969 170)">
 <rect x="12" y="58" width="267" height="180" fill="#ffd99f" fill-opacity="0.03" stroke="#ffd99f" stroke-opacity="0.22" stroke-width="1"/>
 <circle cx="20" cy="64" r="2" fill="#ffd99f" fill-opacity="0.45"/>
@@ -1113,6 +1117,8 @@
 <line x1="32" y1="164" x2="76" y2="164" stroke="#93bdc0" stroke-opacity="0.45" stroke-width="1"/>
 <rect x="32" y="190" width="70" height="6" fill="#ffad3b" fill-opacity="0.8"/>
 <rect x="152" y="112" width="116" height="100" fill="none" stroke="#ffad3b" stroke-opacity="0.4" stroke-width="1"/>
+<circle cx="252.0" cy="124.75" r="12.0" fill="url(#coinglow3)"/>
+<circle cx="252.0" cy="124.75" r="8.0" fill="#ffd99f"/>
 <rect x="162" y="137" width="28" height="22" fill="#ffad3b" fill-opacity="0.10" stroke="#ffad3b" stroke-opacity="0.35" stroke-width="1"/>
 <rect x="196" y="137" width="28" height="22" fill="#ffad3b" fill-opacity="0.10" stroke="#ffad3b" stroke-opacity="0.35" stroke-width="1"/>
 <rect x="230" y="137" width="28" height="22" fill="#ffad3b" fill-opacity="0.10" stroke="#ffad3b" stroke-opacity="0.35" stroke-width="1"/>
@@ -1142,8 +1148,8 @@
 <line x1="1575" y1="500" x2="1561" y2="500" stroke="#7db8c4" stroke-opacity="0.90" stroke-width="1.5"/>
 <line x1="1575" y1="500" x2="1575" y2="486" stroke="#7db8c4" stroke-opacity="0.90" stroke-width="1.5"/>
 <text x="1298" y="202" font-size="24" fill="#d8f0f0">Deepsignal</text>
-<text x="1298" y="218" font-size="14" fill="#93bdc0">scheme · Hex-Lab</text>
-<text x="1298" y="486" font-size="14" letter-spacing="0.06em" fill="#93bdc0">RUNTIME · ARRAY · DWELL</text>
+<text x="1298" y="218" font-size="15" fill="#b3d2d2">Detection and reasoning</text>
+<text x="1298" y="486" font-size="14" letter-spacing="0.06em" fill="#93bdc0">scheme · Hex-Lab</text>
 <g transform="translate(1284 170)">
 <rect x="24" y="58" width="243" height="182" rx="10" fill="#7db8c4" fill-opacity="0.02" stroke="#7db8c4" stroke-opacity="0.5" stroke-width="1.5"/>
 <rect x="32" y="70" width="8" height="150" fill="#7db8c4" fill-opacity="0.30"/>
