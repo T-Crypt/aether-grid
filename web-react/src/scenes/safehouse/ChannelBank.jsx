@@ -3,7 +3,6 @@
 // engine is up, dim when down or absent — 16 channels = engines/instances
 // per the P0 card. The bank numbers follow the reference.
 
-import { useScene } from '../../scene/SceneRoot'
 import { pad } from './frame.jsx'
 
 function Bank({ label, base, engines, ghosted }) {

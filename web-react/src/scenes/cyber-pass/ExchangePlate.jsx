@@ -5,8 +5,10 @@
 // serve cells), STRONGBOX
 // (the post's steps with runner marks) and CISTER (the tank, in litres of
 // vram used-window). Bindings: kpi.vram → price/tin/cistern, kpi.queue →
-// strongbox, kpi.tps → the tariff line.
+// strongbox, kpi.tps → the tariff line. The small coin in the header
+// tallies served tokens at a hundredth of a cent each. No label.
 
+import { useEffect, useRef, useState } from 'react'
 import { useScene } from '../../scene/SceneRoot'
 import SceneCanvas from '../../scene/Canvas'
 import { paintChart, paintTicker, paintTin, paintBox, paintCistern } from './painters'
@@ -28,7 +30,7 @@ export default function ExchangePlate() {
   const pr = priceStats(snap, gpu)
   const k = (snap && snap.kpi) || {}
   const qHist = ((snap && snap.kpiHist && snap.kpiHist.queue) || []).slice(-48)
-  const tin = tinSpentOf(snap, pr.price)
+  const tin = tinSpentOf(snap)
   const spent = 2000 - tin
   const box = qHist.length ? Math.round(qHist[qHist.length - 1] * 52) : 0
   const litres =
@@ -40,6 +42,25 @@ export default function ExchangePlate() {
   const worth = Math.round(litres * ((pr.price || 14.2) / 14.2) * 0.9)
   const sold = Math.round(spent * 0.42)
   const soldB = Math.round((spent / Math.max(1, pr.price || 14.2)) * 10)
+  // The small coin: one hundredth of a cent per token served, summed over
+  // feed time. No timer. The feed clock moves the tally at feed rate, so a
+  // held feed holds the count and a reload restarts it. Post-commit only,
+  // and guarded by the last applied tick so a repeated effect pass cannot
+  // add the same span twice.
+  const CENT_PER_TOKEN = 0.01
+  const [tally, setTally] = useState(0)
+  const lastTick = useRef(null)
+  useEffect(() => {
+    const t = snap && snap.t != null ? snap.t : null
+    if (t == null) return
+    const prev = lastTick.current
+    lastTick.current = t
+    if (prev == null || t <= prev) return
+    if (!snap || snap.mode === 'offline' || snap.mode === 'boot') return
+    const tps = snap.kpi && snap.kpi.tps != null ? snap.kpi.tps : 0
+    const add = Math.max(0, tps) * (t - prev) * CENT_PER_TOKEN
+    if (add > 0) setTally((v) => v + add)
+  })
 
   return (
     <section aria-label="The Rate Exchange" className="cy-plate flex min-h-0 min-w-0 flex-col overflow-hidden">
@@ -68,6 +89,11 @@ export default function ExchangePlate() {
           {offline
             ? 'NO SOURCE'
             : `12-MO ${pr.lo != null ? pr.lo.toFixed(1) : '—'}–${pr.hi != null ? pr.hi.toFixed(1) : '—'} · RE-STAMPED AT EACH ASSAY`}
+        </span>
+        <span className="ml-auto flex items-center gap-1 tabular-nums" aria-label={`tally ${tally.toFixed(2)} cents`}>
+          <i className="cy-coin" aria-hidden="true" />
+          <span className="text-[12px] font-semibold text-dat">{tally.toFixed(2)}</span>
+          <span className="text-[9px] text-ink-2">¢</span>
         </span>
       </div>
 

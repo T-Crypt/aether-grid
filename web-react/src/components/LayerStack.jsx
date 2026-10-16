@@ -60,10 +60,10 @@ export default function LayerStack() {
       </div>
 
       {/* SAFEHOUSE: pinned corner scope, always on unless toggled off.
-          bottom-[56px] clears the app-level scene dock (bottom-3, ~30px). */}
+          bottom-[64px] clears the app-level scene dock (bottom-3, 44px). */}
       <div
         aria-hidden={layers.safehouse ? undefined : 'true'}
-        className={`fixed bottom-[56px] right-3 z-30 w-[118px] transition-opacity duration-300 sm:w-[clamp(150px,13vw,210px)] lg:right-5 ${
+        className={`fixed bottom-[64px] right-3 z-30 w-[118px] transition-opacity duration-300 sm:w-[clamp(150px,13vw,210px)] lg:right-5 ${
           layers.safehouse ? 'opacity-100' : 'opacity-0'
         }`}
       >

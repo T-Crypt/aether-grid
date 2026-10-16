@@ -8,9 +8,12 @@ export function EdgeTop({ snap }) {
   const meta = metaOf(snap)
   const offline = !snap || snap.mode === 'offline'
   const rt = runtimeOf(snap)
+  // The outpost leads with what it caught, not what it burned: model,
+  // engine line and candidate count. Tok/s belongs to the throughput
+  // scene and thermals to the capacity scene, so neither prints here.
   const runtime = offline
     ? 'HELD · NO SOURCE'
-    : `${rt.model || 'NO MODEL'} · ${rt.tps != null ? `${Math.round(rt.tps)} TOK/S` : '— TOK/S'} · ENG ${rt.engine || '—'} · ${rt.temp != null ? `${Math.round(rt.temp)} °C` : '—'}`
+    : `${rt.model || 'NO MODEL'} · ENG ${rt.engine || '—'} · ${meta.cands}`
   return (
     <header className="relative z-10 flex min-w-0 shrink-0 flex-wrap items-center gap-x-4 gap-y-1 border-b border-acc/15 bg-pan/80 px-3 py-1.5 text-[9px] tracking-[0.14em] text-ink-2">
       <span className="min-w-0 truncate">

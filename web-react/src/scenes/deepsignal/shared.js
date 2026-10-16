@@ -1,56 +1,15 @@
-// Deepsignal shared chrome: deterministic helpers (no RNG: the scene must
-// replay identically on reload and settle identically under reduced motion).
-// All bindings read the feed snapshot plus the conductor's smoothed scalars
-// (heat/alert/flow/reason); the scene itself owns no timers.
+// Deepsignal shared chrome: the outpost's own derives. The deterministic
+// helpers and the active-runtime figure are shared console-wide and live in
+// lib/derive; this module re-exports the ones the outpost's components import
+// and keeps only what is specific to the waterfall, the band strip and the
+// candidate log. All bindings read the feed snapshot plus the conductor's
+// smoothed scalars (heat/alert/flow/reason); the scene owns no timers.
 
-export function det(n) {
-  const x = Math.sin(n * 127.1 + 311.7) * 43758.5453
-  return x - Math.floor(x)
-}
+import { activeRuntime, clamp, det, pad, staleOf } from '../../lib/derive'
 
-export function hashCode(s) {
-  let h = 0
-  const str = String(s)
-  for (let i = 0; i < str.length; i++) h = (h * 31 + str.charCodeAt(i)) | 0
-  return Math.abs(h)
-}
+export { det, pad, staleOf }
 
-export function pad(n, w = 2) {
-  return String(n).padStart(w, '0')
-}
-
-const clamp = (v, lo, hi) => (v < lo ? lo : v > hi ? hi : v)
-
-// Dormant outpost: offline/boot or a held zero-tps stream. Heat and spike
-// park so the waterfall scrolls near-empty (dimmed drift) and the band
-// strip settles; the rails already hold their numbers behind HOLD states.
-export function staleOf(snap) {
-  const k = (snap && snap.kpi) || {}
-  return !snap || snap.mode === 'offline' || snap.mode === 'boot' || (k.tps || 0) === 0
-}
-
-// Active-runtime figure for the RUNTIME edge span: the loaded model plus
-// live tok/s, gpu temp and engine load, in outpost-neutral nouns. Model =
-// kpi.tps_models[0], else the first up engine label, else models[0].id;
-// engine = first up label, else up/total. Pure function of snap; the scene
-// renders no ACTIVE-model hero by design, this span is the closest live line.
-export function runtimeOf(snap) {
-  const k = (snap && snap.kpi) || {}
-  const fromTps = Array.isArray(k.tps_models) && k.tps_models.length ? String(k.tps_models[0]) : null
-  const engines = ((snap && snap.engines) || []).filter((e) => e && e.key != null)
-  const up = engines.filter((e) => e.up !== false)
-  const first = up.length ? up[0] : null
-  const fromEng = first ? String(first.label || first.key) : null
-  const models = (snap && snap.models) || []
-  const fromModels = models.length ? String(models[0].id || models[0]) : null
-  const gpu = (snap && snap.gpu) || null
-  return {
-    model: fromTps || fromEng || fromModels,
-    tps: k.tps != null ? k.tps : null,
-    temp: gpu && gpu.temp != null ? gpu.temp : null,
-    engine: fromEng || (engines.length ? `${up.length}/${engines.length}` : null),
-  }
-}
+export const runtimeOf = activeRuntime
 
 // SAST wall clock (UTC+2) advanced at feed rate from the snapshot clock, so
 // it ticks in live and demo and freezes identically under reduced motion.
@@ -95,7 +54,7 @@ export function bandBins(snap, conductor, n = 200) {
   for (let i = 0; i < n; i++) {
     const pos = i / (n - 1)
     // two persistent carriers (sky noise floor + band-shape) plus the live
-    // heat; the amber spikeatest near amberX.
+    // heat; the amber spike rides the alert scalar near amberX.
     const floor = 0.1 + det(i * 1.7) * 0.22
     const shape = 0.5 + 0.5 * Math.sin(pos * Math.PI * 3 + 1.2)
     const shimmer = (det(i * 7.3 + Math.floor(tick) * 0.91) - 0.5) * 0.12

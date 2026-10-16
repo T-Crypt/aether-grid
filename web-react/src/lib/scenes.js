@@ -7,6 +7,22 @@
 // painters. A scheme missing from a scene's table falls back to the base skin
 // table in lib/skins.js, so no scene/scheme pair can resolve broken.
 //
+// Each scene also declares a charter: the one slice of the telemetry it
+// exists to show, `purpose` in plain words and `channels` as the state keys
+// it reads. The five charters are disjoint on purpose. A scene does not
+// reprint another scene's chart, so the dock is a menu of instruments rather
+// than five views of one dashboard.
+//
+//   hexlab       throughput and latency        kpi.tps, kpi.hist.tps, kpi.p95, kpi.ttft
+//   safehouse    engines and sessions          engines, sessions
+//   bloom-line   capacity and pressure         sessions.kv, gpu, kpi.vram, host
+//   cyber-pass   requests and the economy      requests, kpi.queue, kpi.vram as price
+//   deepsignal   detection and reasoning       alerts, events, reasoning
+//
+// Two scenes may read one key for different ends. The booth reads vram as
+// price. The greenhouse reads it as capacity. Neither prints the other's
+// figure.
+//
 // The DOM tokens (pan, bgg, text tiers) resolve in src/index.css through
 // [data-scene][data-skin] blocks on <html>; this table mirrors only the
 // canvas channels (acc, dat, col, alm) painters read off conductor.palette.
@@ -17,6 +33,8 @@ export const SCENES = [
   {
     id: 'hexlab',
     label: 'Hex-Lab',
+    purpose: 'Throughput and latency',
+    channels: ['kpi.tps', 'kpi.p95', 'kpi.ttft'],
     defaultScheme: 'hexlab',
     schemes: SKIN_IDS,
     palettes: {}, // empty: every base scheme applies to hex-lab as-is
@@ -28,6 +46,8 @@ export const SCENES = [
     // table; the other six keep their base role colours on the scene surfaces.
     id: 'safehouse',
     label: 'Safehouse',
+    purpose: 'Engines and sessions',
+    channels: ['engines', 'sessions'],
     defaultScheme: 'corvane',
     schemes: SKIN_IDS,
     palettes: {
@@ -42,6 +62,8 @@ export const SCENES = [
     // leaf-green surfaces.
     id: 'bloom-line',
     label: 'Bloom-Line',
+    purpose: 'Capacity and pressure',
+    channels: ['sessions.kv', 'gpu.vram', 'host'],
     defaultScheme: 'gullet',
     schemes: SKIN_IDS,
     palettes: {
@@ -56,6 +78,8 @@ export const SCENES = [
     // rust-plate surfaces.
     id: 'cyber-pass',
     label: 'Cyber-Pass',
+    purpose: 'Requests and the economy',
+    channels: ['requests', 'kpi.queue', 'kpi.vram'],
     defaultScheme: 'sounding',
     schemes: SKIN_IDS,
     palettes: {
@@ -69,6 +93,8 @@ export const SCENES = [
     // keep their base role colours on the scene's CRT surfaces.
     id: 'deepsignal',
     label: 'Deepsignal',
+    purpose: 'Detection and reasoning',
+    channels: ['alerts', 'events', 'reasoning'],
     defaultScheme: 'hexlab',
     schemes: SKIN_IDS,
     palettes: {

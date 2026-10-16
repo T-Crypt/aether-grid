@@ -21,6 +21,7 @@ import ClfLog from './ClfLog'
 import FreqBars from './FreqBars'
 import MarqueeStrip from './MarqueeStrip'
 import { hexFrom, tickTimecode, frameCounter } from './frame.jsx'
+import { activeRuntime } from '../../lib/derive'
 // ---------------------------------------------------------------------------
 // Right-pane chrome (decorative reference surfaces, token-driven)
 // ---------------------------------------------------------------------------
@@ -99,21 +100,14 @@ function Seal() {
 function RHeader() {
   const { snap } = useScene()
   const feed = snap ? snap.mode || 'live' : 'boot'
-  const k = (snap && snap.kpi) || {}
-  const engines = (snap && snap.engines) || []
-  const up = engines.filter((e) => e && e.up !== false)
-  const fromTps = Array.isArray(k.tps_models) && k.tps_models.length ? String(k.tps_models[0]) : null
-  const fromEng = up.length ? String(up[0].label || up[0].key) : null
-  const models = (snap && snap.models) || []
-  const active = fromTps || fromEng || (models.length ? String(models[0].id || models[0]) : null)
-  const engine = fromEng || (engines.length ? `${up.length}/${engines.length}` : null)
-  const gpu = (snap && snap.gpu) || null
-  const temp = gpu && gpu.temp != null ? `${Math.round(gpu.temp)}°C` : null
-  const decode = up.reduce((a, e) => a + (e && e.rates && e.rates.decode_tps != null ? e.rates.decode_tps : 0), 0)
-  const running = snap && snap.mode !== 'offline' && snap.mode !== 'boot' && up.length > 0
+  // The workstation watches engines, not silicon: model, decode rate and the
+  // engine line come from the shared resolver. GPU temp stays on the
+  // capacity scene, so the audio line prints no thermal figure.
+  const rt = activeRuntime(snap)
+  const running = snap && snap.mode !== 'offline' && snap.mode !== 'boot' && rt.upCount > 0
   const audioLine = !snap || snap.mode === 'offline'
     ? 'NO SOURCE'
-    : `SIG ${active || 'NO MODEL'} · ${running && decode > 0 ? `DECODE ${Math.round(decode)} TOK/S · ENG ${engine || '—'} · ${temp || '—'} · ON AIR` : 'STANDBY · DESK OPEN'}`
+    : `SIG ${rt.model || 'NO MODEL'} · ${running && rt.decode > 0 ? `DECODE ${Math.round(rt.decode)} TOK/S · ENG ${rt.engine || '—'} · ON AIR` : 'STANDBY · DESK OPEN'}`
   return (
     <div className="flex min-w-0 flex-col justify-center overflow-hidden px-1" aria-label="Audio analysis header">
       <div className="truncate text-[10px] uppercase tracking-[0.18em] text-acc sm:text-[11px]">AUDIO ANALYSIS · NETWORK EF DATA ANALYSIS</div>

@@ -47,6 +47,7 @@ import { useTelemetry } from '../hooks/useTelemetry'
 import { createConductor, translateSnap } from './conductor'
 import { DEFAULT_SKIN, SKIN_IDS, skinById, faviconFor } from '../lib/skins'
 import { DEFAULT_SCENE, SCENE_IDS, sceneById, resolvePalette } from '../lib/scenes'
+import { schemeForScene, rememberScene } from '../lib/scheme'
 
 export const SceneCtx = createContext(null)
 export const useScene = () => useContext(SceneCtx)
@@ -117,24 +118,12 @@ export default function SceneRoot({ children }) {
   }, [layers, conductor])
 
   // Switching scenes enters the scene on its own scheme: the scheme the
-  // user last chose in that scene, else its native default scheme.
+  // user last chose in that scene, else its native default scheme. Same
+  // rules as boot (lib/scheme), so a reload and a switch agree.
   const switchScene = useCallback((id) => {
     if (!SCENE_IDS.includes(id)) return
-    let stored = null
-    try {
-      stored = localStorage.getItem('aether.console.skin.' + id)
-    } catch {
-      /* storage blocked */
-    }
-    if (!stored && id === DEFAULT_SCENE) {
-      try {
-        stored = localStorage.getItem('aether.console.skin')
-      } catch {
-        /* storage blocked */
-      }
-    }
     setScene(id)
-    setSkin(stored && SKIN_IDS.includes(stored) ? stored : sceneById(id).defaultScheme)
+    setSkin(schemeForScene(id))
   }, [])
 
   useEffect(() => {
@@ -148,23 +137,7 @@ export default function SceneRoot({ children }) {
         : `Aether Grid | ${meta.label} / ${skinById(skin).label}`
     const fav = document.getElementById('favicon')
     if (fav) fav.href = faviconFor(skin)
-    try {
-      localStorage.setItem('aether.console.scene', scene)
-    } catch {
-      /* storage blocked */
-    }
-    try {
-      localStorage.setItem('aether.console.skin.' + scene, skin)
-    } catch {
-      /* storage blocked */
-    }
-    if (scene === DEFAULT_SCENE) {
-      try {
-        localStorage.setItem('aether.console.skin', skin)
-      } catch {
-        /* storage blocked */
-      }
-    }
+    rememberScene(scene, skin)
   }, [scene, skin, conductor])
 
   const value = useMemo(

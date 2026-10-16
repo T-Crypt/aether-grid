@@ -1,9 +1,10 @@
-// Cyber-pass shared chrome: deterministic helpers (no RNG: the scene must
-// replay identically on reload and settle identically under reduced motion)
-// plus the telemetry binding layer — every readout the plates print is a
-// pure function of the latest snap / conductor scalars. The scene never
-// owns a timer; transient row flashes restart a finite CSS animation by
-// re-keying the element.
+// Cyber-pass shared chrome: the booth's own derives — the telemetry binding
+// layer where every readout a plate prints is a pure function of the latest
+// snap and the conductor's smoothed scalars. The deterministic helpers and
+// the active-runtime figure are shared console-wide and live in lib/derive;
+// this module re-exports the ones the plates import. The scene never owns a
+// timer; transient row flashes restart a finite CSS animation by re-keying
+// the element.
 //
 // Reference lore (uispace.org/cyber-pass): a mountain customs booth whose
 // handheld assay lights amber or violet beside a button-currency exchange
@@ -19,26 +20,11 @@
 //   generator           = host cpu + gpu power; dead bulbs = down engines
 //   weather / clause    = decorative (flagged in the report)
 
-const clamp = (v, lo, hi) => (v < lo ? lo : v > hi ? hi : v)
+import { activeRuntime, clamp, det, hashCode, pad, staleOf } from '../../lib/derive'
 
-// ---------------------------------------------------------------------------
-// Deterministic helpers
-// ---------------------------------------------------------------------------
+export { det, hashCode, pad, staleOf }
 
-export function det(n) {
-  const x = Math.sin(n * 127.1 + 311.7) * 43758.5453
-  return x - Math.floor(x)
-}
-
-export function hashCode(s) {
-  let h = 0
-  for (let i = 0; i < String(s).length; i++) h = (h * 31 + String(s).charCodeAt(i)) | 0
-  return Math.abs(h)
-}
-
-export function pad(n, w = 2) {
-  return String(n).padStart(w, '0')
-}
+export const activeModelOf = activeRuntime
 
 export function grp(n) {
   return Math.round(n).toLocaleString('en-US')
@@ -98,10 +84,9 @@ export function priceStats(snap, gpu) {
 
 // The declared tin (2,000 B) as it spends: the queue draining is the tin
 // being handed out, so what's left = 2,000 − the recent queue load.
-export function tinSpentOf(snap, price) {
+export function tinSpentOf(snap) {
   const q = ((snap && snap.kpiHist && snap.kpiHist.queue) || []).slice(-48)
   const spent = q.length ? Math.min(1940, Math.round(q.reduce((a, v) => a + (v || 0), 0) * 2)) : 0
-  void price
   return 2000 - spent
 }
 
@@ -168,11 +153,6 @@ export function talliesOf(snap) {
     refused: Math.min(9, flagged),
     docket: 3900 + (hashCode((snap && snap.kpi && String(snap.kpi.tps)) || 'x') % 40),
   }
-}
-
-export function staleOf(snap) {
-  const k = (snap && snap.kpi) || {}
-  return !snap || snap.mode === 'offline' || snap.mode === 'boot' || (k.tps || 0) === 0
 }
 
 // Decode-rate gate 0..1 for booth motion (bulb shimmer, tape run, scan
@@ -340,63 +320,14 @@ export function bulbFracs(litMask) {
 // THE EXCHANGE boards: QUEUE SERVED (the declared 2,000-cell tin, spent as
 // the queue deepens), STRONGBOX (the post's box of serve cells, worth less
 // water each re-post) and CISTER (the water stock: vram used-window, sold
-// at the posted price).
+// at the posted price). The boards compute their cells in ExchangePlate —
+// tinSpentOf is the one figure the plates and the painters share.
 // ---------------------------------------------------------------------------
-
-export function tinStats(snap, price) {
-  const q = ((snap && snap.kpiHist && snap.kpiHist.queue) || []).slice(-48)
-  const spent = q.length ? Math.min(1940, Math.round(q.reduce((a, v) => a + (v || 0), 0) * 2)) : 0
-  const tin = 2000 - spent
-  const p = price != null && price > 0 ? price : 14.2
-  return { tin, spent, litres: (tin / p).toFixed(1) }
-}
-
-export function boxStats(snap, price, gpu) {
-  const g = gpu || (snap && snap.gpu) || null
-  const v = g && g.vram != null ? g.vram : 12
-  const total = g && g.vramTotal != null ? g.vramTotal : 24
-  const box = Math.round(600 + (1 - clamp(v / total, 0, 1)) * 900)
-  const p = price != null && price > 0 ? price : 14.2
-  return { box, litres: (box / p).toFixed(1), tariff: (40 / p).toFixed(2) }
-}
-
-export function cisternStats(snap, price, gpu) {
-  const g = gpu || (snap && snap.gpu) || null
-  const v = g && g.vram != null ? g.vram : 12
-  const total = g && g.vramTotal != null ? g.vramTotal : 24
-  const level = clamp(v / total, 0, 1)
-  const litres = Math.round(level * 4000)
-  const p = price != null && price > 0 ? price : 14.2
-  const worth = Math.round(litres * p)
-  const sold = Math.round(level * 300)
-  return { level, litres, cap: 4000, worth, sold, soldB: Math.round(sold * p) }
-}
 
 // ---------------------------------------------------------------------------
 // ACTIVE screen line: the loaded model this booth is assaying, plus the
-// live tok/s + temp + queue/p95 figures. ACTIVE = kpi.tps_models[0], else
-// the first up engine label, else models[0].id. Pure function of snap.
+// live tok/s + temp + queue/p95 figures, from lib/derive's activeRuntime.
 // ---------------------------------------------------------------------------
-
-export function activeModelOf(snap) {
-  const k = (snap && snap.kpi) || {}
-  const fromTps = Array.isArray(k.tps_models) && k.tps_models.length ? String(k.tps_models[0]) : null
-  const engines = ((snap && snap.engines) || []).filter((e) => e && e.key != null)
-  const up = engines.find((e) => e.up !== false)
-  const fromEng = up ? String(up.label || up.key) : null
-  const models = (snap && snap.models) || []
-  const fromModels = models.length ? String(models[0].id || models[0]) : null
-  const g = (snap && snap.gpu) || null
-  const upCount = engines.filter((e) => e.up !== false).length
-  return {
-    model: fromTps || fromEng || fromModels,
-    tps: k.tps != null ? k.tps : null,
-    temp: g && g.temp != null ? g.temp : null,
-    queue: k.queue != null ? k.queue : null,
-    p95: k.p95 != null ? k.p95 : null,
-    engine: fromEng || (engines.length ? `${upCount}/${engines.length}` : null),
-  }
-}
 
 // ---------------------------------------------------------------------------
 // WEATHER: decorative (flagged in the report). Wind/cinders/visibility ride

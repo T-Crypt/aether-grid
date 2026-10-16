@@ -1,46 +1,14 @@
 // Safehouse shared chrome: the reference's framed panel grammar (title bar +
-// hairline frame) and small deterministic helpers. This scene never owns a
-// timer; transient row flashes restart a finite CSS animation by re-keying
-// the element, and all derived readouts are stable hash functions of the
-// data they decorate.
+// hairline frame) plus the workstation's own derives. The deterministic
+// helpers are shared console-wide and live in lib/derive; this module
+// re-exports the ones the panes import. This scene never owns a timer;
+// transient row flashes restart a finite CSS animation by re-keying the
+// element, and all derived readouts are stable hash functions of the data
+// they decorate.
 
-import { useMemo } from 'react'
-import { useScene } from '../../scene/SceneRoot'
+import { det, hashCode, hexFrom, pad } from '../../lib/derive'
 
-// ---------------------------------------------------------------------------
-// Deterministic helpers (no RNG: the scene must replay identically on reload
-// and settle identically under reduced motion).
-// ---------------------------------------------------------------------------
-
-export function det(n) {
-  const x = Math.sin(n * 127.1 + 311.7) * 43758.5453
-  return x - Math.floor(x)
-}
-
-export function hashCode(s) {
-  let h = 0
-  for (let i = 0; i < String(s).length; i++) h = (h * 31 + String(s).charCodeAt(i)) | 0
-  return Math.abs(h)
-}
-
-export function hexFrom(seed, len) {
-  const chars = '0123456789ABCDEF'
-  let s = ''
-  for (let i = 0; i < len; i++) s += chars[Math.floor(det(hashCode(seed) + i * 13.7) * 16)]
-  return s
-}
-
-export function pad(n, w = 2) {
-  return String(n).padStart(w, '0')
-}
-
-// The one engine this scene tracks: the first engine that is up. Everything
-// sat/target-related keys off it; null means the panel ghosts.
-export function useTarget() {
-  const { snap } = useScene()
-  const engines = useMemo(() => (snap && snap.engines) || [], [snap])
-  return { engines, target: engines.find((e) => e && e.up) || null }
-}
+export { det, hashCode, hexFrom, pad }
 
 // Tick-based timecode: HH:MM:SS:FF where the frame field advances 24 frames
 // per feed tick, so the readout marches at feed rate without a scene timer.

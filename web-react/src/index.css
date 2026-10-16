@@ -101,7 +101,7 @@
     --bgg: 10 24 32;
     --text-1: #c8dce8;
     --text-2: #93aabb;
-    --text-3: #608090;
+    --text-3: #7f99a6;
     --alm: 255 72 48;
     --sh-top: #0e1e28;
     --sh-bot: #06121a;
@@ -122,7 +122,7 @@
     --bgg: 4 16 12;
     --text-1: #d8f0e2;
     --text-2: #a9cdbb;
-    --text-3: #5c8a78;
+    --text-3: #669180;
     --alm: 240 155 170;
     --bl-top: #08180f;
     --bl-mid: #061410;
@@ -160,7 +160,7 @@
     --bgg: 2 6 16;
     --text-1: #d8e4f0;
     --text-2: #8ca6bb;
-    --text-3: #5c7e9c;
+    --text-3: #6686a2;
     --alm: 232 84 63;
   }
   [data-scene='deepsignal'][data-skin='hexlab'] {
@@ -742,6 +742,15 @@
     border-bottom: 0.5em solid rgb(var(--alm));
     vertical-align: 0.08em;
     margin-left: 0.3em;
+  }
+  /* the small coin: one tally mark per token served, nothing labelled */
+  .cy-coin {
+    display: inline-block;
+    width: 8px;
+    height: 8px;
+    border-radius: 9999px;
+    background: rgb(var(--dat));
+    box-shadow: 0 0 6px rgb(var(--dat) / 0.8);
   }
   /* co-cards on the device plate */
   .cy-co {

@@ -1,10 +1,12 @@
 # Visual map
 
-Base visual is **HEX-LAB** (the React console in `web-react/`, Vite
-build): the scene is one continuous surface with hairline scopes, corner
-ticks and caption labels over a full-bleed Declination backdrop. Status
-pills, KPI strips, the hero helix, terrain, GPU block, KV cohort, log,
-data band. Every element reads one console state object assembled in
+The React console in `web-react/` (Vite build) renders one of five scenes
+at a time. HEX-LAB is the base and the overview: throughput and latency
+on one continuous surface with hairline scopes, corner ticks and caption
+labels over a full-bleed Declination backdrop. SAFEHOUSE watches engines
+and sessions. BLOOM-LINE watches capacity and pressure. CYBER-PASS
+watches requests and the economy. DEEPSIGNAL watches detection and
+reasoning. Every scene reads one console state object assembled in
 `web-react/src/lib/`. `simulator.js` feeds `?demo` with a seeded loop
 through idle, burst, pressure, overflow and recover. `adapt.js` maps the
 collector `snapshot()` and `tick()` documents for live. Live and demo
@@ -35,15 +37,30 @@ Long-range panels (`/api/history`, `/api/spans`, `/api/leaderboard`,
 
 ## Skins
 
-The chrome is AETHER GRID (sigil logo, hairline header). All seven skins
+The chrome is AETHER GRID (sigil logo, hairline header). All seven schemes
 ship: HEX-LAB (the base, cyan) plus AETHER, THE BRAID, ISODOSE,
-CORVANE, SOUNDING and GULLET. The skin rail in the header flips the CSS
-custom properties in `src/index.css` (mapped into Tailwind by
-`tailwind.config.js`) and the canvas palette in `src/lib/skins.js`
-(severity hues stay absolute, including the alarm red `--alm`); the choice
-persists to `localStorage`. `src/index.css` and `skins.js` carry the same
-token values in two forms, CSS for the DOM and RGB channels for the
-painters. Change one, change the other.
+CORVANE, SOUNDING and GULLET. The scene dock, pinned bottom-right,
+switches scene and scheme. Each scene opens on its own scheme: the one
+last chosen there, else its native default. The choice persists to
+`localStorage` (`src/lib/scheme.js` owns the keys). `src/index.css` and
+`skins.js` carry the same token values in two forms, CSS for the DOM and
+RGB channels for the painters. Change one, change the other.
+
+## Scenes
+
+Each scene owns one slice of the telemetry. The registry
+(`src/lib/scenes.js`) names the charter as purpose plus channels, and the
+dock prints the purpose under each scene. Two scenes may read one key for
+different ends. The booth reads vram as price. The greenhouse reads it as
+capacity.
+
+| Scene | Charter | Reads most | Key pieces |
+|---|---|---|---|
+| Hex-Lab | Throughput and latency | `kpi.tps`, `kpi.p95`, `kpi.ttft` | hero helix, KPI strip, terrain, data band |
+| Safehouse | Engines and sessions | `engines`, `sessions` | channel banks, TRM table, audio header |
+| Bloom-Line | Capacity and pressure | `sessions.kv`, `gpu`, `host` | tank zones, species strip, drone manifest |
+| Cyber-Pass | Requests and the economy | `requests`, `kpi.queue`, `kpi.vram` as price | assay device, rate exchange, the small coin |
+| Deepsignal | Detection and reasoning | `alerts`, `events`, `reasoning` | waterfall, band strip, candidate log, edge bars |
 
 ## Layers
 
@@ -88,6 +105,7 @@ the shared field.
 
 ```text
 hex-lab base        pills · timecode · kpi strip · hero helix · terrain · gpu block · kv cohort · log · data band · foot
+scenes            →    hex-lab (throughput/latency) · safehouse (engines/sessions) · bloom-line (capacity) · cyber-pass (requests/economy) · deepsignal (detection)
 declination    →    kpi.hist.tps as a state-reactive full-screen backdrop (half-res)
 loom-9         →    anchors (queue/hero/kv/gpu/rail) as cables, packets from kpi.tps
 scope-omega    →    kpi.queue/vram/p95 excursions + anomaly ping rings, full frame

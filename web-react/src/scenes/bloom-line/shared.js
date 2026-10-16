@@ -1,34 +1,15 @@
-// Bloom-Line shared chrome: deterministic helpers (no RNG: the scene must
-// replay identically on reload and settle identically under reduced motion).
-// This scene never owns a timer; transient row flashes restart a finite CSS
-// animation by re-keying the element, and all derived readouts are stable
-// hash functions of the data they decorate.
+// Bloom-Line shared chrome: the greenhouse's own derives. The deterministic
+// helpers and the active-runtime figure are shared console-wide and live in
+// lib/derive; this module re-exports the ones this scene's components import
+// and keeps only the tank, drone, manifest and archive bindings. The scene
+// never owns a timer; transient row flashes restart a finite CSS animation by
+// re-keying the element.
 
-// ---------------------------------------------------------------------------
-// Deterministic helpers
-// ---------------------------------------------------------------------------
+import { activeRuntime, clamp, det, hashCode, hexFrom, pad, staleOf } from '../../lib/derive'
 
-export function det(n) {
-  const x = Math.sin(n * 127.1 + 311.7) * 43758.5453
-  return x - Math.floor(x)
-}
+export { det, hashCode, hexFrom, pad, staleOf }
 
-export function hashCode(s) {
-  let h = 0
-  for (let i = 0; i < String(s).length; i++) h = (h * 31 + String(s).charCodeAt(i)) | 0
-  return Math.abs(h)
-}
-
-export function hexFrom(seed, len) {
-  const chars = '0123456789ABCDEF'
-  let s = ''
-  for (let i = 0; i < len; i++) s += chars[Math.floor(det(hashCode(seed) + i * 13.7) * 16)]
-  return s
-}
-
-export function pad(n, w = 2) {
-  return String(n).padStart(w, '0')
-}
+export const activeOf = activeRuntime
 
 // Master clock in display seconds (conductor.t is seconds, frozen under
 // reduced motion / held feed — a valid static value either way).
@@ -99,17 +80,6 @@ export const CALLOUTS = [
 // returns display strings/states; nulls mean "no source" and the caller
 // ghosts the region.
 // ---------------------------------------------------------------------------
-
-const clamp = (v, lo, hi) => (v < lo ? lo : v > hi ? hi : v)
-
-// Stale feed: offline/boot or a held zero-tps stream. The stage dims and
-// the callouts hold when this is true (Scene.jsx); the painters already
-// scale bloom pulse amplitude, cable-dot density and drift speed from
-// `flow`, so motion settles toward still on its own.
-export function staleOf(snap) {
-  const k = (snap && snap.kpi) || {}
-  return !snap || snap.mode === 'offline' || snap.mode === 'boot' || (k.tps || 0) === 0
-}
 
 // 12 bioreactor tank zones: per-engine KV fill (the card's best-fit source;
 // a missing engine reuses the previous zone so the ring never has holes).
@@ -230,31 +200,6 @@ export function envRows(snap) {
   ]
   const offline = !host && !gpu
   return { env, atm, rot, offline }
-}
-
-// Active-runtime hero figure: the loaded model plus the live tok/s, MTP
-// accept, thinking-token count, gpu temp and engine load. ACTIVE =
-// kpi.tps_models[0], else the first up engine label, else models[0].id;
-// engine = first up label, else up/total. Pure function of snap.
-export function activeOf(snap) {
-  const k = (snap && snap.kpi) || {}
-  const fromTps = Array.isArray(k.tps_models) && k.tps_models.length ? String(k.tps_models[0]) : null
-  const engines = ((snap && snap.engines) || []).filter((e) => e && e.key != null)
-  const up = engines.filter((e) => e.up !== false)
-  const first = up.length ? up[0] : null
-  const fromEng = first ? String(first.label || first.key) : null
-  const models = (snap && snap.models) || []
-  const fromModels = models.length ? String(models[0].id || models[0]) : null
-  const gpu = (snap && snap.gpu) || null
-  const r = (snap && snap.reasoning) || {}
-  return {
-    model: fromTps || fromEng || fromModels,
-    tps: k.tps != null ? k.tps : null,
-    temp: gpu && gpu.temp != null ? gpu.temp : null,
-    mtp: r.mtp_accept_pct != null ? r.mtp_accept_pct : k.mtp != null ? k.mtp : null,
-    think: r.thinking_tokens != null ? r.thinking_tokens : null,
-    engine: fromEng || (engines.length ? `${up.length}/${engines.length}` : null),
-  }
 }
 
 // SHIP manifest: the four newest queued requests; dest = model, mass = the
