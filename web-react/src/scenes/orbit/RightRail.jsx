@@ -114,8 +114,7 @@ export default function RightRail() {
               }`}
             >
               <span className="truncate text-[7.5px] tracking-[0.06em] text-ink-3">
-                <span className="mr-0.5 text-[7px] tracking-[0.08em] text-acc">{r.key}</span>
-                {r.name}
+                <span className="text-[7px] tracking-[0.08em] text-acc">{r.key}</span>
               </span>
               <span
                 className={`whitespace-nowrap text-right text-[8.5px] tabular-nums ${

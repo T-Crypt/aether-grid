@@ -235,7 +235,7 @@ export function memOf(snap) {
 
 // Right-rail telemetry list: 18 rows, every one a snapshot key or a direct
 // derivation (headroom = 1 - vram/vramTotal; at-risk = the 0.85 well state).
-// Each row: [key, name, value, state].
+// Each row: [label, value, state] — one label per row.
 export function telemRows(snap) {
   const k = (snap && snap.kpi) || {}
   const gpu = (snap && snap.gpu) || null
@@ -247,26 +247,26 @@ export function telemRows(snap) {
   const vramPct = gpu && gpu.vramTotal && gpu.vram != null ? gpu.vram / gpu.vramTotal : null
   const f = (v, d = 1) => (v == null || !isFinite(v) ? null : v.toFixed(d))
   const rows = [
-    ['VRAM', 'vram used', gpu && gpu.vram != null ? `${f(gpu.vram)} / ${f(gpu.vramTotal, 0)} GB` : '—', vramPct != null && vramPct >= 0.9 ? 'alarm' : vramPct != null && vramPct >= 0.75 ? 'warn' : ''],
-    ['HEADRM', 'vram headroom', vramPct != null ? `${Math.round((1 - vramPct) * 100)}%` : '—', vramPct != null && vramPct >= 0.9 ? 'alarm' : ''],
-    ['KV POOL', 'kv cache', k.cache != null ? `${Math.round(k.cache)}%` : '—', k.cache != null && k.cache < 40 ? 'warn' : ''],
-    ['REINGST', 'cache reingest', k.reingest != null ? `${Math.round(k.reingest)}%` : '—', k.reingest != null && k.reingest > 40 ? 'warn' : ''],
-    ['SLOTS', 'kv slots live', sessions.length ? grp(sessions.length) : '0'],
-    ['AT RISK', 'slots at evict line', grp(flagged), flagged ? 'alarm' : ''],
-    ['QUEUE', 'requests queued', k.queue != null ? grp(k.queue) : '—', k.queue != null && k.queue > 8 ? 'warn' : ''],
-    ['TOK/S', 'decode rate', k.tps != null ? grp(k.tps) : '—'],
-    ['P95', 'p95 latency', k.p95 != null ? `${f(k.p95 / 1000)}s` : '—'],
-    ['TTFT', 'time to 1st tok', k.ttft != null ? `${f(k.ttft / 1000, 2)}s` : '—'],
-    ['REQ/MIN', 'arrival rate', k.rpm != null ? grp(k.rpm) : '—'],
-    ['MTP', 'mtp accept', k.mtp != null ? `${f(k.mtp)}%` : '—'],
-    ['THINK', 'think tokens', (snap && snap.reasoning && snap.reasoning.thinking_tokens) != null ? grp(snap.reasoning.thinking_tokens) : '—'],
-    ['GPU T', 'die temp', gpu && gpu.temp != null ? `${Math.round(gpu.temp)}°C` : '—', gpu && gpu.temp != null && gpu.temp >= 70 ? 'warn' : ''],
-    ['GPU P', 'board draw', gpu && gpu.power != null ? `${Math.round(gpu.power)}W` : '—', gpu && gpu.power != null && gpu.power > 380 ? 'warn' : ''],
-    ['GPU U', 'compute util', gpu && gpu.util != null ? `${Math.round(gpu.util)}%` : '—'],
-    ['ENG', 'engines up', `${upEng}/${engines.length || 0}`],
-    ['HOST', 'host cpu', host && host.cpu != null ? `${Math.round(host.cpu)}%` : '—'],
+    ['VRAM USED', gpu && gpu.vram != null ? `${f(gpu.vram)} / ${f(gpu.vramTotal, 0)} GB` : '—', vramPct != null && vramPct >= 0.9 ? 'alarm' : vramPct != null && vramPct >= 0.75 ? 'warn' : ''],
+    ['HEADROOM', vramPct != null ? `${Math.round((1 - vramPct) * 100)}%` : '—', vramPct != null && vramPct >= 0.9 ? 'alarm' : ''],
+    ['KV POOL', k.cache != null ? `${Math.round(k.cache)}%` : '—', k.cache != null && k.cache < 40 ? 'warn' : ''],
+    ['REINGEST', k.reingest != null ? `${Math.round(k.reingest)}%` : '—', k.reingest != null && k.reingest > 40 ? 'warn' : ''],
+    ['SLOTS LIVE', sessions.length ? grp(sessions.length) : '0'],
+    ['AT RISK', grp(flagged), flagged ? 'alarm' : ''],
+    ['QUEUE', k.queue != null ? grp(k.queue) : '—', k.queue != null && k.queue > 8 ? 'warn' : ''],
+    ['DECODE TOK/S', k.tps != null ? grp(k.tps) : '—'],
+    ['P95 LATENCY', k.p95 != null ? `${f(k.p95 / 1000)}s` : '—'],
+    ['TTFT', k.ttft != null ? `${f(k.ttft / 1000, 2)}s` : '—'],
+    ['REQ/MIN', k.rpm != null ? grp(k.rpm) : '—'],
+    ['MTP ACCEPT', k.mtp != null ? `${f(k.mtp)}%` : '—'],
+    ['THINK TOK', (snap && snap.reasoning && snap.reasoning.thinking_tokens) != null ? grp(snap.reasoning.thinking_tokens) : '—'],
+    ['DIE TEMP', gpu && gpu.temp != null ? `${Math.round(gpu.temp)}°C` : '—', gpu && gpu.temp != null && gpu.temp >= 70 ? 'warn' : ''],
+    ['BOARD DRAW', gpu && gpu.power != null ? `${Math.round(gpu.power)}W` : '—', gpu && gpu.power != null && gpu.power > 380 ? 'warn' : ''],
+    ['COMPUTE UTIL', gpu && gpu.util != null ? `${Math.round(gpu.util)}%` : '—'],
+    ['ENGINES UP', `${upEng}/${engines.length || 0}`],
+    ['HOST CPU', host && host.cpu != null ? `${Math.round(host.cpu)}%` : '—'],
   ]
-  return rows.map(([key, name, val, state]) => ({ key, name, val: val == null ? '—' : val, state: state || '' }))
+  return rows.map(([key, val, state]) => ({ key, val: val == null ? '—' : val, state: state || '' }))
 }
 
 // Word-boundary clip for log rows (the spectrum's rule): a row never cuts a
