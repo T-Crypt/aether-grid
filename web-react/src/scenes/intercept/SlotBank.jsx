@@ -1,24 +1,25 @@
-// ChannelBank: two banks of eight channel buttons (A 01-08, B 21-28).
-// Each button is one engine/instance state: active (data fill) when the
-// engine is up, dim when down or absent — 16 channels = engines/instances
-// per the P0 card. The bank numbers follow the reference.
+// SlotBank: two banks of engine slots (A and B). Each button is one
+// engine's slot state: filled (data tint) when the engine is up, dim when
+// down or absent. The button prints the engine key, so the bank reads as
+// the engine registry rather than a numbered mystery. The banks ghost
+// when the feed has no engines.
 
-import { pad } from './frame.jsx'
+import { useScene } from '../../scene/SceneRoot'
 
-function Bank({ label, base, engines, ghosted }) {
-  const btn = (n, up) => {
-    const active = up === true
+function Bank({ label, engines, ghosted }) {
+  const btn = (e) => {
+    const active = e ? e.up === true : false
     return (
       <span
-        key={n}
-        className={`flex h-[15px] items-center justify-center border text-[7px] tabular-nums transition-colors duration-300 ${
+        key={e ? e.key : 'empty'}
+        className={`flex h-[15px] items-center justify-center border text-[6.5px] uppercase transition-colors duration-300 ${
           active
             ? 'border-dat bg-dat text-bgg'
             : 'border-acc/25 bg-pan/40 text-ink-3'
         }`}
-        aria-label={`channel ${n} ${active ? 'active' : 'idle'}`}
+        aria-label={`slot ${e ? e.key : 'empty'} ${active ? 'up' : 'down'}`}
       >
-        {pad(base + n)}
+        {e ? String(e.key || e.label || '—').slice(0, 6).toUpperCase() : '·'}
       </span>
     )
   }
@@ -27,20 +28,20 @@ function Bank({ label, base, engines, ghosted }) {
     <div className="min-w-0">
       <div className="px-0.5 pb-0.5 text-[7px] tracking-[0.18em] text-acc">{label}</div>
       <div className={`grid grid-cols-8 gap-0.5 ${ghosted ? 'ic-ghost' : ''}`}>
-        {slots.map((e, i) => btn(i + 1, e ? e.up : false))}
+        {slots.map((e) => btn(e))}
       </div>
     </div>
   )
 }
 
-export default function ChannelBank({ engines, ghosted }) {
+export default function SlotBank({ engines, ghosted }) {
   return (
     <div
-      aria-label="Active channel banks"
+      aria-label="Engine slot banks"
       className="grid min-h-0 grid-cols-2 gap-1.5 pt-1"
     >
-      <Bank label="ACTIVE CHANNEL · BANK A" base={0} engines={(engines || []).slice(0, 8)} ghosted={ghosted} />
-      <Bank label="ACTIVE CHANNEL · BANK B" base={20} engines={(engines || []).slice(8, 16)} ghosted={ghosted} />
+      <Bank label="ENGINE SLOT · BANK A" engines={(engines || []).slice(0, 8)} ghosted={ghosted} />
+      <Bank label="ENGINE SLOT · BANK B" engines={(engines || []).slice(8, 16)} ghosted={ghosted} />
     </div>
   )
 }

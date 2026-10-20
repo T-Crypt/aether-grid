@@ -423,6 +423,73 @@
   .ic-flash {
     animation: ic-flash 360ms ease-out;
   }
+  /* CRT scanlines over the intercept pane, the Hollywood phosphor texture */
+  .ic-scan {
+    background: repeating-linear-gradient(
+      to bottom,
+      transparent 0 2px,
+      rgb(0 0 0 / 0.14) 2px 3px
+    );
+    mix-blend-mode: multiply;
+  }
+  /* the scene's display face for hero numerals */
+  .ic-vt {
+    font-family: 'VT323', ui-monospace, monospace;
+  }
+  /* boot reveal: one lock-on sweep of light down the console on mount,
+     finite and one-shot. A held feed settles the canvases; this overlay
+     plays once and ends at opacity 0. Under prefers-reduced-motion the
+     global rule below collapses it to a single instant frame. */
+  .ic-boot {
+    background: linear-gradient(
+      178deg,
+      transparent 43.6%,
+      rgb(var(--dat) / 0.06) 46.8%,
+      rgb(var(--dat) / 0.2) 49.3%,
+      rgb(255 252 240 / 0.3) 50%,
+      rgb(var(--dat) / 0.2) 50.7%,
+      rgb(var(--dat) / 0.06) 53.2%,
+      transparent 56.4%
+    );
+    background-size: 100% 340%;
+    background-position: 0 118%;
+    opacity: 0;
+    animation: ic-boot-sweep 1.6s cubic-bezier(0.3, 0, 0.2, 1) 0.15s 1 both;
+  }
+  @keyframes ic-boot-sweep {
+    0% {
+      opacity: 1;
+      background-position: 0 118%;
+    }
+    100% {
+      opacity: 0;
+      background-position: 0 -40%;
+    }
+  }
+  /* alarm flare: a full-stage glitch flash, one shot per event; the Scene
+     re-keys the element so the same event can re-arm it */
+  @keyframes ic-flare {
+    0% {
+      opacity: 0.55;
+    }
+    12% {
+      opacity: 0.1;
+    }
+    24% {
+      opacity: 0.4;
+    }
+    100% {
+      opacity: 0;
+    }
+  }
+  .ic-flare {
+    background:
+      linear-gradient(0deg, rgb(var(--alm) / 0.2), rgb(var(--alm) / 0.2)),
+      repeating-linear-gradient(90deg, transparent 0 3px, rgb(var(--alm) / 0.3) 3px 4px);
+    mix-blend-mode: screen;
+    opacity: 0;
+    animation: ic-flare 900ms steps(24, end) 1 both;
+  }
 
   /* ------------------------------------------------------------------
      Context Orbit scene: the KV slot stage. Staged surfaces for the
@@ -1069,6 +1136,14 @@
   [data-scene='intercept'] .ic-marquee-track {
     animation: none;
     padding-left: 8px;
+  }
+  /* Inference Intercept: the constant loops stop under reduced motion; the
+     painters settle on one static frame via the conductor, the one-shot
+     ic-flash degenerates instantly, and the boot sweep and the alarm flare
+     collapse to nothing. */
+  [data-scene='intercept'] .ic-boot,
+  [data-scene='intercept'] .ic-flare {
+    animation: none;
   }
   /* Context Orbit: the constant loops (core glow, slot pulses, flags) stop
      under reduced motion; the painters settle on one static frame via the

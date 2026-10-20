@@ -1,5 +1,5 @@
-// IntelFeed: the last five feed events as a live intel stream (level +
-// message), beside the seal in the right pane header row. Warn/err lines
+// EventTicker: the last five feed events as a live event stream (level +
+// message), beside the emblem in the right pane header row. Warn/err lines
 // take the data amber; the panel ghosts when no events are buffered.
 
 import { useScene } from '../../scene/SceneRoot'
@@ -11,13 +11,13 @@ function clock(e) {
   return `${String(d.getHours()).padStart(2, '0')}:${String(d.getMinutes()).padStart(2, '0')}`
 }
 
-export default function IntelFeed() {
+export default function EventTicker() {
   const { snap } = useScene()
   const events = ((snap && snap.events) || []).slice(0, 5)
   const empty = events.length === 0
 
   return (
-    <Frame title="INTEL FEED" tag={empty ? '—' : 'LIVE'} empty={empty} note="no source" className="h-full min-h-0">
+    <Frame title="EVENT FEED" tag={empty ? '—' : 'LIVE'} empty={empty} note="no source" className="h-full min-h-0">
       <div className="flex h-full flex-col justify-start overflow-hidden">
         {events.map((e, i) => {
           const hot = e.level === 'warn' || e.level === 'err' || e.level === 'alert'

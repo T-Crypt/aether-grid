@@ -1,10 +1,12 @@
-// OpsStrip: the far-left vertical operations strip. The operator deck
-// (CPU / RAM meters, GAIN knob) binds to host telemetry; the input list,
-// trace-frequency ladder and latch rows are decorative deck lore (flagged in
-// the scene report). The deck meters ease between feed ticks with CSS
-// transitions, so there is no scene timer.
+// OpsRail: the far-left vertical operations rail. The SESSIONS column
+// prints the first sessions' ids and KV fill; the TOK/S ladder prints one
+// row per engine with its decode rate; STATE counts the KV well states
+// and the live alerts. The operator deck (CPU / RAM meters, power knob)
+// binds to host telemetry. Deck meters ease between feed ticks with CSS
+// transitions, so there is no rail timer.
 
 import { useScene } from '../../scene/SceneRoot'
+import { sessionFill, upEngines, wellCounts } from './shared'
 
 function Meter({ level, label }) {
   const lit = Math.round(Math.min(1, Math.max(0, level)) * 6)
@@ -33,25 +35,15 @@ function Knob({ level }) {
       >
         <span className="absolute left-1/2 top-[2px] h-[7px] w-px -translate-x-1/2 bg-dat" />
       </div>
-      <span className="text-[6px] uppercase tracking-[0.1em] text-ink-3">GAIN</span>
+      <span className="text-[6px] uppercase tracking-[0.1em] text-ink-3">DRAW</span>
       <span className="text-[6px] tabular-nums text-dat">
-        {level > 0 ? `${(level * 30).toFixed(1)}` : '—'}
+        {level > 0 ? `${(level * 450).toFixed(0)}W` : '—'}
       </span>
     </div>
   )
 }
 
-const INPUTS = ['870', '75D', 'B9D', '18D', '658', 'D13', '6F9', '4EA', 'AEC', '7E7', 'BDD', 'E69']
-const TRACE = ['18.408', '85.408', '102.948', '578.077', '1290.762', '2104.5', '3072.1', '4480.8', '6622.0', '8810.4']
-const LATCH = [
-  { k: 'L1', v: 'OK' },
-  { k: 'L2', v: 'OK' },
-  { k: 'L3', v: 'HOLD' },
-  { k: 'L4', v: 'OK' },
-  { k: 'L5', v: 'WAIT' },
-]
-
-export default function OpsStrip() {
+export default function OpsRail() {
   const { snap } = useScene()
   const host = (snap && snap.host) || null
   const cpu = host && host.cpu != null ? host.cpu / 100 : null
@@ -62,9 +54,14 @@ export default function OpsStrip() {
   const deckGhost = cpu == null && ram == null && powerLvl == null
   const uptimeH = host && host.uptime != null ? Math.floor(host.uptime / 3600) : null
 
+  const sessions = (((snap && snap.sessions) || []) || []).slice(0, 12)
+  const engines = upEngines(snap).slice(0, 10)
+  const wells = wellCounts(snap)
+  const alerts = ((snap && snap.alerts) || []).length
+
   return (
     <aside
-      aria-label="Operations strip"
+      aria-label="Operations rail"
       className="hidden w-11 shrink-0 select-none flex-col overflow-hidden border-r border-acc/25 bg-bgg/40 font-mono uppercase md:flex"
     >
       <div className="border-b border-acc/25 px-1 py-1.5 text-center text-[8px] font-semibold tracking-[0.16em] text-acc [writing-mode:vertical-rl]">
@@ -72,30 +69,48 @@ export default function OpsStrip() {
       </div>
 
       <div className="border-b border-acc/25 px-1 pb-1.5 pt-1">
-        <div className="mb-0.5 text-[7px] tracking-[0.1em] text-acc/85">INPUTS</div>
-        {INPUTS.map((v, i) => (
-          <div key={i} className="flex items-baseline justify-between px-0.5 text-[7px] leading-[1.5]">
-            <span className="text-ink-3">IN {String(i + 1).padStart(2, '0')}</span>
-            <span className="tabular-nums text-ink-2/80">{v}</span>
-          </div>
-        ))}
+        <div className="mb-0.5 text-[7px] tracking-[0.1em] text-acc/85">SESSIONS</div>
+        {sessions.map((s, i) => {
+          const f = sessionFill(s)
+          return (
+            <div key={s.id ?? i} className="flex items-baseline justify-between px-0.5 text-[7px] leading-[1.5]">
+              <span className="tabular-nums text-ink-3">{String(s.id || '—').slice(-4)}</span>
+              <span className="tabular-nums text-dat/80">{f != null ? `${Math.round(f * 100)}%` : '—'}</span>
+            </div>
+          )
+        })}
+        {sessions.length === 0 && (
+          <div className="px-0.5 text-[7px] leading-[1.5] text-ink-3">NO SESSIONS</div>
+        )}
       </div>
 
       <div className="border-b border-acc/25 px-1 pb-1.5 pt-1">
-        <div className="mb-0.5 text-[7px] tracking-[0.1em] text-acc/85">TRACE FREQ</div>
-        {TRACE.map((v) => (
-          <div key={v} className="px-0.5 text-[7.5px] leading-[1.45] tabular-nums text-dat/80">
-            {v}
-          </div>
-        ))}
+        <div className="mb-0.5 text-[7px] tracking-[0.1em] text-acc/85">TOK/S</div>
+        {engines.map((e) => {
+          const r = e.rates && e.rates.decode_tps
+          return (
+            <div key={e.key} className="flex items-baseline justify-between px-0.5 text-[7px] leading-[1.5]">
+              <span className="text-ink-3">{String(e.key || e.label).slice(0, 4).toUpperCase()}</span>
+              <span className="tabular-nums text-dat/80">{r != null && isFinite(r) ? Math.round(r) : '—'}</span>
+            </div>
+          )
+        })}
+        {engines.length === 0 && (
+          <div className="px-0.5 text-[7px] leading-[1.5] text-ink-3">NO ENGINES</div>
+        )}
       </div>
 
       <div className="border-b border-acc/25 px-1 pb-1.5 pt-1">
-        <div className="mb-0.5 text-[7px] tracking-[0.1em] text-acc/85">LATCH</div>
-        {LATCH.map((r) => (
-          <div key={r.k} className="flex items-baseline justify-between px-0.5 text-[7px] leading-[1.5]">
-            <span className="text-ink-3">{r.k}</span>
-            <span className="tabular-nums text-dat/80">{r.v}</span>
+        <div className="mb-0.5 text-[7px] tracking-[0.1em] text-acc/85">STATE</div>
+        {[
+          ['HOT', wells.hot, wells.hot > 0],
+          ['WATCH', wells.watch, wells.watch > 0],
+          ['OK', wells.ok, false],
+          ['ALRT', alerts, alerts > 0],
+        ].map(([k, v, warn]) => (
+          <div key={k} className="flex items-baseline justify-between px-0.5 text-[7px] leading-[1.5]">
+            <span className="text-ink-3">{k}</span>
+            <span className={`tabular-nums ${warn ? 'text-alm' : 'text-dat/80'}`}>{String(v)}</span>
           </div>
         ))}
       </div>

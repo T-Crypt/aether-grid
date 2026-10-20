@@ -1,11 +1,13 @@
-// IoBlocks: the bottom I/O row of the left pane — INPUT SIGNAL block
-// (input = request queue depth), REQUEST DATA block (output = serving
-// stats, bit.rate = rpm) and the five mode buttons (decorative states).
-// PORT/NODE key off the serving engine; CHAN/PHASE/GAIN/STREAM/STATUS are
-// deck lore, with STATUS mirroring live alert pressure.
+// SessionIo: the bottom I/O row of the engine bay — SESSION INGRESS (what
+// arrives: queue, arrival rate, latency) and SESSION OUTFLOW (what the
+// engines emit: sessions, context tokens, decode and prefill rates,
+// reasoning), plus the event-class legend the log on the right pane keys
+// on. PREFILL derives from arrivals when the engine does not report it
+// (marked *); every other figure is a snapshot key or a direct sum.
 
 import { useScene } from '../../scene/SceneRoot'
 import { Frame } from './frame.jsx'
+import { ctxUsed, decodeOf, prefillOf, upEngines, wellCounts } from './shared'
 
 function IoBlock({ title, rows, ghosted = false, note }) {
   return (
@@ -25,51 +27,51 @@ function IoBlock({ title, rows, ghosted = false, note }) {
 const BTN =
   'flex min-h-0 flex-1 items-center justify-center border border-acc/25 bg-pan/40 px-1 text-[7.5px] tracking-[0.16em] uppercase transition-colors duration-300'
 
-export default function IoBlocks({ target, ghosted }) {
+export default function SessionIo({ target, ghosted }) {
   const { snap } = useScene()
   const k = (snap && snap.kpi) || {}
   const alerts = (snap && snap.alerts) || []
   const feed = snap ? snap.mode || 'live' : '—'
-
-  const queue = k.queue != null ? String(Math.round(k.queue)) : '—'
-  const tps = k.tps != null ? String(Math.round(k.tps)) : '—'
-  const rpm = k.rpm != null ? `${Math.round(k.rpm)}K` : '—'
+  const wells = wellCounts(snap)
+  const decode = decodeOf(snap)
+  const pf = prefillOf(snap)
+  const r = (snap && snap.reasoning) || {}
 
   const inRows = [
-    ['PORT', target && target.backend ? String(target.backend).replace(/^https?:\/\//, '').split('/')[0] || '—' : '—'],
-    ['CHAN', '06 / 24'],
-    ['BUF', queue],
-    ['PHASE', '+04.20'],
-    ['GAIN', '+12.40'],
-    ['STREAM', feed.toUpperCase()],
+    ['QUEUE', k.queue != null ? String(Math.round(k.queue)) : '—'],
+    ['REQ/MIN', k.rpm != null ? String(Math.round(k.rpm)) : '—'],
+    ['P95', k.p95 != null ? `${(k.p95 / 1000).toFixed(1)}S` : '—'],
+    ['TTFT', k.ttft != null ? `${(k.ttft / 1000).toFixed(2)}S` : '—'],
+    ['HOT SESS', String(wells.hot)],
+    ['WATCH SESS', String(wells.watch)],
     ['STATUS', alerts.length ? `ALRT ${alerts.length}` : 'OK', alerts.length ? 'text-dat' : ''],
   ]
   const outRows = [
-    ['TARGET', target ? String(target.label || target.key).slice(0, 10).toUpperCase() : '—'],
-    ['NODE', target ? String(target.origin || '—').toUpperCase() : '—'],
-    ['BUF', k.vram != null ? k.vram.toFixed(1) : '—'],
-    ['TRX', tps],
-    ['BIT.RATE', rpm, 'text-dat'],
-    ['CRC', 'OK'],
-    ['SPLIT', feed === 'demo' ? 'SIM' : 'FULL'],
+    ['SESS', String((((snap && snap.sessions) || []) || []).length)],
+    ['CTX TOK', ctxUsed(snap).toLocaleString('en-US')],
+    ['DECODE', decode > 0 ? `${Math.round(decode)} TOK/S` : '—', 'text-dat'],
+    ['PREFILL', pf.v != null ? `${Math.round(pf.v)}${pf.derived ? '*' : ''} TOK/S` : '—'],
+    ['MTP', r.mtp_accept_pct != null ? `${Math.round(r.mtp_accept_pct)}%` : k.mtp != null ? `${Math.round(k.mtp)}%` : '—'],
+    ['THINK', r.thinking_tokens != null ? r.thinking_tokens.toLocaleString('en-US') : '—'],
+    ['ENG', `${upEngines(snap).length}/${(((snap && snap.engines) || []) || []).length}`],
   ]
 
-  const buttons = [
-    { l: 'INPUT', a: false },
-    { l: 'OUTPUT', a: true },
-    { l: 'MODES', a: false },
-    { l: 'ARRAY 1', a: false },
-    { l: 'ARRAY 2', a: false },
+  const legend = [
+    { l: 'PREFILL', c: 'text-acc' },
+    { l: 'DECODE', c: 'text-dat' },
+    { l: 'THINK', c: 'text-col' },
+    { l: 'EVICT', c: 'text-dat' },
+    { l: 'ERROR', c: 'text-alm' },
   ]
 
   return (
     <div className="grid min-h-[120px] flex-[18] grid-cols-2 gap-1.5 md:min-h-0 md:grid-cols-[minmax(0,1fr)_minmax(0,1fr)_64px]">
-      <IoBlock title="INPUT SIGNAL" rows={inRows} ghosted={ghosted} note="no source" />
-      <IoBlock title="REQUEST DATA" rows={outRows} ghosted={ghosted} note="no source" />
+      <IoBlock title="SESSION INGRESS" rows={inRows} ghosted={ghosted} note="no source" />
+      <IoBlock title="SESSION OUTFLOW" rows={outRows} ghosted={ghosted} note="no source" />
       <div className="col-span-2 flex flex-wrap gap-1 md:col-span-1 md:flex-col">
-        {buttons.map((b) => (
+        {legend.map((b) => (
           <div key={b.l} className={BTN} aria-hidden="true">
-            <span className={b.a ? 'text-dat' : 'text-acc'}>{b.l}</span>
+            <span className={b.c}>{b.l}</span>
           </div>
         ))}
       </div>

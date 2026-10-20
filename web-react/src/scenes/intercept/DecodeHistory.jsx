@@ -1,9 +1,9 @@
-// SignalHistory: four sparklines (SIG-A/B/C + NOISE) as in the reference.
-// SIG rows bind to the first three engines' tps histories (engHist); NOISE
-// is the host cpu history, per the P0 card. Each row normalises against its
-// own peak so a quiet feed still reads. Rows whose source is absent draw a
-// flat mid-line with a dash; the whole panel ghosts when there are no
-// engines and no host series.
+// DecodeHistory: four decode-rate sparklines — the first three engines'
+// tok/s histories (engHist) plus the host cpu history as the fourth row,
+// labelled HOST. Each row normalises against its own peak so a quiet feed
+// still reads. Rows whose source is absent draw a flat mid-line with a
+// dash; the whole panel ghosts when there are no engines and no host
+// series.
 
 import { useScene } from '../../scene/SceneRoot'
 import { Frame } from './frame.jsx'
@@ -42,11 +42,11 @@ function Row({ label, series, value }) {
   )
 }
 
-export default function SignalHistory({ engines }) {
+export default function DecodeHistory({ engines }) {
   const { snap } = useScene()
   const top3 = (engines || []).slice(0, 3)
-  const noise = (snap && snap.hostHist && snap.hostHist.cpu) || []
-  const hasSource = top3.length > 0 || noise.length > 0
+  const host = (snap && snap.hostHist && snap.hostHist.cpu) || []
+  const hasSource = top3.length > 0 || host.length > 0
   const empty = !hasSource
 
   const seriesOf = (e) => {
@@ -63,12 +63,14 @@ export default function SignalHistory({ engines }) {
   }
 
   return (
-    <Frame title="SIGNAL HISTORY" ghosted={empty} empty={empty} note="no source" className="flex-[10] min-h-0">
+    <Frame title="DECODE HISTORY" ghosted={empty} empty={empty} note="no source" className="flex-[10] min-h-0">
       <div className="flex h-full flex-col justify-start overflow-hidden">
-        <Row label="SIG-A" series={top3[0] ? seriesOf(top3[0]) : null} value={top3[0] ? valueOf(top3[0], seriesOf(top3[0])) : null} />
-        <Row label="SIG-B" series={top3[1] ? seriesOf(top3[1]) : null} value={top3[1] ? valueOf(top3[1], seriesOf(top3[1])) : null} />
-        <Row label="SIG-C" series={top3[2] ? seriesOf(top3[2]) : null} value={top3[2] ? valueOf(top3[2], seriesOf(top3[2])) : null} />
-        <Row label="NOISE" series={noise.length ? noise : null} value={noise.length ? Math.round(noise[noise.length - 1]) : null} />
+        {top3.map((e, i) => {
+          const h = seriesOf(e)
+          return <Row key={e.key || i} label={`E${i + 1}`} series={h} value={valueOf(e, h)} />
+        })}
+        {top3.length < 3 && <Row key="e-dim" label="E—" series={null} value="—" />}
+        <Row label="HOST" series={host.length ? host : null} value={host.length ? Math.round(host[host.length - 1]) : null} />
       </div>
     </Frame>
   )

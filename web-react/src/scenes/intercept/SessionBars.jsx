@@ -1,50 +1,43 @@
-// FreqBars: the FREQUENCY ANALYSIS block — ten bars, one per KPI key
-// (tps, rpm, p95, vram, ttft, tpot, cache, reingest, mtp, queue)
-// normalised against a sane per-key ceiling, per the P0 card. Heights
-// ease between feed ticks with a CSS transition. The panel ghosts when no
-// KPI values are present.
+// SessionBars: the SESSION THROUGHPUT block — one bar per session (top 14
+// by decode share), the height the session's derived tok/s against the
+// desk peak. Heights ease between feed ticks with a CSS transition. The
+// panel ghosts when no session rate resolves.
 
-import { KPI_KEYS } from '../../lib/format'
-import { clamp01 } from '../../lib/format'
 import { useScene } from '../../scene/SceneRoot'
+import { clamp01 } from '../../lib/format'
 import { Frame } from './frame.jsx'
+import { sessionRate, sessionState } from './shared'
 
-const CEILING = {
-  tps: 300,
-  rpm: 400,
-  p95: 2000,
-  vram: 24,
-  ttft: 2000,
-  tpot: 100,
-  cache: 100,
-  reingest: 100,
-  mtp: 100,
-  queue: 16,
-}
-const LABEL = { tps: 'TPS', rpm: 'RPM', p95: 'P95', vram: 'VRAM', ttft: 'TTFT', tpot: 'TPOT', cache: 'CACH', reingest: 'REIN', mtp: 'MTP', queue: 'QUEUE' }
+const BARS = 14
 
-export default function FreqBars() {
+export default function SessionBars() {
   const { snap } = useScene()
-  const k = (snap && snap.kpi) || {}
-  const bars = KPI_KEYS.map((key) => {
-    const v = k[key]
-    const level = v != null && isFinite(v) ? clamp01(Math.max(0, v) / (CEILING[key] || 100)) : null
-    return { key, level }
-  })
-  const empty = bars.every((b) => b.level == null)
+  const sessions = (((snap && snap.sessions) || []) || [])
+    .map((s) => ({ id: s.id, rate: sessionRate(s, snap) || 0, st: sessionState(s) }))
+    .filter((s) => s.rate > 0)
+    .sort((a, b) => b.rate - a.rate)
+    .slice(0, BARS)
+  const peak = sessions.reduce((a, s) => Math.max(a, s.rate), 0)
+  const empty = sessions.length === 0
 
   return (
-    <Frame title="FREQUENCY ANALYSIS" tag="8 BAND" empty={empty} note="no source" className="h-[46px] shrink-0" bodyClass="px-1.5 pt-0.5">
+    <Frame title="SESSION THROUGHPUT" tag={`SESS ${sessions.length} OF ${(((snap && snap.sessions) || []) || []).length}`} empty={empty} note="no source" className="h-[46px] shrink-0" bodyClass="px-1.5 pt-0.5">
       <div className="flex h-full items-end gap-0.5">
-        {bars.map((b) => (
-          <div key={b.key} className="flex h-full min-w-0 flex-1 flex-col items-center justify-end gap-px">
-            <div
-              className="w-full bg-gradient-to-t from-acc to-dat shadow-[0_0_3px_rgb(var(--acc)_/_0.35)] transition-[height] duration-300 ease-out"
-              style={{ height: b.level == null ? '2%' : `${Math.max(4, Math.round(b.level * 100))}%` }}
-            />
-            <span className="text-[5.5px] tracking-[0.04em] text-ink-3">{LABEL[b.key]}</span>
-          </div>
-        ))}
+        {sessions.map((s) => {
+          const level = peak > 0 ? clamp01(s.rate / peak) : 0
+          const hot = s.st === 'hot'
+          return (
+            <div key={s.id} className="flex h-full min-w-0 flex-1 flex-col items-center justify-end gap-px" aria-label={`session ${s.id} ${Math.round(s.rate)} tok/s`}>
+              <div
+                className={`w-full shadow-[0_0_3px_rgb(var(--acc)_/_0.35)] transition-[height] duration-300 ease-out ${
+                  hot ? 'bg-alm' : 'bg-gradient-to-t from-acc to-dat'
+                }`}
+                style={{ height: `${Math.max(4, Math.round(level * 100))}%` }}
+              />
+              <span className="text-[5.5px] tracking-[0.04em] text-ink-3">{String(s.id || '—').slice(-4)}</span>
+            </div>
+          )
+        })}
       </div>
     </Frame>
   )
