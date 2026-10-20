@@ -59,7 +59,7 @@ const pct = (x, y) => ({ x: (x / VBX) * 100, y: (y / VBY) * 100 })
 // need that much separation.
 export const CALLOUTS = [
   { a: pct(740.9, 623.0), l: pct(560.0, 726.0), side: 'left', cyr: 'ДЫНЯ ТАШКЕНТ', lat: 'P23 · TASHKENT MELON 2178', bind: 'bloom' },
-  { a: pct(622.0, 179.1), l: pct(324.3, 130.0), side: 'left', cyr: 'ТОМАТ', lat: 'SAN MARZANO · P07', bind: 'harv' },
+  { a: pct(622.0, 179.1), l: pct(505.0, 200.0), side: 'right', cyr: 'ТОМАТ', lat: 'SAN MARZANO · P07', bind: 'harv' },
   { a: pct(828.0, 298.1), l: pct(324.3, 314.0), side: 'left', cyr: 'САЛАТ', lat: 'SPOTTED TROUT · P14', bind: 'nom' },
   { a: pct(622.0, 654.9), l: pct(919.7, 738.0), side: 'right', cyr: 'КЛУБНИКА', lat: 'MARA DES BOIS · P28', bind: 'nom' },
   { a: pct(416.0, 535.9), l: pct(919.7, 610.1), side: 'right', cyr: 'БАЗИЛИК', lat: 'GENOVESE DOP · P36', bind: 'warn' },
@@ -68,12 +68,12 @@ export const CALLOUTS = [
   { a: pct(441.7, 351.4), l: pct(239.0, 360.0), side: 'left', cyr: 'ГИДРОПОН.', lat: 'HYDROPONIC LOOP', bind: 'hydro' },
   { a: pct(475.1, 293.7), l: pct(306.1, 268.0), side: 'left', cyr: 'pH-БАЛАНС', lat: 'pH AVG', bind: 'ph' },
   { a: pct(622.0, 117.8), l: pct(324.3, 222.0), side: 'left', cyr: 'ЗЕРКАЛО', lat: 'MIRROR ARRAY', bind: 'nom' },
-  { a: pct(768.9, 293.7), l: pct(937.9, 168.7), side: 'right', cyr: 'CO₂ АТМ.', lat: 'CO₂ ATMOSPHERE', bind: 'co2' },
-  { a: pct(802.3, 351.4), l: pct(1005.0, 284.9), side: 'right', cyr: 'КИСЛОРОД', lat: 'O₂ ATMOSPHERE', bind: 'o2' },
+  { a: pct(768.9, 293.7), l: pct(796.0, 290.0), side: 'right', cyr: 'CO₂ АТМ.', lat: 'CO₂ ATMOSPHERE', bind: 'co2' },
+  { a: pct(802.3, 351.4), l: pct(1005.0, 340.0), side: 'right', cyr: 'КИСЛОРОД', lat: 'O₂ ATMOSPHERE', bind: 'o2' },
   { a: pct(622.0, 716.2), l: pct(919.7, 786.0), side: 'right', cyr: 'РОЙ · 28', lat: 'DRONE BAY · 28/28', bind: 'drones' },
   { a: pct(903.2, 519.3), l: pct(1005.0, 549.1), side: 'right', cyr: 'ОБИТ. БЛОК', lat: 'HABITAT · YUMI', bind: 'hab' },
   { a: pct(322.8, 417.0), l: pct(215.7, 417.0), side: 'left', cyr: 'L2 ↔ ЗЕМЛЯ', lat: 'COMM · LAGOS RELAY', bind: 'comm' },
-  { a: pct(441.7, 482.6), l: pct(239.0, 549.1), side: 'left', cyr: 'ФОНД · X-H', lat: 'FOUND. XENO-HERIT.', bind: 'nom' },
+  { a: pct(441.7, 482.6), l: pct(239.0, 490.0), side: 'left', cyr: 'ФОНД · X-H', lat: 'FOUND. XENO-HERIT.', bind: 'nom' },
   { a: pct(368.6, 265.0), l: pct(239.0, 176.0), side: 'left', cyr: 'СВЕЧЕНИЕ', lat: 'GROW-LIGHT ARRAY', bind: 'nom' },
   { a: pct(875.4, 569.0), l: pct(1005.0, 675.0), side: 'right', cyr: 'ВОДА · ЦИКЛ', lat: 'WATER LOOP · NUTRIENT', bind: 'water' },
 ]
