@@ -2,7 +2,7 @@
 // bezel framing the falling time axis on a single 2D canvas on the shared
 // conductor clock); dense text modules rail both sides; edge strips carry
 // the runtime meta, the anomaly flag and the event-log ticker. Everything
-// animates off conductor.t — the scene owns no timers. Below 768 px the
+// animates off conductor.t; the scene owns no timers. Below 768 px the
 // rails hide and the viewport is a 55 vh hero; the stage stretches (never
 // letterboxes) past 1920 px. The .sp-boot overlay plays a one-shot lock-on
 // sweep on mount and degenerates instantly under reduced motion.
@@ -68,7 +68,7 @@ function Viewport({ snap, conductor }) {
           </span>
         </div>
 
-        {/* mid: the reasoning lock card — the headline overlay, big glowing
+        {/* mid: the reasoning lock card, the headline overlay: the big glowing
             score off the reasoning feed */}
         <div className="absolute top-[30px] left-2 z-[5] hidden min-w-0 border border-acc/25 bg-black/55 px-2.5 py-1.5 sm:block" aria-label="Reasoning lock score">
           <div className="flex min-w-0 items-baseline gap-2">
@@ -92,7 +92,7 @@ function Viewport({ snap, conductor }) {
           <div className="text-[8px] tracking-[0.2em] text-ink-3">AETHER GRID · LOCAL LLM RUNTIME</div>
         </div>
 
-        {/* bottom: time axis — the lane names print on the canvas centre */}
+        {/* bottom: time axis; the lane names print on the canvas centre */}
         <div className="absolute inset-x-0 bottom-0 z-[5] flex min-w-0 justify-between p-2 text-[8px] tabular-nums text-ink-3">
           <span>−7 S</span>
           <span>NOW</span>

@@ -1,5 +1,5 @@
 // Logit Spectrum canvas painters. Registered through SceneCanvas; every one
-// is a pure function of (ctx, w, h, c) — the conductor carries the clock,
+// is a pure function of (ctx, w, h, c): the conductor carries the clock,
 // the latest snapshot and the active palette. No timers, no React state;
 // per-row write state lives in the ring buffer below the way the foundry
 // holds its bay layout. Under reduced motion the conductor settles each
@@ -19,7 +19,7 @@
 // meaning.
 
 import { ALM } from '../../scene/conductor'
-import { det, engineLevels, heatRamp, lanesOf, staleOf } from './shared'
+import { det, engineLevels, heatRamp, lanesOf, rampChannels, staleOf } from './shared'
 
 const chan = (s) => String(s || '0 0 0').trim().split(/\s+/).map(Number)
 const clamp01 = (a) => (a < 0 ? 0 : a > 1 ? 1 : a)
@@ -38,7 +38,7 @@ function flareAge(c, types) {
 }
 
 // ---------------------------------------------------------------------------
-// THE TOKEN SPECTROGRAM — one 2D canvas on the shared clock. A ring buffer
+// THE TOKEN SPECTROGRAM. One 2D canvas on the shared clock. A ring buffer
 // holds the recent time rows; each frame the history shifts UP (time falls
 // toward NOW at the bottom) and the newest rows are written along the bottom
 // edge, then the buffer blits stretched over the viewport.
@@ -85,26 +85,13 @@ function spRow(lanes, y) {
   return row
 }
 
-// Sample the ramp as channels (the burn tint mixes in RGB space).
-function rampChannels(ramp, v) {
-  const x = Math.min(1, Math.max(0, v))
-  let i = 1
-  while (i < ramp.length - 1 && ramp[i].v < x) i++
-  const lo = ramp[i - 1]
-  const hi = ramp[i]
-  const t = hi.v === lo.v ? 0 : (x - lo.v) / (hi.v - lo.v)
-  const c = [
-    Math.round(lo.c[0] + (hi.c[0] - lo.c[0]) * t),
-    Math.round(lo.c[1] + (hi.c[1] - lo.c[1]) * t),
-    Math.round(lo.c[2] + (hi.c[2] - lo.c[2]) * t),
-  ]
-  return { c, a: lo.a + (hi.a - lo.a) * t }
-}
+// Sample the ramp as channels (the burn tint mixes in RGB space); the
+// channel sampler lives in shared.js next to heatRamp.
 
 // Write one row into the buffer. `glitch` is the flare strength at write
 // time; rows written inside the short flare window go near-full alarm and
-// ride up as thin streaks, so an anomaly reads as a glitch line, not a red
-// flood over the whole tube.
+// ride up as thin streaks, so an anomaly reads as a glitch line rather than
+// a red flood over the whole tube.
 function writeRow(b, y, lanes, glitch, ramp) {
   const row = spRow(lanes, y)
   const burn = 0.85 * glitch
@@ -250,7 +237,7 @@ export function paintSpectrogram(ctx, w, h, c) {
 }
 
 // ---------------------------------------------------------------------------
-// Phase slice 140×28: the live lobe profile as one bar row — think / decode
+// Phase slice 140×28: the live lobe profile as one bar row, think / decode
 // / mtp amplitudes over the bins, breathing with the shimmer term.
 // ---------------------------------------------------------------------------
 

@@ -90,16 +90,17 @@ export function heatRamp(pal) {
 
 // Sample the ramp at v (0..1). The alarm streak stays outside the scale and
 // is handled at the call site.
-export function rampColor(ramp, v) {
+export function rampChannels(ramp, v) {
   const x = Math.min(1, Math.max(0, v))
   let i = 1
   while (i < ramp.length - 1 && ramp[i].v < x) i++
   const lo = ramp[i - 1]
   const hi = ramp[i]
   const t = hi.v === lo.v ? 0 : (x - lo.v) / (hi.v - lo.v)
-  const c = mix(lo.c, hi.c, t)
-  const a = lo.a + (hi.a - lo.a) * t
-  return `rgb(${c[0]} ${c[1]} ${c[2]} / ${a.toFixed(3)})`
+  return {
+    c: mix(lo.c, hi.c, t),
+    a: lo.a + (hi.a - lo.a) * t,
+  }
 }
 
 // The think rate: the delta of reasoning.thinking_tokens between feed snaps.
