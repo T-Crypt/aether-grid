@@ -29,9 +29,14 @@ export default function TimecodeStrip() {
       className="grid grid-cols-4 gap-x-3 lg:grid-cols-8"
     >
       {cells.map((c) => (
-        <div key={c.k} className="flex items-baseline justify-between gap-2 px-1 pb-1 text-2xs">
+        // stacked label/value below lg so TC and VRAM fit 390 px columns
+        // untruncated; the baseline row (and its truncate) is desktop-only
+        <div
+          key={c.k}
+          className="flex flex-col items-start gap-0.5 px-1 pb-1 text-2xs lg:flex-row lg:items-baseline lg:justify-between lg:gap-2"
+        >
           <span className={`shrink-0 ${TONE[c.tone]}`}>{c.k}</span>
-          <span className="truncate tabular-nums text-[12px] font-semibold text-ink-1">{c.v}</span>
+          <span className="tabular-nums text-[12px] font-semibold text-ink-1 lg:min-w-0 lg:truncate">{c.v}</span>
         </div>
       ))}
     </div>
