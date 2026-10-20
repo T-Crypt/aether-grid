@@ -60,17 +60,33 @@ function Viewport({ snap, conductor }) {
         <div className="sp-grain pointer-events-none absolute inset-0 hidden min-[769px]:block" aria-hidden="true" />
         <div className="sp-vignette pointer-events-none absolute inset-0" aria-hidden="true" />
 
-        {/* top: phase strip + lock chip */}
-        <div className="absolute inset-x-0 top-0 z-[5] flex min-w-0 items-center gap-2 p-2">
+        {/* top: phase strip */}
+        <div className="absolute inset-x-0 top-0 z-[5] flex min-w-0 items-center gap-2 p-1.5">
           <PhaseStrip snap={snap} conductor={conductor} />
           <span className="hidden shrink-0 border border-acc/25 bg-black/50 px-1.5 py-0.5 text-[8px] tracking-[0.16em] text-ink-2 sm:block">
             SPEC · <span className="text-acc">REASONING LOCK</span>
           </span>
         </div>
 
+        {/* the tick ruler: channel names on their lane centres */}
+        <div className="pointer-events-none absolute inset-x-2 top-[22px] z-[5] hidden h-[12px] sm:block" aria-hidden="true">
+          <div className="relative h-full">
+            {[22, 50, 78].map((pct, i) => (
+              <span
+                key={pct}
+                className="absolute top-0 -translate-x-1/2 whitespace-nowrap bg-black/40 px-1 text-[8px] tracking-[0.18em]"
+                style={{ left: `${pct}%`, color: 'rgb(var(--acc) / 0.9)' }}
+              >
+                {['THINK', 'DECODE', 'MTP'][i]}
+              </span>
+            ))}
+            <div className="absolute inset-x-0 bottom-0 h-px" style={{ background: 'rgb(var(--acc) / 0.14)' }} />
+          </div>
+        </div>
+
         {/* mid: the reasoning lock card, the headline overlay: the big glowing
             score off the reasoning feed */}
-        <div className="absolute top-[30px] left-2 z-[5] hidden min-w-0 border border-acc/25 bg-black/55 px-2.5 py-1.5 sm:block" aria-label="Reasoning lock score">
+        <div className="absolute top-[38px] left-2 z-[5] hidden min-w-0 border border-acc/25 bg-black/55 px-2.5 py-1.5 sm:block" aria-label="Reasoning lock score">
           <div className="flex min-w-0 items-baseline gap-2">
             <span className="shrink-0 text-[8px] tracking-[0.18em] text-ink-3">REASONING LOCK</span>
             <span
@@ -88,14 +104,11 @@ function Viewport({ snap, conductor }) {
             {offline ? 'FEED HELD · SPECTROGRAM SETTLED' : `THINK LANE ${lanesOf(snap, conductor).think > 0 ? 'ACTIVE' : 'IDLE'} · DECODE ${k.tps != null ? Math.round(k.tps) : '—'} TOK/S`}
           </div>
         </div>
-        <div className="absolute top-[26px] right-2 z-[5] hidden text-right md:block" aria-hidden="true">
-          <div className="text-[8px] tracking-[0.2em] text-ink-3">AETHER GRID · LOCAL LLM RUNTIME</div>
-        </div>
-
-        {/* bottom: time axis; the lane names print on the canvas centre */}
-        <div className="absolute inset-x-0 bottom-0 z-[5] flex min-w-0 justify-between p-2 text-[8px] tabular-nums text-ink-3">
-          <span>−7 S</span>
-          <span>NOW</span>
+        {/* bottom: time axis with the console mark */}
+        <div className="absolute inset-x-0 bottom-0 z-[5] flex min-w-0 items-center justify-between gap-2 p-2 text-[8px] tabular-nums text-ink-3">
+          <span className="shrink-0">−7 S</span>
+          <span className="hidden min-w-0 truncate bg-black/40 px-1.5 py-0.5 tracking-[0.2em] text-ink-2 md:block">AETHER GRID · LOCAL LLM RUNTIME</span>
+          <span className="shrink-0 text-ink-2">NOW</span>
         </div>
       </div>
     </section>

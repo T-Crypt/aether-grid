@@ -6,7 +6,7 @@
 // truncate; nothing here owns a timer.
 
 import SceneCanvas from '../../scene/Canvas'
-import { paintPhaseSpec, paintSeries, paintEngines } from './painters'
+import { paintPhaseSpec, paintTrace, paintEngines } from './painters'
 import {
   lockScore,
   alertIndex,
@@ -171,14 +171,14 @@ export function RightRail({ snap, conductor }) {
           <Dial label="DECODE" pct={shares.decodeShare} title="Decode activity over prefill activity, percent" />
         </div>
       </Mod>
-      <Mod title="MTP ACCEPT · LAST 60" right="TICKS">
-        <SceneCanvas draw={(ctx, w, h, c) => paintSeries(ctx, w, h, c, 'mtp', 'acc')} label="MTP acceptance sparkline" className="h-[24px] w-full" />
+      <Mod title="MTP ACCEPT" right="LAST 60 TICKS">
+        <SceneCanvas draw={(ctx, w, h, c) => paintTrace(ctx, w, h, c, 'mtp', 'acc', '%')} label="MTP acceptance trace" className="h-[46px] w-full" />
       </Mod>
       <Mod title="ENGINES · DECODE TOK/S" right={`${engines.filter((e) => e.up).length}/${engines.length}`}>
-        <SceneCanvas draw={paintEngines} label="Per-engine decode rate bars" className="h-[40px] w-full" />
+        <SceneCanvas draw={paintEngines} label="Per-engine decode rate bars" className="h-[46px] w-full" />
         <div className="flex justify-between gap-1 text-[7px] tabular-nums text-ink-3">
           {engines.slice(0, 6).map((e) => (
-            <span key={e.id} className={`min-w-0 truncate ${e.up ? '' : 'text-alm'}`}>{e.id} {e.up ? `${e.tps != null ? Math.round(e.tps) : '—'}` : 'DOWN'}</span>
+            <span key={e.id} className={`min-w-0 truncate ${e.up ? '' : 'text-alm'}`}>{e.id}{e.up ? '' : ' · DOWN'}</span>
           ))}
         </div>
       </Mod>
@@ -192,8 +192,8 @@ export function RightRail({ snap, conductor }) {
           ))}
         </div>
       </Mod>
-      <Mod title="LATENCY · TTFT / P95" right="MS">
-        <SceneCanvas draw={(ctx, w, h, c) => paintSeries(ctx, w, h, c, 'p95', 'dat')} label="P95 latency sparkline" className="h-[16px] w-full" />
+      <Mod title="LATENCY · P95" right="MS">
+        <SceneCanvas draw={(ctx, w, h, c) => paintTrace(ctx, w, h, c, 'p95', 'dat', 'MS')} label="P95 latency trace" className="h-[40px] w-full" />
         <div className="mt-0.5 flex min-w-0 justify-between gap-2 text-[8.5px] tabular-nums">
           <span className="min-w-0 truncate text-ink-3">TTFT <span className="text-ink-1">{lat.ttft != null ? lat.ttft : '—'}</span></span>
           <span className="shrink-0 text-ink-3">P95 <span className="text-ink-1">{lat.p95 != null ? lat.p95 : '—'}</span></span>

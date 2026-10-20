@@ -210,13 +210,23 @@ export function classMix(snap) {
   return names.map((name) => ({ name, v: n ? (counts[name] / n) * 100 : 0, n: counts[name] }))
 }
 
+// Word-boundary clip for log rows: a row never cuts a word in half, and the
+// cut never lands on a trailing separator.
+export function clipWords(s, n) {
+  const t = String(s || '')
+  if (t.length <= n) return t
+  const cut = t.slice(0, n)
+  const sp = cut.lastIndexOf(' ')
+  return (sp > n * 0.5 ? cut.slice(0, sp) : cut).replace(/[\s·—-]+$/, '') + '…'
+}
+
 // Anomaly log: the last 12 feed events, newest first.
 export function history12(snap) {
   const events = ((snap && snap.events) || []).slice(0, 12)
   return events.map((e, i) => ({
     id: e && e.id != null ? e.id : `ev-${i}`,
-    t: e && e.t != null && isFinite(e.t) ? hmOf(e.t) : '—',
-    msg: String((e && e.msg) || 'EVENT').slice(0, 26).toUpperCase(),
+    t: e && e.t != null && isFinite(e.t) ? hmOf(e.t).slice(0, 5) : '—',
+    msg: clipWords(String((e && e.msg) || 'EVENT').slice(0, 60).toUpperCase(), 24),
     level: (e && e.level) || 'info',
   }))
 }
