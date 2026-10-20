@@ -134,7 +134,7 @@ export function paintEngines(ctx, w, h, c) {
   const n = Math.max(1, shown.length)
   const padL = 40
   const padR = 20
-  const xAt = (i) => (n === 1 ? w * 0.5 : padL + (i / (n - 1)) * (w - padL - padR))
+  const xAt = (i) => (n === 1 ? w * 0.38 : padL + (i / (n - 1)) * (w - padL - padR))
   const yAt = (load) => 10 + (1 - Math.min(1, Math.max(0, load))) * (h - 26)
 
   for (let i = 0; i < shown.length; i++) {

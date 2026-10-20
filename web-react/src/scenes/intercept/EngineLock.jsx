@@ -58,9 +58,9 @@ export default function EngineLock({ target, ghosted }) {
         {!ghosted && (
           <svg aria-hidden="true" className="pointer-events-none absolute inset-0 h-full w-full">
             <line
-              x1="50%"
+              x1="38%"
               y1="55%"
-              x2="57%"
+              x2="45%"
               y2="62%"
               stroke="rgb(var(--acc) / 0.75)"
               strokeWidth="1"
@@ -90,7 +90,7 @@ export default function EngineLock({ target, ghosted }) {
         {!ghosted && target ? (
           <div
             className="pointer-events-none absolute border border-acc/25 bg-acc px-2 py-1 text-[8px] leading-[1.35] uppercase tracking-[0.08em] text-bgg shadow-[0_0_12px_rgb(var(--acc)_/_0.45)]"
-            style={{ left: 'calc(50% + 30px)', top: 'calc(55% + 24px)' }}
+            style={{ left: 'calc(38% + 30px)', top: 'calc(55% + 24px)' }}
           >
             <span className="block font-bold">TARGET LOCK = {hexFrom(target.key || target.label || 'eng', 2)}</span>
             <span className="block text-[7.5px] opacity-80">

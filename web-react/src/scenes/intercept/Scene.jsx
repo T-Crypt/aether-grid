@@ -115,7 +115,7 @@ function RHeader() {
   const running = snap && snap.mode !== 'offline' && snap.mode !== 'boot' && up.length > 0
   const line = !snap || snap.mode === 'offline'
     ? 'NO SOURCE'
-    : `SIG ${model ? String(model).toUpperCase() : 'NO MODEL'} · ${running && decode > 0 ? `DECODE ${Math.round(decode)} TOK/S · ON AIR` : 'STANDBY · DESK OPEN'}`
+    : `SIG ${model ? String(model).toUpperCase() : 'NO MODEL'} · ${running && decode > 0 ? `${Math.round(decode)} TOK/S · ON AIR` : 'STANDBY · DESK OPEN'}`
   return (
     <div className="flex min-w-0 flex-col justify-center overflow-hidden px-1" aria-label="Decode intercept header">
       <div className="truncate text-[10px] uppercase tracking-[0.18em] text-acc sm:text-[11px]">DECODE INTERCEPT · ENGINE SESSIONS</div>
@@ -123,7 +123,7 @@ function RHeader() {
         <span className="min-w-0 flex-1 truncate text-[14px] font-medium tabular-nums tracking-[0.04em] text-ink-1 sm:text-[18px]">
           {model ? String(model).toUpperCase() : 'NO MODEL'}
         </span>
-        <span className="hidden min-w-0 flex-1 truncate text-[8.5px] uppercase tracking-[0.18em] text-ink-3 sm:inline sm:text-[9px]">{line}</span>
+        <span className="hidden min-w-0 flex-1 truncate text-[8.5px] uppercase tracking-[0.18em] text-ink-3 min-[1440px]:inline min-[1440px]:text-[9px]">{line}</span>
         <span
           className="ic-vt text-[26px] font-semibold leading-none tabular-nums text-dat sm:text-[32px]"
           style={{ textShadow: `0 0 ${12 + Math.min(1, (tps || 0) / 280) * 10}px rgb(var(--dat) / 0.55)` }}

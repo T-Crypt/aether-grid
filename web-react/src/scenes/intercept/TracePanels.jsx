@@ -45,7 +45,7 @@ function Cell({ kind, tag, readout, eventLine, ghosted }) {
         <span>NOW</span>
       </div>
       {eventLine ? (
-        <div className="pointer-events-none absolute bottom-[12px] left-1.5 z-10 max-w-[calc(100%-12px)] truncate text-[8px] uppercase tracking-[0.14em] [text-shadow:0_0_4px_rgb(0_0_0_/_0.85)]">
+        <div className="pointer-events-none absolute bottom-[12px] left-[16px] z-10 max-w-[calc(100%-24px)] truncate text-[8px] uppercase tracking-[0.14em] [text-shadow:0_0_4px_rgb(0_0_0_/_0.85)]">
           <span className="tracking-[0.16em] text-acc">EVENT</span>
           <span className="ml-1.5 tracking-[0.1em] tabular-nums text-ink-3">{eventLine.time}</span>
           <span className="ml-1.5 font-semibold tracking-[0.18em] text-dat">{eventLine.msg}</span>
