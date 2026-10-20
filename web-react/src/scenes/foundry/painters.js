@@ -21,8 +21,7 @@
 //   paintCells       tn-cv          served tokens as a 25x8 cell grid
 //   paintQueueSteps  qb-cv          queue depth step chart, drain marks
 //   paintPool        pl-cv          the vram pool tank (used vs total GB)
-//   paintSpark       t-cv/gd-cv     decode spark + gpu-draw trace
-//   paintTally       tm-cv          arrivals as hand-marked tally groups
+//   paintSpark       t-cv/gd-cv     decode spark + gpu-draw + rate traces
 //
 // Colours come from c.palette ("R G B" channels); neutral shading uses plain
 // black/white alphas (no hue); the only hard-coded colour is the absolute
@@ -35,7 +34,6 @@ import {
   gpuStats,
   hexFrom,
   lockedRequest,
-  modelTally,
   queueRail,
   servedTokens,
   staleOf,
@@ -95,7 +93,7 @@ export function paintQueueLamps(ctx, w, h, c) {
   const rail = queueRail(snap)
   const kick = anim && !staleOf(snap) ? Math.max(0, c.helix.kick || 0) : 0
 
-  const x0 = w * 0.13
+  const x0 = w * 0.17
   const x1 = w * 0.87
   const hooks = [x0 - w * 0.025, lerp(x0, x1, 1 / 3), lerp(x0, x1, 2 / 3), x1 + w * 0.025]
   const wireY = (x) => {
@@ -205,41 +203,21 @@ function bayLayout(w, h) {
   const key = `${w}x${h}`
   const hit = bayGeo.get(key)
   if (hit) return hit
-  // The co-card column (DOM, positioned by the plate) shows only when the
-  // bay is wide enough to hold it beside the device (w >= 400): below that
-  // the device centres at full width and the cards hide (min-[1536px] on
-  // the card block). The two rules track the same breakpoint.
-  const noCo = w < 400
+  // The callout cards are a DOM row under the bay (InspectorPlate), so the
+  // device simply centres and scales to the canvas.
   const baseU = 72 + 318 + 26 + 4
-  const uW = noCo ? w * 0.94 / 380 : (w - 160) / 380
-  const u = Math.max(0.2, Math.min(uW, (h - 4) / baseU))
-  const X = noCo ? Math.round((w - 380 * u) / 2) : Math.round(Math.min(10, w * 0.03))
+  const u = Math.max(0.2, Math.min((w * 0.94) / 380, (h - 4) / baseU))
+  const X = Math.round((w - 380 * u) / 2)
   const Y = Math.round(Math.max(2, (h - baseU * u) / 2))
   const g = {
-    w, h, u, X, Y, noCo,
+    w, h, u, X, Y,
     head: { x: X, y: Y, w: 380 * u, h: 64 * u, r: 12 * u },
     lens: { x: X + 64 * u, y: Y + 18 * u, w: 252 * u, h: 32 * u, r: 5 * u },
     body: { x: X, y: Y + 72 * u, w: 380 * u, h: 318 * u, r: 24 * u },
     bezel: { x: X + 15 * u, y: Y + 89 * u, w: 350 * u, h: 214 * u, r: 14 * u },
     crt: { x: X + 24 * u, y: Y + 98 * u, w: 332 * u, h: 196 * u, r: 10 * u },
     plate: { x: X + 34 * u, y: Y + 357 * u, w: 312 * u, h: 22 * u, r: 3 * u },
-    right: X + 380 * u,
   }
-  // lock-on bracket anchors: the four corners of the tube, pushed out by
-  // the bracket reach
-  g.crtBox = {
-    x0: g.crt.x - 9 * u,
-    y0: g.crt.y - 9 * u,
-    x1: g.crt.x + g.crt.w + 9 * u,
-    y1: g.crt.y + g.crt.h + 9 * u,
-  }
-  // co-card leader anchors (the cards are DOM, positioned by the plate)
-  g.leaders = [
-    { ay: g.lens.y + g.lens.h / 2, fy: 0.09 },
-    { ay: g.crt.y + g.crt.h * 0.28, fy: 0.36 },
-    { ay: g.crt.y + g.crt.h * 0.62, fy: 0.62 },
-    { ay: g.plate.y + g.plate.h / 2, fy: 0.8 },
-  ]
   if (bayGeo.size > 24) bayGeo.clear()
   bayGeo.set(key, g)
   return g
@@ -427,21 +405,6 @@ export function paintBay(ctx, w, h, c) {
     sg.addColorStop(1, rgba(p.dat, 0))
     ctx.fillStyle = sg
     ctx.fillRect(sx - sw, g.body.y, 2 * sw, g.body.h)
-  }
-
-  // callout leaders to the DOM co-cards
-  if (!g.noCo) {
-    ctx.lineWidth = 1
-    ctx.strokeStyle = rgba(p.dat, 0.5)
-    ctx.fillStyle = rgba(p.dat, 0.85)
-    for (const L of g.leaders) {
-      const y = L.fy * h
-      ctx.beginPath()
-      ctx.moveTo(L.ay, g.right)
-      ctx.lineTo(g.right + 18, y)
-      ctx.stroke()
-      ctx.fillRect(L.ay - 1.5, g.right - 3, 3, 3)
-    }
   }
 }
 
@@ -1304,54 +1267,4 @@ export function paintSpark(ctx, w, h, c, series, tone) {
   const lv = s[n - 1]
   ctx.fillStyle = rgba(col, 1)
   ctx.fillRect(xOf(n - 1) - 1.5, yOf(lv) - 1.5, 3, 3)
-}
-
-// ---------------------------------------------------------------------------
-// TALLY MARKS — requests ledgered in the window, as hand-marked groups of
-// five (four strokes, one diagonal), jittered deterministically.
-// ---------------------------------------------------------------------------
-
-export function paintTally(ctx, w, h, c) {
-  if (w < 30 || h < 14) return
-  const p = c.palette
-  const snap = c.snap
-  const n = Math.min(56, modelTally(snap).total)
-  const groups = Math.ceil(n / 5)
-  let gh = Math.min(h - 2, 30)
-  let gw = 0
-  let gx = 0
-  let cols = 1
-  let rowsN = 1
-  for (;;) {
-    gw = gh * 0.95
-    gx = gh * 0.42
-    cols = Math.max(1, Math.floor((w + gx) / (gw + gx)))
-    rowsN = Math.max(1, Math.floor((h + 3) / (gh + 3)))
-    if (cols * rowsN >= groups || gh <= 7) break
-    gh -= 1
-  }
-  ctx.lineCap = 'round'
-  for (let m = 0; m < n; m++) {
-    const gi = Math.floor(m / 5)
-    const j = m % 5
-    const colI = gi % cols
-    const rowI = Math.floor(gi / cols)
-    if (rowI >= rowsN) break
-    const x0 = colI * (gw + gx) + 1
-    const y0 = rowI * (gh + 3) + 1
-    const jit = (det(m * 5.3) - 0.5) * gh * 0.08
-    const jit2 = (det(m * 9.1) - 0.5) * gh * 0.1
-    ctx.strokeStyle = rgba(p.dat, 0.8)
-    ctx.lineWidth = Math.max(1.1, gh * 0.075)
-    ctx.beginPath()
-    if (j < 4) {
-      const x = x0 + (j + 0.5) * (gw / 4.2) + jit
-      ctx.moveTo(x, y0 + gh * 0.08 + jit2)
-      ctx.lineTo(x + jit * 0.4, y0 + gh * 0.08 + gh * 0.84)
-    } else {
-      ctx.moveTo(x0 - gw * 0.04, y0 + gh * 0.8 + jit2)
-      ctx.lineTo(x0 - gw * 0.04 + gw * 1.05, y0 + gh * 0.8 + jit2 - gh * 0.62)
-    }
-    ctx.stroke()
-  }
 }

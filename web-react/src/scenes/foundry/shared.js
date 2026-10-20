@@ -205,11 +205,12 @@ export function queueRail(snap) {
 }
 
 // Lamp x fractions (of the rail width) for the screen-blended light pool.
+// Must match paintQueueLamps' lamp span (0.17w..0.87w).
 export function lampFracs(lit) {
   const out = []
   for (let i = 0; i < 14; i++) {
     if (lit == null || i >= lit) continue
-    out.push(13 + ((i + 0.5) / 14) * 74)
+    out.push(17 + ((i + 0.5) / 14) * 70)
   }
   return out
 }
@@ -252,8 +253,9 @@ export function samplerOf(snap) {
 }
 
 // ---------------------------------------------------------------------------
-// PRESSURE LADDER: guard lines read against the live figures. A row lights
-// when its line is crossed and holds alarm red at its critical line.
+// PRESSURE LADDER: guard lines read against the live figures. `fill` is the
+// live figure read against the line (100 = at the line); a row lights when
+// its line is crossed and holds alarm red at its critical line.
 // ---------------------------------------------------------------------------
 
 export function pressureLines(snap, gpu) {
@@ -267,10 +269,10 @@ export function pressureLines(snap, gpu) {
   const q = k.queue != null ? k.queue : 0
   const power = g && g.power != null ? g.power : 0
   return [
-    { label: 'VRAM 75% GUARD', v: `${vp.toFixed(0)}%`, on: vp >= 75, crit: vp >= 90 },
-    { label: 'VRAM 90% GUARD', v: `${vp.toFixed(0)}%`, on: vp >= 90, crit: true },
-    { label: 'POWER 382 W GUARD', v: `${power != null ? Math.round(power) : '—'} W`, on: power >= 382, crit: power >= 430 },
-    { label: 'QUEUE 12 GUARD', v: `${Math.round(q)} DEEP`, on: q >= 12, crit: q >= 14 },
-    { label: 'KV 85% GUARD', v: `${hot} HOT`, on: hot > 0, crit: hot >= 5 },
+    { label: 'VRAM 75%', v: `${vp.toFixed(0)}%`, fill: (vp / 75) * 100, on: vp >= 75, crit: vp >= 90 },
+    { label: 'VRAM 90%', v: `${vp.toFixed(0)}%`, fill: (vp / 90) * 100, on: vp >= 90, crit: true },
+    { label: 'PWR 382 W', v: `${power != null ? Math.round(power) : '—'} W`, fill: (power / 382) * 100, on: power >= 382, crit: power >= 430 },
+    { label: 'QUEUE 12', v: `${Math.round(q)} DEEP`, fill: (q / 12) * 100, on: q >= 12, crit: q >= 14 },
+    { label: 'KV 85%', v: `${hot} HOT`, fill: (hot / 5) * 100, on: hot > 0, crit: hot >= 5 },
   ]
 }

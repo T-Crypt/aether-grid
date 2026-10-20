@@ -13,21 +13,19 @@ import SceneCanvas from '../../scene/Canvas'
 import { paintBay, paintFace } from './painters'
 import { clockHms, ledgerRows, lockedRequest, grp } from './shared'
 
-function CoCard({ no, label, body, sub, top }) {
+function CoCard({ no, label, body, sub }) {
   return (
-    <div className="absolute right-0 w-[148px]" style={{ top, transform: 'translateY(-50%)' }}>
-      <div className="flex h-[46px] flex-col justify-center gap-0.5 border border-black/60 bg-[rgb(0_0_0_/_0.42)] px-1.5 shadow-[inset_0_1px_0_rgb(var(--text-1)_/_0.06),0_1px_3px_rgb(0_0_0_/_0.5)]">
-        <span className="text-[7.5px] tracking-[0.14em] text-ink-3">
-          {no} · {label}
-        </span>
-        <span className="text-[10px] font-semibold tracking-[0.06em] text-ink-1 tabular-nums truncate whitespace-nowrap">{body}</span>
-        <span className="text-[8px] tracking-[0.06em] text-ink-3 tabular-nums truncate whitespace-nowrap">{sub}</span>
-      </div>
+    <div className="flex min-w-0 flex-col justify-center gap-0.5 border border-black/60 bg-[rgb(0_0_0_/_0.42)] px-1.5 py-1 shadow-[inset_0_1px_0_rgb(var(--text-1)_/_0.06),0_1px_3px_rgb(0_0_0_/_0.5)]">
+      <span className="text-[7.5px] tracking-[0.14em] text-ink-3">
+        {no} · {label}
+      </span>
+      <span className="truncate text-[10px] font-semibold tracking-[0.06em] text-ink-1 tabular-nums whitespace-nowrap">{body}</span>
+      <span className="truncate text-[8px] tracking-[0.06em] text-ink-3 tabular-nums whitespace-nowrap">{sub}</span>
     </div>
   )
 }
 
-const LED_COLS = 'grid grid-cols-[6.5ch_minmax(0,1fr)_5.2ch_5.2ch_3.5ch_minmax(0,1fr)] items-center gap-x-1 text-[10px]'
+const LED_COLS = 'grid grid-cols-[6ch_minmax(0,1fr)_5ch_5ch_5ch_minmax(0,1.1fr)] items-center gap-x-1 text-[10px]'
 
 export default function InspectorPlate() {
   const { snap, tick } = useScene()
@@ -75,43 +73,38 @@ export default function InspectorPlate() {
         </span>
       </div>
 
-      <div className="flex min-h-0 flex-1 flex-col gap-1.5 px-1.5 pb-1.5 min-[769px]:grid min-[769px]:grid-cols-[minmax(0,57fr)_minmax(0,43fr)] min-[769px]:gap-1.5">
-        {/* left: the inspection bay */}
-        <div className="fd-dev relative min-h-[300px] flex-1 min-[769px]:min-h-0">
-          <SceneCanvas draw={(ctx, w, h, c) => paintBay(ctx, w, h, c)} className="absolute inset-0 h-full w-full" />
-          <SceneCanvas draw={(ctx, w, h, c) => paintFace(ctx, w, h, c)} className="absolute inset-0 h-full w-full" />
-          {/* the four co-cards: callout cards over the bay's right side;
-              they show only when the bay is wide enough to hold them
-              beside the device (bayLayout hides the card strip below a
-              400 px bay, which is a 1536 px viewport) */}
-          <div data-fd-co="cards" className="absolute inset-y-0 right-1 z-10 hidden min-[1536px]:block">
+      <div className="flex min-h-0 flex-1 flex-col gap-1.5 px-1.5 pb-1.5 min-[769px]:grid min-[769px]:grid-cols-[minmax(0,52fr)_minmax(0,48fr)] min-[769px]:gap-1.5">
+        {/* left: the inspection bay + its callout row */}
+        <div className="flex min-h-0 flex-col gap-1.5">
+          <div className="fd-dev relative min-h-[300px] flex-1 min-[769px]:min-h-0">
+            <SceneCanvas draw={(ctx, w, h, c) => paintBay(ctx, w, h, c)} className="absolute inset-0 h-full w-full" />
+            <SceneCanvas draw={(ctx, w, h, c) => paintFace(ctx, w, h, c)} className="absolute inset-0 h-full w-full" />
+          </div>
+          {/* the four co-cards: a row under the bay, never over it */}
+          <div data-fd-co="cards" className="grid shrink-0 grid-cols-2 gap-1">
             <CoCard
               no="1"
               label="THE LOCK"
               body={offline ? 'LOCK · —' : `LOCK · ${hashS}`}
               sub={offline ? 'NO SOURCE' : `${hm} · ${lock.hash ? 'LOCKED' : 'OPEN'}`}
-              top="9%"
             />
             <CoCard
               no="2"
               label="TTFT"
               body={offline ? '—' : `${lock.ttft != null ? Math.round(lock.ttft) : '—'} MS`}
               sub={offline ? 'NO SOURCE' : `P95 ${lock.p95 != null ? Math.round(lock.p95) : '—'} MS · GATE`}
-              top="36%"
             />
             <CoCard
               no="3"
               label="DECODE"
               body={offline ? '—' : `${tpsS != null ? tpsS : '—'} TOK/S`}
               sub={offline ? 'NO SOURCE' : `ENGINE ${lock.engine || '—'}`}
-              top="62%"
             />
             <CoCard
               no="4"
               label="QUEUE"
               body={offline ? '—' : `${lock.queue != null ? Math.round(lock.queue) : '—'} DEEP`}
               sub={offline ? 'NO SOURCE' : `${grp(total)} LEDGERED · RIG 01`}
-              top="80%"
             />
           </div>
         </div>
@@ -119,8 +112,8 @@ export default function InspectorPlate() {
         {/* right: the request ledger */}
         <div className="fd-win flex min-h-[220px] flex-col px-1.5 pt-1 pb-1.5 min-[769px]:min-h-0">
           <div className="flex items-baseline justify-between gap-2">
-            <span className="text-[9px] font-semibold tracking-[0.14em] text-ink-2">REQUEST LEDGER</span>
-            <span className="text-[8px] tracking-[0.08em] text-ink-3 tabular-nums">
+            <span className="whitespace-nowrap text-[9px] font-semibold tracking-[0.14em] text-ink-2">REQUEST LEDGER</span>
+            <span className="min-w-0 truncate whitespace-nowrap text-[8px] tracking-[0.08em] text-ink-3 tabular-nums">
               {offline
                 ? 'NO SOURCE · LEDGER HELD'
                 : `LAST 40 · ${grp(total)} RECORDS · ${k.rpm != null ? Math.round(k.rpm) : '—'} REQ/MIN`}
@@ -131,7 +124,7 @@ export default function InspectorPlate() {
             <span className="px-0.5">MODEL</span>
             <span className="px-0.5">IN</span>
             <span className="px-0.5">OUT</span>
-            <span className="px-0.5">T/S</span>
+            <span className="px-0.5">TOK/S</span>
             <span className="px-0.5">STATUS</span>
           </div>
           <div className="min-h-0 flex-1 overflow-hidden">

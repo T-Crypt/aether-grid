@@ -10,7 +10,7 @@
 import { useEffect, useRef } from 'react'
 import { useScene } from '../../scene/SceneRoot'
 import SceneCanvas from '../../scene/Canvas'
-import { paintSpark, paintTally } from './painters'
+import { paintSpark } from './painters'
 import { eventRows, gpuStats, modelTally, pressureLines, samplerOf } from './shared'
 
 function PlateHead({ letter, t, sub, className = '' }) {
@@ -61,8 +61,12 @@ export function ModelTallyPlate() {
           <span className="text-[8px] tracking-[0.06em] text-ink-3 tabular-nums">ARRIVAL RATE · LIVE</span>
         </div>
         <div className="relative h-[34px] min-h-[26px]">
-          <SceneCanvas draw={(ctx, w, h, c) => paintTally(ctx, w, h, c)} className="absolute inset-0 h-full w-full" />
+          <SceneCanvas
+            draw={(ctx, w, h, c) => paintSpark(ctx, w, h, c, ((c.snap && c.snap.kpiHist && c.snap.kpiHist.rpm) || []).slice(-60), 'acc')}
+            className="absolute inset-0 h-full w-full"
+          />
         </div>
+        <div className="text-[8px] tracking-[0.06em] text-ink-3 tabular-nums">ARRIVALS / MIN · LAST 60 TICKS</div>
       </div>
     </section>
   )
@@ -215,27 +219,42 @@ export function LadderPlate() {
       aria-label="Pressure ladder"
       className="fd-plate hidden min-h-0 min-w-0 flex-col overflow-hidden min-[769px]:flex"
     >
-      <PlateHead letter="G" t="PRESSURE LADDER" sub="GUARD LINES · LIVE FIGURES" />
-      <div className="flex min-h-0 flex-1 flex-col gap-[5px] px-2 pb-1.5">
-        {lines.map((l) => (
-          <div key={l.label} className="flex items-center gap-1.5">
-            <i
-              className="h-[7px] w-[7px] shrink-0 rounded-full"
-              style={
-                l.crit && l.on
-                  ? { background: 'rgb(var(--alm))', boxShadow: '0 0 6px rgb(var(--alm) / 0.9)' }
-                  : l.on
-                    ? { background: 'rgb(var(--col))', boxShadow: '0 0 6px rgb(var(--col) / 0.8)' }
-                    : { background: 'rgb(0 0 0 / 0.55)', boxShadow: 'inset 0 0 0 1px rgb(var(--text-3) / 0.4)' }
-              }
-            />
-            <span className="flex-1 text-[8.5px] tracking-[0.08em] text-ink-2">{l.label}</span>
-            <span className="text-[8.5px] font-semibold tracking-[0.06em] text-ink-1 tabular-nums">{l.v}</span>
-          </div>
-        ))}
+      <PlateHead letter="G" t="PRESSURE LADDER" sub="GUARD LINES" />
+      <div className="flex min-h-0 flex-1 flex-col gap-[4px] px-2 pb-1.5">
+        {/* each guard as a bar read against its own limit: full bar = at the
+            line, the alarm colour once the line is crossed at its critical
+            level */}
+        {lines.map((l) => {
+          const over = l.on && l.crit
+          const tone = over ? 'alm' : l.on ? 'col' : 'acc'
+          return (
+            <div key={l.label} className="flex items-center gap-1.5">
+              <span className="w-[64px] shrink-0 text-[8px] tracking-[0.05em] text-ink-2">{l.label}</span>
+              <div className="h-[5px] min-w-[24px] flex-1 bg-black/40">
+                <div
+                  className="h-full transition-[width] duration-300 ease-out"
+                  style={{
+                    width: `${Math.max(2, Math.min(100, l.fill))}%`,
+                    background: tone === 'alm' ? 'rgb(var(--alm))' : tone === 'col' ? 'rgb(var(--col))' : 'rgb(var(--acc))',
+                    boxShadow: `0 0 5px rgb(var(--${tone}) / 0.55)`,
+                    opacity: l.on ? 1 : 0.5,
+                  }}
+                />
+              </div>
+              <span
+                className={
+                  'w-[38px] shrink-0 text-right text-[8.5px] font-semibold tabular-nums ' +
+                  (over ? 'text-[rgb(var(--alm))]' : l.on ? 'text-[rgb(var(--col))]' : 'text-ink-3')
+                }
+              >
+                {l.v}
+              </span>
+            </div>
+          )
+        })}
         <div
           className={
-            'mt-auto border-l-2 px-2 py-1 text-[9px] leading-[12px] ' +
+            'border-l-2 px-2 py-1 text-[9px] leading-[12px] ' +
             (alert > 0.45
               ? 'border-[rgb(var(--alm))] bg-[rgb(var(--alm)_/_0.1)] text-[rgb(var(--alm))] [text-shadow:0_0_8px_rgb(var(--alm)_/_0.6)]'
               : 'border-[rgb(var(--col)_/_0.5)] bg-[rgb(0_0_0_/_0.25)] text-ink-2')
@@ -243,11 +262,11 @@ export function LadderPlate() {
         >
           {alert > 0.45 ? 'ANOMALY PRESSURE HIGH · GUARDS LATCHED' : 'ALL GUARDS WITHIN LINE'}
         </div>
-        <div className="flex flex-wrap gap-x-2 gap-y-0.5 text-[8.5px] tracking-[0.04em]">
-          <span className={errN > 8 ? 'font-semibold text-[rgb(var(--alm))]' : 'text-ink-3'}>
+        <div className="flex flex-wrap gap-x-2 gap-y-0.5 text-[8px] tracking-[0.04em] text-ink-3">
+          <span className={errN > 8 ? 'font-semibold text-[rgb(var(--alm))]' : ''}>
             ERR EVENTS {offline ? '—' : errN} IN RING
           </span>
-          <span className="text-ink-3">VRAM 75/90 · POWER 382 W · QUEUE 12 · KV 85%</span>
+          <span>VRAM 75/90 · PWR 382 W · Q 12 · KV 85%</span>
         </div>
       </div>
     </section>
