@@ -34,9 +34,9 @@ Every frame comes from the built console. The six below are 1000x563 from the de
 | <img src="docs/shots/gallery/scene-hexlab.png" width="440" alt="Hex-Lab"> | <img src="docs/shots/gallery/scene-safehouse.png" width="440" alt="Safehouse"> |
 | --- | --- |
 | Hex-Lab, the base layout. Native scheme Hex-Lab. | Safehouse, the two-pane SIGINT workstation. Native scheme Corvane. |
-| <img src="docs/shots/gallery/scene-bloom-line.png" width="440" alt="Bloom-Line"> | <img src="docs/shots/gallery/scene-cyber-pass.png" width="440" alt="Cyber-Pass"> |
+| <img src="docs/shots/gallery/scene-bloom-line.png" width="440" alt="Bloom-Line"> | <img src="docs/shots/gallery/scene-foundry.png" width="440" alt="Token Foundry"> |
 | --- | --- |
-| Bloom-Line, the orbital greenhouse stage. Native scheme Gullet. | Cyber-Pass, the plate wall under its bulb rail. Native scheme Sounding. |
+| Bloom-Line, the orbital greenhouse stage. Native scheme Gullet. | Token Foundry, the request wall under its queue lamp rail. Native scheme Sounding. |
 | <img src="docs/shots/gallery/scene-deepsignal.png" width="440" alt="Deepsignal"> | <img src="docs/shots/gallery/live-hexlab.png" width="440" alt="Hex-Lab on the live feed"> |
 | --- | --- |
 | Deepsignal, the night-watch CRT and its waterfall. Native scheme Hex-Lab. | Hex-Lab on the live feed, reading this machine's GPU, host and llama-swap sources. |
@@ -45,7 +45,7 @@ Every frame comes from the built console. The six below are 1000x563 from the de
 
 The phone layout at 390 px, where the rails hide and the panes stack.
 
-Each scene keeps its own nouns for the same telemetry. Safehouse reads `SIG model · DECODE tps TOK/S · ENG engine · ON AIR`, Bloom-Line reads `FLOWERED · model · tps TOK/S · MTP mtp% · THINK think`, Cyber-Pass stamps probes with `LAST · SEQ · LAMP · model · tps TOK/S · ENG engine · Q queue`, and Deepsignal runs a `RUNTIME model · ENG engine · candidates` span. Hex-Lab is the base console, with the hero helix, the terrain mesh, the GPU block, the KV cohort, the log and the data band.
+Each scene keeps its own nouns for the same telemetry. Safehouse reads `SIG model · DECODE tps TOK/S · ENG engine · ON AIR`, Bloom-Line reads `FLOWERED · model · tps TOK/S · MTP mtp% · THINK think`, Token Foundry inspects requests with `LOCK hash · TTFT ms · model · tps TOK/S · IN inT · OUT outT · Q queue`, and Deepsignal runs a `RUNTIME model · ENG engine · candidates` span. Hex-Lab is the base console, with the hero helix, the terrain mesh, the GPU block, the KV cohort, the log and the data band.
 
 ## Scene architecture
 

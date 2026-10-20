@@ -8,7 +8,7 @@ export default function TimecodeStrip() {
   const k = snap.kpi || {}
   const gpu = snap.gpu || {}
   const tp = gpu.temp
-  const tStamp = tempState(tp)
+  const tpState = tempState(tp)
   const engines = snap.engines || []
   const mtp = snap.reasoning?.mtp_accept_pct
 
@@ -16,8 +16,8 @@ export default function TimecodeStrip() {
     { k: 'TC', v: clockCode(), tone: 'acc' },
     { k: 'TPS', v: fmtKpi('tps', k.tps) ?? '—', tone: 'acc' },
     { k: 'QUE', v: fmtKpi('queue', k.queue) ?? '—', tone: 'dat' },
-    { k: 'TMP', v: tp != null && isFinite(tp) ? `${Math.round(tp)}C` : '—', tone: tStamp === 'alert' ? 'alm' : tStamp === 'warn' ? 'dat' : 'acc' },
-    { k: 'VRAM', v: fmtKpi('vram', k.vram) ?? '—', tone: tStamp === 'alert' ? 'alm' : 'col' },
+    { k: 'TMP', v: tp != null && isFinite(tp) ? `${Math.round(tp)}C` : '—', tone: tpState === 'alert' ? 'alm' : tpState === 'warn' ? 'dat' : 'acc' },
+    { k: 'VRAM', v: fmtKpi('vram', k.vram) ?? '—', tone: tpState === 'alert' ? 'alm' : 'col' },
     { k: 'MTP', v: mtp != null ? `${mtp.toFixed(1)}%` : '—', tone: 'acc' },
     { k: 'ENG', v: `${engines.filter((e) => e.up).length}/${engines.length}`, tone: 'dat' },
     { k: 'FEED', v: snap.feed, tone: 'dim' },

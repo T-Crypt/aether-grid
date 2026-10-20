@@ -31,7 +31,7 @@ const INFRA = [
   ['187.092.216', '9485', 'KEF', 'EC.5M', '5C', 'PIPE-77'],
 ]
 
-// Queue-pressure latch (module-local, like cyber-pass lastSeen: written only
+// Queue-pressure latch (module-local, like the foundry lastSeen: written only
 // from feed data, read only here). Warn trips at queue >= 8 and holds until
 // the queue drains below 6, so per-tick jitter across 8 stops flipping the
 // row tint. Same-snap double render is idempotent, so StrictMode is safe.

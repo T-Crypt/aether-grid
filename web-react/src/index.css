@@ -133,11 +133,12 @@
     --col: 125 216 196;
   }
 
-  /* The cyber-pass scene re-tunes the shared role colours on its rust-plate
-     surfaces for every scheme, and carries the reference's native palette
-     (uispace.org/cyber-pass) on its default scheme, sounding. Warm near-black
-     wall, cream text, amber lamp, violet anomaly, the held alarm yellow. */
-  [data-scene='cyber-pass'] {
+  /* The foundry scene re-tunes the shared role colours on its forge-plate
+     surfaces for every scheme, and carries the scene's native palette
+     (furnace amber, molten cream, cool violet, held alarm yellow) on its
+     default scheme, sounding. Warm near-black wall, cream text, amber
+     lamps, violet anomaly, the held alarm yellow. */
+  [data-scene='foundry'] {
     --pan: 22 14 9;
     --bgg: 14 9 6;
     --text-1: #fff4df;
@@ -145,7 +146,7 @@
     --text-3: #bb9179;
     --alm: 255 220 43;
   }
-  [data-scene='cyber-pass'][data-skin='sounding'] {
+  [data-scene='foundry'][data-skin='sounding'] {
     --acc: 255 173 59;
     --dat: 255 217 159;
     --col: 168 123 255;
@@ -625,14 +626,14 @@
   }
 
   /* ------------------------------------------------------------------
-     Cyber-pass scene: the mountain customs booth wall. Scrap-plate material
-     system — riveted plates, rust grain, recessed windows, stencilled zone
-     titles, screen-blended bulb light. Everything token-driven; the scene
-     block in @layer base supplies the values. Scoped by
-     [data-scene='cyber-pass'] so the base skins and other scenes are
-     untouched.
+     Token Foundry scene: the request wall. Plate-steel material system —
+     riveted plates, wear grain, recessed windows, stencilled zone titles,
+     screen-blended lamp light, one-shot boot sweep. Everything
+     token-driven; the scene block in @layer base supplies the values.
+     Scoped by [data-scene='foundry'] so the base skins and other scenes
+     are untouched.
   ------------------------------------------------------------------ */
-  .cy-stage {
+  .fd-stage {
     background:
       radial-gradient(ellipse 70% 42% at 50% 0%, rgb(var(--dat) / 0.06), transparent 72%),
       radial-gradient(ellipse 120% 90% at 50% 50%, transparent 55%, rgb(0 0 0 / 0.4) 100%),
@@ -641,7 +642,7 @@
   /* the bulbs' pools of light on the wall: screen-blended, positioned by
      Scene.jsx from the lit-bulb x fractions; opacity tracks the lit ratio
      at feed rate */
-  .cy-light {
+  .fd-light {
     position: absolute;
     left: 0;
     right: 0;
@@ -650,19 +651,21 @@
     mix-blend-mode: screen;
     transition: opacity 450ms ease-out;
   }
-  .cy-vignette {
+  .fd-vignette {
     background: radial-gradient(ellipse 95% 90% at 50% 45%, transparent 50%, rgb(0 0 0 / 0.5) 100%);
     mix-blend-mode: multiply;
   }
-  .cy-grain {
+  .fd-grain {
     background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='160' height='160'%3E%3Cfilter id='g'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.92' numOctaves='2' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='160' height='160' filter='url(%23g)'/%3E%3C/svg%3E");
     filter: grayscale(1);
     mix-blend-mode: overlay;
     opacity: 0.22;
   }
 
-  /* the plates: scrap steel, riveted, rounded */
-  .cy-plate {
+  /* the plates: scrap steel, riveted, rounded; the outer shadow ring rides
+     the conductor's --alert scalar, so an anomaly or a vram_pressure
+     crossing rings every plate in the alarm colour, then it eases out */
+  .fd-plate {
     position: relative;
     min-width: 0;
     min-height: 0;
@@ -675,10 +678,12 @@
     box-shadow:
       inset 0 1px 0 rgb(var(--dat) / 0.14),
       inset 0 -1px 0 rgb(0 0 0 / 0.55),
-      0 3px 8px rgb(0 0 0 / 0.6);
+      0 3px 8px rgb(0 0 0 / 0.6),
+      0 0 0 1px rgb(var(--alm) / calc(var(--alert) * 0.45)),
+      0 0 14px rgb(var(--alm) / calc(var(--alert) * 0.28));
   }
   /* corner rivets (the reference's painted pair per corner, token-tinted) */
-  .cy-plate::before {
+  .fd-plate::before {
     content: '';
     position: absolute;
     inset: 4px;
@@ -691,7 +696,7 @@
       radial-gradient(circle at 3.5px 3.5px, rgb(var(--text-3) / 0.9) 0 1.6px, rgb(var(--bgg) / 0.9) 2.1px 3px, transparent 3.4px) right bottom / 8px 8px no-repeat;
   }
   /* recessed dark window cut into a plate */
-  .cy-win {
+  .fd-win {
     position: relative;
     min-width: 0;
     min-height: 0;
@@ -706,7 +711,7 @@
       0 1px 0 rgb(var(--text-1) / 0.06);
   }
   /* plate header: stencilled zone title + sub-readout */
-  .cy-ph {
+  .fd-ph {
     position: relative;
     z-index: 2;
     display: flex;
@@ -719,7 +724,7 @@
     flex: 0 0 auto;
   }
   /* stencilled zone title: counters bridged by a painted gap */
-  .cy-st {
+  .fd-st {
     font-family: 'Rubik', system-ui, sans-serif;
     font-weight: 700;
     font-size: 12px;
@@ -728,59 +733,22 @@
     white-space: nowrap;
     line-height: 1;
   }
-  .cy-st .sb {
+  .fd-st .sb {
     display: inline-block;
     -webkit-mask-image: linear-gradient(90deg, #040201 45%, transparent 45%, transparent 58%, #040201 58%);
     mask-image: linear-gradient(90deg, #040201 45%, transparent 45%, transparent 58%, #040201 58%);
   }
-  .cy-st .zl {
+  .fd-st .zl {
     color: rgb(var(--acc));
     text-shadow: 0 0 8px rgb(var(--acc) / 0.7);
     margin-right: 0.35em;
   }
-  .cy-vt {
+  .fd-vt {
     font-family: 'VT323', ui-monospace, monospace;
-  }
-  /* the alarm: the price's up arrow, held — nothing blinks */
-  .cy-up {
-    display: inline-block;
-    width: 0;
-    height: 0;
-    border-left: 0.36em solid transparent;
-    border-right: 0.36em solid transparent;
-    border-bottom: 0.5em solid rgb(var(--alm));
-    vertical-align: 0.08em;
-    margin-left: 0.3em;
-  }
-  /* the small coin: one tally mark per token served, nothing labelled */
-  .cy-coin {
-    display: inline-block;
-    width: 8px;
-    height: 8px;
-    border-radius: 9999px;
-    background: rgb(var(--dat));
-    box-shadow: 0 0 6px rgb(var(--dat) / 0.8);
-  }
-  /* co-cards on the device plate */
-  .cy-co {
-    display: flex;
-    flex-direction: column;
-    gap: 1px;
-    padding: 3px 8px 4px 7px;
-    background: rgb(var(--bgg) / 0.86);
-    border-left: 1px solid rgb(var(--dat));
-    white-space: nowrap;
-    transition: border-color 1.2s ease;
-  }
-  .cy-co-lamp-a {
-    border-left: 2px solid rgb(var(--acc));
-  }
-  .cy-co-lamp-v {
-    border-left: 2px solid rgb(var(--col));
   }
   /* one-shot row flash, re-keyed per event (finite; degenerates under
      reduced motion via the global rule) */
-  @keyframes cy-row-flash {
+  @keyframes fd-row-flash {
     0% {
       background-color: rgb(var(--acc) / 0.18);
     }
@@ -788,10 +756,10 @@
       background-color: transparent;
     }
   }
-  .cy-flash {
-    animation: cy-row-flash 700ms ease-out;
+  .fd-flash {
+    animation: fd-row-flash 700ms ease-out;
   }
-  @keyframes cy-row-flash-v {
+  @keyframes fd-row-flash-v {
     0% {
       background-color: rgb(var(--col) / 0.2);
     }
@@ -799,8 +767,41 @@
       background-color: transparent;
     }
   }
-  .cy-flash-v {
-    animation: cy-row-flash-v 700ms ease-out;
+  .fd-flash-v {
+    animation: fd-row-flash-v 700ms ease-out;
+  }
+  /* boot reveal: one lock-on sweep of light across the wall on mount,
+     finite and one-shot. A held feed settles the canvases; this overlay
+     plays once and ends at opacity 0. Under prefers-reduced-motion the
+     global rule below collapses it to a single instant frame. */
+  .fd-boot {
+    background: linear-gradient(
+      104deg,
+      transparent 43.6%,
+      rgb(var(--dat) / 0.06) 46.8%,
+      rgb(var(--dat) / 0.2) 49.3%,
+      rgb(255 252 240 / 0.3) 50%,
+      rgb(var(--dat) / 0.2) 50.7%,
+      rgb(var(--dat) / 0.06) 53.2%,
+      transparent 56.4%
+    );
+    background-size: 340% 100%;
+    background-position: 118% 0;
+    opacity: 0;
+    animation: fd-boot-sweep 1.6s cubic-bezier(0.3, 0, 0.2, 1) 0.15s 1 both;
+  }
+  @keyframes fd-boot-sweep {
+    0% {
+      opacity: 1;
+      background-position: 118% 0;
+    }
+    82% {
+      opacity: 1;
+    }
+    100% {
+      opacity: 0;
+      background-position: -82% 0;
+    }
   }
 
   /* ------------------------------------------------------------------
@@ -963,11 +964,11 @@
   [data-scene='bloom-line'] .bl-foundation {
     animation: none;
   }
-  /* Cyber-pass: the reference blinks nothing by design; the one-shot row
-     flashes degenerate instantly and the canvases settle statically via the
-     conductor. */
-  [data-scene='cyber-pass'] .cy-flash,
-  [data-scene='cyber-pass'] .cy-flash-v {
+  /* Token Foundry: the one-shot row flashes and the boot sweep degenerate
+     instantly, and the canvases settle statically via the conductor. */
+  [data-scene='foundry'] .fd-flash,
+  [data-scene='foundry'] .fd-flash-v,
+  [data-scene='foundry'] .fd-boot {
     animation: none;
   }
   /* Deepsignal: the tube goes still — flicker, pip and the WOW entrance

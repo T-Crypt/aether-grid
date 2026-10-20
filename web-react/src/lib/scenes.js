@@ -16,12 +16,12 @@
 //   hexlab       throughput and latency        kpi.tps, kpi.hist.tps, kpi.p95, kpi.ttft
 //   safehouse    engines and sessions          engines, sessions
 //   bloom-line   capacity and pressure         sessions.kv, gpu, kpi.vram, host
-//   cyber-pass   requests and the economy      requests, kpi.queue, kpi.vram as price
+//   foundry      requests and the queue        requests, kpi.queue, kpi.vram as cost
 //   deepsignal   detection and reasoning       alerts, events, reasoning
 //
-// Two scenes may read one key for different ends. The booth reads vram as
-// price. The greenhouse reads it as capacity. Neither prints the other's
-// figure.
+// Two scenes may read one key for different ends. The foundry reads vram as
+// the cost of a request. The greenhouse reads it as capacity. Neither
+// prints the other's figure.
 //
 // The DOM tokens (pan, bgg, text tiers) resolve in src/index.css through
 // [data-scene][data-skin] blocks on <html>; this table mirrors only the
@@ -71,15 +71,15 @@ export const SCENES = [
     },
   },
   {
-    // Reference palette (uispace.org/cyber-pass): lamp amber #FFAD3B, data
-    // cream #FFD99F, cool violet #A87BFF, held alarm #FFDC2B. Sounding's base
+    // Foundry palette: furnace amber accent #FFAD3B, molten cream #FFD99F,
+    // cool violet #A87BFF, held alarm yellow #FFDC2B. Sounding's base
     // accent (#FFB000) is the closest base scheme, so it carries the native
     // table; the other six keep their base role colours on the scene's
-    // rust-plate surfaces.
-    id: 'cyber-pass',
-    label: 'Cyber-Pass',
-    purpose: 'Requests and the economy',
-    channels: ['requests', 'kpi.queue', 'kpi.vram'],
+    // forge-plate surfaces.
+    id: 'foundry',
+    label: 'Token Foundry',
+    purpose: 'Requests and the queue',
+    channels: ['requests', 'kpi.queue', 'kpi.vram', 'kpi.tps', 'kpi.p95'],
     defaultScheme: 'sounding',
     schemes: SKIN_IDS,
     palettes: {
