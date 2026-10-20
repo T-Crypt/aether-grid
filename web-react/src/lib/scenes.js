@@ -17,7 +17,7 @@
 //   safehouse    engines and sessions          engines, sessions
 //   bloom-line   capacity and pressure         sessions.kv, gpu, kpi.vram, host
 //   foundry      requests and the queue        requests, kpi.queue, kpi.vram as cost
-//   deepsignal   detection and reasoning       alerts, events, reasoning
+//   spectrum     detection and reasoning       alerts, events, reasoning
 //
 // Two scenes may read one key for different ends. The foundry reads vram as
 // the cost of a request. The greenhouse reads it as capacity. Neither
@@ -87,12 +87,13 @@ export const SCENES = [
     },
   },
   {
-    // Reference palette (deepsignal card): teal accent #7DB8C4, data green
-    // #5BE872, amber #FFB000, alarm coral #E8543F. Hexlab's cool base is the
-    // closest base scheme, so it carries the native table; the other six
-    // keep their base role colours on the scene's CRT surfaces.
-    id: 'deepsignal',
-    label: 'Deepsignal',
+    // Spectrum palette: teal accent #7DB8C4, data green #5BE872, amber
+    // #FFB000, alarm coral #E8543F, the scene's cold-CRT role colours.
+    // Hexlab's cool base is the closest base scheme, so it carries the
+    // native table; the other six keep their base role colours on the
+    // scene's CRT surfaces.
+    id: 'spectrum',
+    label: 'Logit Spectrum',
     purpose: 'Detection and reasoning',
     channels: ['alerts', 'events', 'reasoning'],
     defaultScheme: 'hexlab',

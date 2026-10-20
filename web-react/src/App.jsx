@@ -8,7 +8,7 @@ import HexlabScene from './scenes/hexlab/Scene'
 import SafehouseScene from './scenes/safehouse/Scene'
 import BloomLineScene from './scenes/bloom-line/Scene'
 import FoundryScene from './scenes/foundry/Scene'
-import DeepsignalScene from './scenes/deepsignal/Scene'
+import SpectrumScene from './scenes/spectrum/Scene'
 
 // One Root component per scene id in lib/scenes.js.
 const SCENE_ROOTS = {
@@ -16,7 +16,7 @@ const SCENE_ROOTS = {
   safehouse: SafehouseScene,
   'bloom-line': BloomLineScene,
   foundry: FoundryScene,
-  deepsignal: DeepsignalScene,
+  spectrum: SpectrumScene,
 }
 
 function SceneMount() {

@@ -37,15 +37,15 @@ Every frame comes from the built console. The six below are 1000x563 from the de
 | <img src="docs/shots/gallery/scene-bloom-line.png" width="440" alt="Bloom-Line"> | <img src="docs/shots/gallery/scene-foundry.png" width="440" alt="Token Foundry"> |
 | --- | --- |
 | Bloom-Line, the orbital greenhouse stage. Native scheme Gullet. | Token Foundry, the request wall under its queue lamp rail. Native scheme Sounding. |
-| <img src="docs/shots/gallery/scene-deepsignal.png" width="440" alt="Deepsignal"> | <img src="docs/shots/gallery/live-hexlab.png" width="440" alt="Hex-Lab on the live feed"> |
+| <img src="docs/shots/gallery/scene-spectrum.png" width="440" alt="Logit Spectrum"> | <img src="docs/shots/gallery/live-hexlab.png" width="440" alt="Hex-Lab on the live feed"> |
 | --- | --- |
-| Deepsignal, the night-watch CRT and its waterfall. Native scheme Hex-Lab. | Hex-Lab on the live feed, reading this machine's GPU, host and llama-swap sources. |
+| Logit Spectrum, the token spectrogram under its reasoning lock. Native scheme Hex-Lab. | Hex-Lab on the live feed, reading this machine's GPU, host and llama-swap sources. |
 
 <img src="docs/shots/gallery/mobile-pane.png" alt="The console at 390 px, centered in a pane">
 
 The phone layout at 390 px, where the rails hide and the panes stack.
 
-Each scene keeps its own nouns for the same telemetry. Safehouse reads `SIG model · DECODE tps TOK/S · ENG engine · ON AIR`, Bloom-Line reads `FLOWERED · model · tps TOK/S · MTP mtp% · THINK think`, Token Foundry inspects requests with `LOCK hash · TTFT ms · model · tps TOK/S · IN inT · OUT outT · Q queue`, and Deepsignal runs a `RUNTIME model · ENG engine · candidates` span. Hex-Lab is the base console, with the hero helix, the terrain mesh, the GPU block, the KV cohort, the log and the data band.
+Each scene keeps its own nouns for the same telemetry. Safehouse reads `SIG model · DECODE tps TOK/S · ENG engine · ON AIR`, Bloom-Line reads `FLOWERED · model · tps TOK/S · MTP mtp% · THINK think`, Token Foundry inspects requests with `LOCK hash · TTFT ms · model · tps TOK/S · IN inT · OUT outT · Q queue`, and Logit Spectrum runs a `RUNTIME model · ENG engine · THINK tokens · LOCK mtp%` span. Hex-Lab is the base console, with the hero helix, the terrain mesh, the GPU block, the KV cohort, the log and the data band.
 
 ## Scene architecture
 
