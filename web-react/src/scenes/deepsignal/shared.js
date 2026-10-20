@@ -29,6 +29,52 @@ export function sastOf(snap) {
 // scalar. Returns 0..1 fields the painters read every frame.
 // ---------------------------------------------------------------------------
 
+// Perceptual heat ramp for the waterfall, built from the active scheme's
+// canvas channels: dark noise floor → accent → data → bright hot carrier.
+// The floor dims the accent toward black so it sits near the scene
+// background while keeping the scheme hue; the carrier lifts the data
+// channel toward the hot colour. Derived per paint, so a scheme switch
+// re-tints the whole history with no hard-coded hex.
+const rgbOf = (ch) => {
+  const s = String(ch || '125 184 196').split(' ')
+  return [Number(s[0]) || 0, Number(s[1]) || 0, Number(s[2]) || 0]
+}
+
+const mix = (a, b, t) => [
+  Math.round(a[0] + (b[0] - a[0]) * t),
+  Math.round(a[1] + (b[1] - a[1]) * t),
+  Math.round(a[2] + (b[2] - a[2]) * t),
+]
+
+export function heatRamp(pal) {
+  const acc = rgbOf(pal && pal.acc)
+  const dat = rgbOf(pal && pal.dat)
+  const col = rgbOf(pal && pal.col)
+  const floor = mix([0, 0, 0], acc, 0.12)
+  const hot = mix(dat, col, 0.6).map((v) => Math.min(255, Math.round(v * 1.2 + 18)))
+  return [
+    { v: 0.0, c: floor, a: 0.55 },
+    { v: 0.42, c: floor, a: 0.75 },
+    { v: 0.62, c: acc, a: 0.65 },
+    { v: 0.82, c: dat, a: 0.95 },
+    { v: 1.0, c: hot, a: 1 },
+  ]
+}
+
+// Sample the ramp at v (0..1). The alarm spike lane stays outside the scale
+// and is handled at the call site.
+export function rampColor(ramp, v) {
+  const x = Math.min(1, Math.max(0, v))
+  let i = 1
+  while (i < ramp.length - 1 && ramp[i].v < x) i++
+  const lo = ramp[i - 1]
+  const hi = ramp[i]
+  const t = hi.v === lo.v ? 0 : (x - lo.v) / (hi.v - lo.v)
+  const c = mix(lo.c, hi.c, t)
+  const a = lo.a + (hi.a - lo.a) * t
+  return `rgb(${c[0]} ${c[1]} ${c[2]} / ${a.toFixed(3)})`
+}
+
 export function waterfallOf(snap, conductor) {
   if (staleOf(snap)) return { heat: 0.06, spike: 0, tps: 0, think: 0, amberX: 0.62 }
   const k = (snap && snap.kpi) || {}

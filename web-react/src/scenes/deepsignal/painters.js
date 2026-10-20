@@ -4,7 +4,7 @@
 // except the absolute alarm red. Under reduced motion the conductor settles
 // each canvas on one static frame via paintSettled.
 
-import { det, staleOf } from './shared'
+import { det, heatRamp, rampColor, staleOf } from './shared'
 
 // ---------------------------------------------------------------------------
 // Hero waterfall: scrolling time×frequency heat. A small offscreen ring
@@ -46,17 +46,17 @@ function wfColumn(snap, c, rows) {
   return col
 }
 
-function wfColor(v, spike, pal) {
-  // cold teal floor → data green elevations → amber hot → coral spike
+function wfColor(v, spike, pal, ramp) {
+  // alarm spike lane stays outside the ramp; everything else samples the
+  // palette-derived perceptual scale
   if (spike > 0.55 && v > 0.62) return `rgb(${pal.alm} / ${0.35 + v * 0.65})`
-  if (v > 0.66) return `rgb(${pal.col} / ${0.3 + v * 0.7})`
-  if (v > 0.38) return `rgb(${pal.dat} / ${0.25 + v * 0.65})`
-  return `rgb(${pal.acc} / ${0.08 + v * 0.5})`
+  return rampColor(ramp, v)
 }
 
 export function paintWaterfall(ctx, w, h, c) {
   const snap = c.snap
   const pal = c.palette || { acc: '125 184 196', dat: '91 232 114', col: '255 176 0', alm: '232 84 63' }
+  const ramp = heatRamp(pal)
   if (!wf.cv || wf.cv.width !== WF_COLS || wf.cv.height !== WF_ROWS) {
     wf.cv = document.createElement('canvas')
     wf.cv.width = WF_COLS
@@ -71,7 +71,7 @@ export function paintWaterfall(ctx, w, h, c) {
       wf.acc = x / COLS_PER_SEC
       const col = wfColumn(snap, { ...c, alert: c.alert }, WF_ROWS)
       for (let y = 0; y < WF_ROWS; y++) {
-        b.fillStyle = wfColor(col[y], c.alert, pal)
+        b.fillStyle = wfColor(col[y], c.alert, pal, ramp)
         b.fillRect(x, y, 1, 1)
       }
     }
@@ -88,7 +88,7 @@ export function paintWaterfall(ctx, w, h, c) {
         wf.acc += 0.001
         const col = wfColumn(snap, c, WF_ROWS)
         for (let y = 0; y < WF_ROWS; y++) {
-          b.fillStyle = wfColor(col[y], c.alert, pal)
+          b.fillStyle = wfColor(col[y], c.alert, pal, ramp)
           b.fillRect(WF_COLS - n + x, y, 1, 1)
         }
       }
