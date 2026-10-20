@@ -1,24 +1,24 @@
-// Safehouse scene root: the two-pane SIGINT workstation (uispace.org/safehouse
-// recreation). LEFT = signal processing (TRM table, satellite track, telemetry,
-// history, I/O), RIGHT = audio analysis (tabs, seal, waveforms, toggles,
-// timecode, channel banks, clf history, frequency bars, database buttons),
-// a vertical ops strip at far left, the TRM top bar, and a 60 s status
-// marquee along the bottom. Everything animates off the shared conductor
-// clock; the scene owns no timers. Below 768 px the panes stack and the
-// right pane is promoted to hero, as in the reference.
+// Inference Intercept scene root: the two-pane engine-session console.
+// LEFT = engine bay (session table, engine lock, engine telemetry, decode
+// history, session I/O), RIGHT = decode intercept (tabs, emblem, traces,
+// session rail, readout cells, slot banks, event log, session bars,
+// engine registry), a vertical ops rail at far left, the top bar, and a
+// 60 s status marquee along the bottom. Everything animates off the shared
+// conductor clock; the scene owns no timers. Below 768 px the panes stack
+// and the right pane is promoted to hero.
 
 import { useScene } from '../../scene/SceneRoot'
-import OpsStrip from './OpsStrip'
-import TrmTable from './TrmTable'
-import SatPanel from './SatPanel'
-import TelemetryGrid from './TelemetryGrid'
-import SignalHistory from './SignalHistory'
-import IoBlocks from './IoBlocks'
-import WavePanels from './WavePanels'
-import IntelFeed from './IntelFeed'
-import ChannelBank from './ChannelBank'
-import ClfLog from './ClfLog'
-import FreqBars from './FreqBars'
+import OpsRail from './OpsRail'
+import SessionTable from './SessionTable'
+import EngineLock from './EngineLock'
+import EngineTelemetry from './EngineTelemetry'
+import DecodeHistory from './DecodeHistory'
+import SessionIo from './SessionIo'
+import TracePanels from './TracePanels'
+import EventTicker from './EventTicker'
+import SlotBank from './SlotBank'
+import EventLog from './EventLog'
+import SessionBars from './SessionBars'
 import MarqueeStrip from './MarqueeStrip'
 import { hexFrom, tickTimecode, frameCounter } from './frame.jsx'
 import { activeRuntime } from '../../lib/derive'
@@ -253,7 +253,7 @@ function StatusStrip() {
 // Scene root
 // ---------------------------------------------------------------------------
 
-export default function SafehouseScene() {
+export default function InterceptScene() {
   const { snap, mode } = useScene()
   const engines = (snap && snap.engines) || []
   const target = engines.find((e) => e && e.up) || null
@@ -261,11 +261,11 @@ export default function SafehouseScene() {
   const noEngines = engines.length === 0
 
   return (
-    <div className="sh-stage relative flex min-h-dvh flex-col overflow-x-hidden pb-[var(--chrome-h)] font-mono md:h-dvh md:min-h-0 md:overflow-hidden">
+    <div className="ic-stage relative flex min-h-dvh flex-col overflow-x-hidden pb-[var(--chrome-h)] font-mono md:h-dvh md:min-h-0 md:overflow-hidden">
       {/* stage layers: engineering grid, vignette, static film grain */}
-      <div className="sh-grid pointer-events-none absolute inset-0" aria-hidden="true" />
-      <div className="sh-vignette pointer-events-none absolute inset-0 z-[60]" aria-hidden="true" />
-      <div className="sh-grain pointer-events-none absolute inset-0 z-[70]" aria-hidden="true" />
+      <div className="ic-grid pointer-events-none absolute inset-0" aria-hidden="true" />
+      <div className="ic-vignette pointer-events-none absolute inset-0 z-[60]" aria-hidden="true" />
+      <div className="ic-grain pointer-events-none absolute inset-0 z-[70]" aria-hidden="true" />
 
       {/* top bar: TRM / DATA TERMINAL WINDOW / LK-R3 / SP1-7 */}
       <header className="z-10 flex h-[22px] shrink-0 items-center gap-3.5 border-b border-acc/25 bg-bgg/70 px-2.5 text-[9px] uppercase tracking-[0.1em] text-ink-3">
@@ -277,29 +277,29 @@ export default function SafehouseScene() {
       </header>
 
       <div className="relative z-10 flex min-h-0 flex-1">
-        <OpsStrip />
+        <OpsRail />
 
         <div className="flex min-h-0 min-w-0 flex-1 flex-col gap-1 p-1 md:flex-row">
           {/* PANE LEFT — signal processing */}
           <section
             aria-label="Signal processing pane"
-            className="sh-pane order-2 min-h-0 min-w-0 border border-acc/25 p-1 md:order-1 md:w-1/2"
+            className="ic-pane order-2 min-h-0 min-w-0 border border-acc/25 p-1 md:order-1 md:w-1/2"
           >
             <div className="flex h-full min-h-0 flex-col gap-1">
-              <TrmTable ghosted={offline || noEngines} />
-              <SatPanel target={target} ghosted={offline || !target} />
+              <SessionTable ghosted={offline || noEngines} />
+              <EngineLock target={target} ghosted={offline || !target} />
               <div className="grid min-h-[90px] flex-[10] grid-cols-1 gap-1 sm:grid-cols-2 md:min-h-0">
-                <TelemetryGrid target={target} ghosted={offline || !target} />
-                <SignalHistory engines={engines} />
+                <EngineTelemetry target={target} ghosted={offline || !target} />
+                <DecodeHistory engines={engines} />
               </div>
-              <IoBlocks target={target} ghosted={offline || !target} />
+              <SessionIo target={target} ghosted={offline || !target} />
             </div>
           </section>
 
           {/* PANE RIGHT — audio analysis */}
           <section
             aria-label="Audio analysis pane"
-            className="sh-pane order-1 min-h-0 min-w-0 border border-acc/25 p-1 md:order-2 md:w-1/2"
+            className="ic-pane order-1 min-h-0 min-w-0 border border-acc/25 p-1 md:order-2 md:w-1/2"
           >
             <div className="flex h-full min-h-0 flex-col gap-1">
               <RpTabs />
@@ -310,11 +310,11 @@ export default function SafehouseScene() {
                 </div>
                 <RHeader />
                 <div className="hidden w-[172px] shrink-0 lg:block">
-                  <IntelFeed />
+                  <EventTicker />
                 </div>
               </div>
 
-              <WavePanels ghosted={offline} />
+              <TracePanels ghosted={offline} />
 
               <div className="grid min-h-[130px] flex-[120] grid-cols-1 gap-1 sm:grid-cols-[124px_minmax(0,1fr)] md:min-h-0">
                 <div className="scrollbar-thin-x flex min-w-0 flex-col overflow-x-hidden overflow-y-auto">
@@ -324,11 +324,11 @@ export default function SafehouseScene() {
               </div>
 
               <div className="shrink-0">
-                <ChannelBank engines={engines} ghosted={offline || noEngines} />
+                <SlotBank engines={engines} ghosted={offline || noEngines} />
               </div>
 
-              <ClfLog />
-              <FreqBars />
+              <EventLog />
+              <SessionBars />
               <StatusStrip />
               <DbButtons />
             </div>

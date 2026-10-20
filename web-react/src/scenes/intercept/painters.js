@@ -1,4 +1,4 @@
-// Safehouse canvas painters. Registered through SceneCanvas; every one is a
+// Inference Intercept canvas painters. Registered through SceneCanvas; every one is a
 // pure function of the conductor (master clock, latest snapshot, active
 // palette). No timers, no wall clock, no per-painter accumulators: derive
 // every phase from c.t so a held feed freezes cleanly and reduced motion

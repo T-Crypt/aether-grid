@@ -65,7 +65,7 @@ function TrmRow({ row, flash, onDone }) {
   return (
     <div
       className={`grid gap-2 whitespace-nowrap px-1 text-[6.5px] leading-[1.3] transition-colors duration-500 ${cls} ${
-        flash ? 'sh-flash' : ''
+        flash ? 'ic-flash' : ''
       }`}
       style={{ gridTemplateColumns: COLS[0] }}
       onAnimationEnd={flash ? onDone : undefined}

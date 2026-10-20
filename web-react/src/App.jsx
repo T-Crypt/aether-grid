@@ -5,7 +5,7 @@
 import SceneRoot, { useScene } from './scene/SceneRoot'
 import SceneDock from './components/SceneDock'
 import HexlabScene from './scenes/hexlab/Scene'
-import SafehouseScene from './scenes/safehouse/Scene'
+import InterceptScene from './scenes/intercept/Scene'
 import OrbitScene from './scenes/orbit/Scene'
 import FoundryScene from './scenes/foundry/Scene'
 import SpectrumScene from './scenes/spectrum/Scene'
@@ -13,7 +13,7 @@ import SpectrumScene from './scenes/spectrum/Scene'
 // One Root component per scene id in lib/scenes.js.
 const SCENE_ROOTS = {
   hexlab: HexlabScene,
-  safehouse: SafehouseScene,
+  intercept: InterceptScene,
   orbit: OrbitScene,
   foundry: FoundryScene,
   spectrum: SpectrumScene,

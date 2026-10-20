@@ -26,7 +26,7 @@ function Bank({ label, base, engines, ghosted }) {
   return (
     <div className="min-w-0">
       <div className="px-0.5 pb-0.5 text-[7px] tracking-[0.18em] text-acc">{label}</div>
-      <div className={`grid grid-cols-8 gap-0.5 ${ghosted ? 'sh-ghost' : ''}`}>
+      <div className={`grid grid-cols-8 gap-0.5 ${ghosted ? 'ic-ghost' : ''}`}>
         {slots.map((e, i) => btn(i + 1, e ? e.up : false))}
       </div>
     </div>

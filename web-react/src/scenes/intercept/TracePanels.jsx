@@ -25,7 +25,7 @@ function Cell({ kind, tag, transcript, ghosted }) {
   return (
     <div
       className={`relative min-h-0 min-w-0 flex-1 overflow-hidden border border-acc/25 bg-bgg/85 transition-opacity duration-500 ${
-        ghosted ? 'sh-ghost' : ''
+        ghosted ? 'ic-ghost' : ''
       }`}
     >
       <SceneCanvas

@@ -31,9 +31,9 @@ The console ships five scenes, and each one is a complete visual program over th
 
 Every frame comes from the built console. The six below are 1000x563 from the demo feed, except the last one, which is the same console on the live feed.
 
-| <img src="docs/shots/gallery/scene-hexlab.png" width="440" alt="Hex-Lab"> | <img src="docs/shots/gallery/scene-safehouse.png" width="440" alt="Safehouse"> |
+| <img src="docs/shots/gallery/scene-hexlab.png" width="440" alt="Hex-Lab"> | <img src="docs/shots/gallery/scene-intercept.png" width="440" alt="Inference Intercept"> |
 | --- | --- |
-| Hex-Lab, the base layout. Native scheme Hex-Lab. | Safehouse, the two-pane SIGINT workstation. Native scheme Corvane. |
+| Hex-Lab, the base layout. Native scheme Hex-Lab. | Inference Intercept, the engine-session interceptor. Native scheme Corvane. |
 | <img src="docs/shots/gallery/scene-orbit.png" width="440" alt="Context Orbit"> | <img src="docs/shots/gallery/scene-foundry.png" width="440" alt="Token Foundry"> |
 | --- | --- |
 | Context Orbit, the KV slot system around the model core. Native scheme Gullet. | Token Foundry, the request wall under its queue lamp rail. Native scheme Sounding. |
@@ -45,7 +45,7 @@ Every frame comes from the built console. The six below are 1000x563 from the de
 
 The phone layout at 390 px, where the rails hide and the panes stack.
 
-Each scene keeps its own nouns for the same telemetry. Safehouse reads `SIG model · DECODE tps TOK/S · ENG engine · ON AIR`, Context Orbit reads `ORBITING · model · tps TOK/S · ENG engine · temp°C · MTP mtp% · THINK think`, Token Foundry inspects requests with `LOCK hash · TTFT ms · model · tps TOK/S · IN inT · OUT outT · Q queue`, and Logit Spectrum runs a `RUNTIME model · ENG engine · THINK tokens · LOCK mtp%` span. Hex-Lab is the base console, with the hero helix, the terrain mesh, the GPU block, the KV cohort, the log and the data band.
+Each scene keeps its own nouns for the same telemetry. Inference Intercept reads `SIG model · DECODE tps TOK/S · ENG engine · ON AIR`, Context Orbit reads `ORBITING · model · tps TOK/S · ENG engine · temp°C · MTP mtp% · THINK think`, Token Foundry inspects requests with `LOCK hash · TTFT ms · model · tps TOK/S · IN inT · OUT outT · Q queue`, and Logit Spectrum runs a `RUNTIME model · ENG engine · THINK tokens · LOCK mtp%` span. Hex-Lab is the base console, with the hero helix, the terrain mesh, the GPU block, the KV cohort, the log and the data band.
 
 ## Scene architecture
 
@@ -57,7 +57,7 @@ The conductor smooths four scene scalars, `heat`, `alert`, `flow` and `reason`, 
 
 The Scope primitive (`Scope.jsx`) is a transparent region of the shared surface, drawn with a hairline edge, corner ticks and a caption. A ghosted scope keeps its place in the layout and shows a no-source note when its data source is absent.
 
-Four full-bleed layers sit under and over the scene, toggled from the bottom-left cluster. Declination paints the backdrop wash. Loom-9 routes cables between the engine rail, queue, hero, KV grid and GPU block. Scope-Omega scatters anomaly pings over the whole frame. Safehouse pins a corner radar of load and draws no session content.
+Four full-bleed layers sit under and over the scene, toggled from the bottom-left cluster. Declination paints the backdrop wash. Loom-9 routes cables between the engine rail, queue, hero, KV grid and GPU block. Scope-Omega scatters anomaly pings over the whole frame. The fourth pins a corner radar of load and draws no session content.
 
 ## Colour language
 

@@ -14,7 +14,7 @@
 // than five views of one dashboard.
 //
 //   hexlab       throughput and latency        kpi.tps, kpi.hist.tps, kpi.p95, kpi.ttft
-//   safehouse    engines and sessions          engines, sessions
+//   intercept     engines and sessions          engines, sessions
 //   orbit        capacity and pressure         sessions.kv, gpu, kpi.vram, host
 //   foundry      requests and the queue        requests, kpi.queue, kpi.vram as cost
 //   spectrum     detection and reasoning       alerts, events, reasoning
@@ -40,12 +40,13 @@ export const SCENES = [
     palettes: {}, // empty: every base scheme applies to hex-lab as-is
   },
   {
-    // Reference palette (uispace.org/safehouse): sky-cyan accent #50C0E0,
-    // data amber #FFC850, cool white #FFFFFF, alarm #FF4830. Corvane's base
-    // accent (#59C3FF) is the closest base scheme, so it carries the native
-    // table; the other six keep their base role colours on the scene surfaces.
-    id: 'safehouse',
-    label: 'Safehouse',
+    // Intercept palette: sky-cyan accent #50C0E0, data amber #FFC850, cool
+    // white #FFFFFF, alarm #FF4830 — the intercept console's role colours on
+    // its cold-blue surfaces. Corvane's base accent (#59C3FF) is the closest
+    // base scheme, so it carries the native table; the other six keep their
+    // base role colours on the scene surfaces.
+    id: 'intercept',
+    label: 'Inference Intercept',
     purpose: 'Engines and sessions',
     channels: ['engines', 'sessions'],
     defaultScheme: 'corvane',

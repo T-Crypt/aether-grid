@@ -1,7 +1,7 @@
 // MarqueeStrip: the 60-second linear status marquee along the bottom, as
 // in the reference: one track of status tokens (time · message, level
 // coloured) duplicated so the CSS loop is seamless. The animation is pure
-// CSS (sh-marquee-track); under reduced motion the track stops with the
+// CSS (ic-marquee-track); under reduced motion the track stops with the
 // first token visible. No scene timer is involved.
 
 import { useScene } from '../../scene/SceneRoot'
@@ -32,7 +32,7 @@ export default function MarqueeStrip() {
   // Two copies of the token list: the track scrolls one track-width, so the
   // join between copy 1 and copy 2 is invisible.
   const track = (
-    <div className="sh-marquee-track">
+    <div className="ic-marquee-track">
       {[0, 1].map((dup) => (
         <div key={dup} className="flex gap-6" aria-hidden={dup === 1 ? 'true' : undefined}>
           {events.map((e, i) => (

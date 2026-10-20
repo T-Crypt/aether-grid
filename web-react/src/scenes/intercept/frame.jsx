@@ -1,5 +1,5 @@
-// Safehouse shared chrome: the reference's framed panel grammar (title bar +
-// hairline frame) plus the workstation's own derives. The deterministic
+// Intercept shared chrome: the console's framed panel grammar (title bar +
+// hairline frame) plus the console's own derives. The deterministic
 // helpers are shared console-wide and live in lib/derive; this module
 // re-exports the ones the panes import. This scene never owns a timer;
 // transient row flashes restart a finite CSS animation by re-keying the
@@ -38,8 +38,8 @@ export function Frame({ title, tag, ghosted = false, empty = false, note, classN
     <section
       aria-label={title}
       aria-busy={ghosted || empty || undefined}
-      className={`sh-frame relative flex min-h-0 min-w-0 flex-col border border-acc/25 transition-opacity duration-500 ${
-        ghosted ? 'sh-ghost' : ''
+      className={`ic-frame relative flex min-h-0 min-w-0 flex-col border border-acc/25 transition-opacity duration-500 ${
+        ghosted ? 'ic-ghost' : ''
       } ${className}`}
     >
       <header className="flex shrink-0 items-center justify-between gap-2 border-b border-acc/25 px-1.5 pb-1 pt-0.5">

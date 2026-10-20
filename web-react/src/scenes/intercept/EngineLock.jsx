@@ -35,7 +35,7 @@ export default function SatPanel({ target, ghosted }) {
       ]
 
   return (
-    <div className={`flex min-h-[300px] flex-[38] flex-col gap-1 md:min-h-0 ${ghosted ? 'sh-ghost' : ''}`}>
+    <div className={`flex min-h-[300px] flex-[38] flex-col gap-1 md:min-h-0 ${ghosted ? 'ic-ghost' : ''}`}>
       <div className="flex h-[18px] shrink-0 items-center gap-2.5 border border-acc/25 bg-pan/45 px-1.5 text-[8.5px] uppercase tracking-[0.1em]">
         <span className="text-[11px] font-semibold leading-none text-dat">GPS</span>
         <span className={`tracking-[0.14em] ${ghosted ? 'text-ink-3' : 'text-acc'}`}>
