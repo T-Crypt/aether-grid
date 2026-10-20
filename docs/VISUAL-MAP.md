@@ -58,7 +58,7 @@ capacity.
 |---|---|---|---|
 | Hex-Lab | Throughput and latency | `kpi.tps`, `kpi.p95`, `kpi.ttft` | hero helix, KPI strip, terrain, data band |
 | Safehouse | Engines and sessions | `engines`, `sessions` | channel banks, TRM table, audio header |
-| Bloom-Line | Capacity and pressure | `sessions.kv`, `gpu`, `host` | tank zones, species strip, drone manifest |
+| Context Orbit | Capacity and pressure | `sessions.kv`, `gpu`, `host` | KV slot pods, VRAM core ring, pressure rails |
 | Cyber-Pass | Requests and the economy | `requests`, `kpi.queue`, `kpi.vram` as price | assay device, rate exchange, the small coin |
 | Deepsignal | Detection and reasoning | `alerts`, `events`, `reasoning` | waterfall, band strip, candidate log, edge bars |
 
@@ -105,7 +105,7 @@ the shared field.
 
 ```text
 hex-lab base        pills · timecode · kpi strip · hero helix · terrain · gpu block · kv cohort · log · data band · foot
-scenes            →    hex-lab (throughput/latency) · safehouse (engines/sessions) · bloom-line (capacity) · cyber-pass (requests/economy) · deepsignal (detection)
+scenes            →    hex-lab (throughput/latency) · safehouse (engines/sessions) · orbit (capacity) · cyber-pass (requests/economy) · deepsignal (detection)
 declination    →    kpi.hist.tps as a state-reactive full-screen backdrop (half-res)
 loom-9         →    anchors (queue/hero/kv/gpu/rail) as cables, packets from kpi.tps
 scope-omega    →    kpi.queue/vram/p95 excursions + anomaly ping rings, full frame

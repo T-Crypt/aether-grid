@@ -14,14 +14,14 @@
 // than five views of one dashboard.
 //
 //   hexlab       throughput and latency        kpi.tps, kpi.hist.tps, kpi.p95, kpi.ttft
-//   safehouse    engines and sessions          engines, sessions
-//   bloom-line   capacity and pressure         sessions.kv, gpu, kpi.vram, host
-//   cyber-pass   requests and the economy      requests, kpi.queue, kpi.vram as price
-//   deepsignal   detection and reasoning       alerts, events, reasoning
+//   intercept     engines and sessions          engines, sessions
+//   orbit        capacity and pressure         sessions.kv, gpu, kpi.vram, host
+//   foundry      requests and the queue        requests, kpi.queue, kpi.vram as cost
+//   spectrum     detection and reasoning       alerts, events, reasoning
 //
-// Two scenes may read one key for different ends. The booth reads vram as
-// price. The greenhouse reads it as capacity. Neither prints the other's
-// figure.
+// Two scenes may read one key for different ends. The foundry reads vram as
+// the cost of a request. The orbit reads it as capacity. Neither
+// prints the other's figure.
 //
 // The DOM tokens (pan, bgg, text tiers) resolve in src/index.css through
 // [data-scene][data-skin] blocks on <html>; this table mirrors only the
@@ -40,12 +40,13 @@ export const SCENES = [
     palettes: {}, // empty: every base scheme applies to hex-lab as-is
   },
   {
-    // Reference palette (uispace.org/safehouse): sky-cyan accent #50C0E0,
-    // data amber #FFC850, cool white #FFFFFF, alarm #FF4830. Corvane's base
-    // accent (#59C3FF) is the closest base scheme, so it carries the native
-    // table; the other six keep their base role colours on the scene surfaces.
-    id: 'safehouse',
-    label: 'Safehouse',
+    // Intercept palette: sky-cyan accent #50C0E0, data amber #FFC850, cool
+    // white #FFFFFF, alarm #FF4830 — the intercept console's role colours on
+    // its cold-blue surfaces. Corvane's base accent (#59C3FF) is the closest
+    // base scheme, so it carries the native table; the other six keep their
+    // base role colours on the scene surfaces.
+    id: 'intercept',
+    label: 'Inference Intercept',
     purpose: 'Engines and sessions',
     channels: ['engines', 'sessions'],
     defaultScheme: 'corvane',
@@ -55,31 +56,33 @@ export const SCENES = [
     },
   },
   {
-    // Reference palette (uispace.org/bloom-line): leaf-green accent #6BE8A4,
-    // grow-light amber #F0C060, cool #7DD8C4, soft-pink alarm #F09BAA. Gullet's
-    // base accent (#7CFF6B) is the closest base scheme, so it carries the
-    // native table; the other six keep their base role colours on the scene's
-    // leaf-green surfaces.
-    id: 'bloom-line',
-    label: 'Bloom-Line',
+    // Orbit palette: phosphor-green accent #6BE8A4, telemetry amber #F0C060,
+    // cool cyan #7DD8C4, alarm red #FF5C42 — the capacity scene's role
+    // colours, carried over from its native table with the alarm retuned
+    // from rose to red so an eviction risk reads as danger. Gullet's base
+    // accent (#7CFF6B) is the closest base scheme, so it carries the native
+    // table; the other six keep their base role colours on the scene's
+    // orbit surfaces.
+    id: 'orbit',
+    label: 'Context Orbit',
     purpose: 'Capacity and pressure',
     channels: ['sessions.kv', 'gpu.vram', 'host'],
     defaultScheme: 'gullet',
     schemes: SKIN_IDS,
     palettes: {
-      gullet: { acc: '107 232 164', dat: '240 192 96', col: '125 216 196', alm: '240 155 170' },
+      gullet: { acc: '107 232 164', dat: '240 192 96', col: '125 216 196', alm: '255 92 66' },
     },
   },
   {
-    // Reference palette (uispace.org/cyber-pass): lamp amber #FFAD3B, data
-    // cream #FFD99F, cool violet #A87BFF, held alarm #FFDC2B. Sounding's base
+    // Foundry palette: furnace amber accent #FFAD3B, molten cream #FFD99F,
+    // cool violet #A87BFF, held alarm yellow #FFDC2B. Sounding's base
     // accent (#FFB000) is the closest base scheme, so it carries the native
     // table; the other six keep their base role colours on the scene's
-    // rust-plate surfaces.
-    id: 'cyber-pass',
-    label: 'Cyber-Pass',
-    purpose: 'Requests and the economy',
-    channels: ['requests', 'kpi.queue', 'kpi.vram'],
+    // forge-plate surfaces.
+    id: 'foundry',
+    label: 'Token Foundry',
+    purpose: 'Requests and the queue',
+    channels: ['requests', 'kpi.queue', 'kpi.vram', 'kpi.tps', 'kpi.p95'],
     defaultScheme: 'sounding',
     schemes: SKIN_IDS,
     palettes: {
@@ -87,12 +90,13 @@ export const SCENES = [
     },
   },
   {
-    // Reference palette (deepsignal card): teal accent #7DB8C4, data green
-    // #5BE872, amber #FFB000, alarm coral #E8543F. Hexlab's cool base is the
-    // closest base scheme, so it carries the native table; the other six
-    // keep their base role colours on the scene's CRT surfaces.
-    id: 'deepsignal',
-    label: 'Deepsignal',
+    // Spectrum palette: teal accent #7DB8C4, data green #5BE872, amber
+    // #FFB000, alarm coral #E8543F, the scene's cold-CRT role colours.
+    // Hexlab's cool base is the closest base scheme, so it carries the
+    // native table; the other six keep their base role colours on the
+    // scene's CRT surfaces.
+    id: 'spectrum',
+    label: 'Logit Spectrum',
     purpose: 'Detection and reasoning',
     channels: ['alerts', 'events', 'reasoning'],
     defaultScheme: 'hexlab',
