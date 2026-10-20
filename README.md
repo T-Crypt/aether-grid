@@ -34,9 +34,9 @@ Every frame comes from the built console. The six below are 1000x563 from the de
 | <img src="docs/shots/gallery/scene-hexlab.png" width="440" alt="Hex-Lab"> | <img src="docs/shots/gallery/scene-safehouse.png" width="440" alt="Safehouse"> |
 | --- | --- |
 | Hex-Lab, the base layout. Native scheme Hex-Lab. | Safehouse, the two-pane SIGINT workstation. Native scheme Corvane. |
-| <img src="docs/shots/gallery/scene-bloom-line.png" width="440" alt="Bloom-Line"> | <img src="docs/shots/gallery/scene-foundry.png" width="440" alt="Token Foundry"> |
+| <img src="docs/shots/gallery/scene-orbit.png" width="440" alt="Context Orbit"> | <img src="docs/shots/gallery/scene-foundry.png" width="440" alt="Token Foundry"> |
 | --- | --- |
-| Bloom-Line, the orbital greenhouse stage. Native scheme Gullet. | Token Foundry, the request wall under its queue lamp rail. Native scheme Sounding. |
+| Context Orbit, the KV slot system around the model core. Native scheme Gullet. | Token Foundry, the request wall under its queue lamp rail. Native scheme Sounding. |
 | <img src="docs/shots/gallery/scene-spectrum.png" width="440" alt="Logit Spectrum"> | <img src="docs/shots/gallery/live-hexlab.png" width="440" alt="Hex-Lab on the live feed"> |
 | --- | --- |
 | Logit Spectrum, the token spectrogram under its reasoning lock. Native scheme Hex-Lab. | Hex-Lab on the live feed, reading this machine's GPU, host and llama-swap sources. |
@@ -45,7 +45,7 @@ Every frame comes from the built console. The six below are 1000x563 from the de
 
 The phone layout at 390 px, where the rails hide and the panes stack.
 
-Each scene keeps its own nouns for the same telemetry. Safehouse reads `SIG model · DECODE tps TOK/S · ENG engine · ON AIR`, Bloom-Line reads `FLOWERED · model · tps TOK/S · MTP mtp% · THINK think`, Token Foundry inspects requests with `LOCK hash · TTFT ms · model · tps TOK/S · IN inT · OUT outT · Q queue`, and Logit Spectrum runs a `RUNTIME model · ENG engine · THINK tokens · LOCK mtp%` span. Hex-Lab is the base console, with the hero helix, the terrain mesh, the GPU block, the KV cohort, the log and the data band.
+Each scene keeps its own nouns for the same telemetry. Safehouse reads `SIG model · DECODE tps TOK/S · ENG engine · ON AIR`, Context Orbit reads `ORBITING · model · tps TOK/S · ENG engine · temp°C · MTP mtp% · THINK think`, Token Foundry inspects requests with `LOCK hash · TTFT ms · model · tps TOK/S · IN inT · OUT outT · Q queue`, and Logit Spectrum runs a `RUNTIME model · ENG engine · THINK tokens · LOCK mtp%` span. Hex-Lab is the base console, with the hero helix, the terrain mesh, the GPU block, the KV cohort, the log and the data band.
 
 ## Scene architecture
 

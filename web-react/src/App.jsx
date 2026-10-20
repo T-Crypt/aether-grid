@@ -6,7 +6,7 @@ import SceneRoot, { useScene } from './scene/SceneRoot'
 import SceneDock from './components/SceneDock'
 import HexlabScene from './scenes/hexlab/Scene'
 import SafehouseScene from './scenes/safehouse/Scene'
-import BloomLineScene from './scenes/bloom-line/Scene'
+import OrbitScene from './scenes/orbit/Scene'
 import FoundryScene from './scenes/foundry/Scene'
 import SpectrumScene from './scenes/spectrum/Scene'
 
@@ -14,7 +14,7 @@ import SpectrumScene from './scenes/spectrum/Scene'
 const SCENE_ROOTS = {
   hexlab: HexlabScene,
   safehouse: SafehouseScene,
-  'bloom-line': BloomLineScene,
+  orbit: OrbitScene,
   foundry: FoundryScene,
   spectrum: SpectrumScene,
 }

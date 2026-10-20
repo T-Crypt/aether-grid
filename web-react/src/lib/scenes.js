@@ -15,12 +15,12 @@
 //
 //   hexlab       throughput and latency        kpi.tps, kpi.hist.tps, kpi.p95, kpi.ttft
 //   safehouse    engines and sessions          engines, sessions
-//   bloom-line   capacity and pressure         sessions.kv, gpu, kpi.vram, host
+//   orbit        capacity and pressure         sessions.kv, gpu, kpi.vram, host
 //   foundry      requests and the queue        requests, kpi.queue, kpi.vram as cost
 //   spectrum     detection and reasoning       alerts, events, reasoning
 //
 // Two scenes may read one key for different ends. The foundry reads vram as
-// the cost of a request. The greenhouse reads it as capacity. Neither
+// the cost of a request. The orbit reads it as capacity. Neither
 // prints the other's figure.
 //
 // The DOM tokens (pan, bgg, text tiers) resolve in src/index.css through
@@ -55,19 +55,21 @@ export const SCENES = [
     },
   },
   {
-    // Reference palette (uispace.org/bloom-line): leaf-green accent #6BE8A4,
-    // grow-light amber #F0C060, cool #7DD8C4, soft-pink alarm #F09BAA. Gullet's
-    // base accent (#7CFF6B) is the closest base scheme, so it carries the
-    // native table; the other six keep their base role colours on the scene's
-    // leaf-green surfaces.
-    id: 'bloom-line',
-    label: 'Bloom-Line',
+    // Orbit palette: phosphor-green accent #6BE8A4, telemetry amber #F0C060,
+    // cool cyan #7DD8C4, alarm red #FF5C42 — the capacity scene's role
+    // colours, carried over from its native table with the alarm retuned
+    // from rose to red so an eviction risk reads as danger. Gullet's base
+    // accent (#7CFF6B) is the closest base scheme, so it carries the native
+    // table; the other six keep their base role colours on the scene's
+    // orbit surfaces.
+    id: 'orbit',
+    label: 'Context Orbit',
     purpose: 'Capacity and pressure',
     channels: ['sessions.kv', 'gpu.vram', 'host'],
     defaultScheme: 'gullet',
     schemes: SKIN_IDS,
     palettes: {
-      gullet: { acc: '107 232 164', dat: '240 192 96', col: '125 216 196', alm: '240 155 170' },
+      gullet: { acc: '107 232 164', dat: '240 192 96', col: '125 216 196', alm: '255 92 66' },
     },
   },
   {
