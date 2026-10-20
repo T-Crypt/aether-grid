@@ -474,12 +474,19 @@ export function paintHero(ctx, w, h, c) {
   const tps = c.snap?.kpi?.tps || 0
   const energy = Math.min(1, tps / 280)
   const cx = w / 2
-  const amp = Math.min(w * 0.24, h * 0.3) * (0.55 + energy * 0.45)
+  // Coil radius tracks the scope width so the helix owns the hero, capped by
+  // the height; decode energy still breathes it, in a narrower band.
+  const amp = Math.min(w * 0.36, h * 0.44) * (0.75 + energy * 0.25)
   const turns = 5.5
   const phase = c.helix.phase
   const kick = c.helix.kick
   const flow = flowColor(c)
   const strandCol = mix(flow, reasonColor(c), Math.min(0.75, c.reason))
+  // Decode burst: strands thicken and brighten with the smoothed flow/heat
+  // scalars so a burst reads even at low energy in the coil itself.
+  const surge = Math.min(1, c.flow * 0.85 + c.heat * 0.15)
+  const strandLw = 1.4 + surge * 1.8
+  const strandA = 0.55 + surge * 0.45
 
   const bg = ctx.createLinearGradient(0, 0, 0, h)
   bg.addColorStop(0, rgba(strandCol, 0))
@@ -523,8 +530,8 @@ export function paintHero(ctx, w, h, c) {
     ctx.stroke()
   }
 
-  strand(0, rgba(strandCol, 0.85), 1.7, kick)
-  strand(Math.PI, rgba(mix(strandCol, p.col, 0.4), 0.8), 1.7, kick)
+  strand(0, rgba(strandCol, strandA), strandLw, kick)
+  strand(Math.PI, rgba(mix(strandCol, p.col, 0.4), strandA * 0.94), strandLw, kick)
 
   const rungs = 40
   for (let i = 0; i <= rungs; i++) {
