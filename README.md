@@ -29,7 +29,7 @@ The collector serves `/api/snapshot` and `/api/stream` on that port. The long-ra
 
 The console ships five scenes, and each one is a complete visual program over the same telemetry. The registry is `web-react/src/lib/scenes.js`, and the root components map in `web-react/src/App.jsx`. The scene dock, pinned bottom right, switches scene and scheme. The choice persists in `localStorage`, and `?scene=` deep-links a scene.
 
-Every frame comes from the built console. The six below are 1000x563 from the demo feed, except the last one, which is the same console on the live feed.
+Every frame comes from the built console on the demo feed. The five scenes are 1000x563, and the last frame is the phone layout at 390 px, where the rails hide and the panes stack.
 
 | <img src="docs/shots/gallery/scene-hexlab.png" width="440" alt="Hex-Lab"> | <img src="docs/shots/gallery/scene-intercept.png" width="440" alt="Inference Intercept"> |
 | --- | --- |
@@ -37,13 +37,10 @@ Every frame comes from the built console. The six below are 1000x563 from the de
 | <img src="docs/shots/gallery/scene-orbit.png" width="440" alt="Context Orbit"> | <img src="docs/shots/gallery/scene-foundry.png" width="440" alt="Token Foundry"> |
 | --- | --- |
 | Context Orbit, the KV slot system around the model core. Native scheme Gullet. | Token Foundry, the request wall under its queue lamp rail. Native scheme Sounding. |
-| <img src="docs/shots/gallery/scene-spectrum.png" width="440" alt="Logit Spectrum"> | <img src="docs/shots/gallery/live-hexlab.png" width="440" alt="Hex-Lab on the live feed"> |
+| <img src="docs/shots/gallery/scene-spectrum.png" width="440" alt="Logit Spectrum"> | <img src="docs/shots/gallery/mobile-pane.png" width="440" alt="The console at 390 px"> |
 | --- | --- |
-| Logit Spectrum, the token spectrogram under its reasoning lock. Native scheme Hex-Lab. | Hex-Lab on the live feed, reading this machine's GPU, host and llama-swap sources. |
+| Logit Spectrum, the token spectrogram under its reasoning lock. Native scheme Hex-Lab. | The phone layout at 390 px. |
 
-<img src="docs/shots/gallery/mobile-pane.png" alt="The console at 390 px, centered in a pane">
-
-The phone layout at 390 px, where the rails hide and the panes stack.
 
 Each scene keeps its own nouns for the same telemetry. Inference Intercept reads `SIG model · DECODE tps TOK/S · ENG engine · ON AIR`, Context Orbit reads `ORBITING · model · tps TOK/S · ENG engine · temp°C · MTP mtp% · THINK think`, Token Foundry inspects requests with `LOCK hash · TTFT ms · model · tps TOK/S · IN inT · OUT outT · Q queue`, and Logit Spectrum runs a `RUNTIME model · ENG engine · THINK tokens · LOCK mtp%` span. Hex-Lab is the base console, with the hero helix, the terrain mesh, the GPU block, the KV cohort, the log and the data band.
 

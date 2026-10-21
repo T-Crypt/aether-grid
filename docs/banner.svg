@@ -851,16 +851,16 @@
 <text x="1006.00" y="89" font-size="15" fill="#d8f0f0">Hex-Lab</text>
 <rect x="1085.00" y="69.0" width="110.00" height="30" fill="none" stroke="#50c0e0" stroke-opacity="0.25" stroke-width="1"/>
 <circle cx="1096.50" cy="84" r="3.5" fill="#50c0e0"/>
-<text x="1106.00" y="89" font-size="15" fill="#d8f0f0">Safehouse</text>
+<text x="1106.00" y="89" font-size="15" fill="#d8f0f0">Intercept</text>
 <rect x="1203.00" y="69.0" width="119.00" height="30" fill="none" stroke="#6be8a4" stroke-opacity="0.25" stroke-width="1"/>
 <circle cx="1214.50" cy="84" r="3.5" fill="#6be8a4"/>
-<text x="1224.00" y="89" font-size="15" fill="#d8f0f0">Bloom-Line</text>
+<text x="1224.00" y="89" font-size="15" fill="#d8f0f0">Orbit</text>
 <rect x="1330.00" y="69.0" width="119.00" height="30" fill="none" stroke="#ffad3b" stroke-opacity="0.25" stroke-width="1"/>
 <circle cx="1341.50" cy="84" r="3.5" fill="#ffad3b"/>
-<text x="1351.00" y="89" font-size="15" fill="#d8f0f0">Cyber-Pass</text>
+<text x="1351.00" y="89" font-size="15" fill="#d8f0f0">Foundry</text>
 <rect x="1457.00" y="69.0" width="119.00" height="30" fill="none" stroke="#7db8c4" stroke-opacity="0.25" stroke-width="1"/>
 <circle cx="1468.50" cy="84" r="3.5" fill="#7db8c4"/>
-<text x="1478.00" y="89" font-size="15" fill="#d8f0f0">Deepsignal</text>
+<text x="1478.00" y="89" font-size="15" fill="#d8f0f0">Spectrum</text>
 </g>
 <g>
 <rect x="24" y="170" width="291" height="330" fill="#00e0e0" fill-opacity="0.03" stroke="#00e0e0" stroke-opacity="0.30" stroke-width="1"/>
@@ -949,7 +949,7 @@
 <line x1="339" y1="500" x2="339" y2="486" stroke="#50c0e0" stroke-opacity="0.90" stroke-width="1.5"/>
 <line x1="630" y1="500" x2="616" y2="500" stroke="#50c0e0" stroke-opacity="0.90" stroke-width="1.5"/>
 <line x1="630" y1="500" x2="630" y2="486" stroke="#50c0e0" stroke-opacity="0.90" stroke-width="1.5"/>
-<text x="353" y="202" font-size="24" fill="#d8f0f0">Safehouse</text>
+<text x="353" y="202" font-size="24" fill="#d8f0f0">Intercept</text>
 <text x="353" y="218" font-size="15" fill="#b3d2d2">Engines and sessions</text>
 <text x="353" y="486" font-size="14" letter-spacing="0.06em" fill="#93bdc0">scheme · Corvane</text>
 <g transform="translate(339 170)">
@@ -1020,7 +1020,7 @@
 <line x1="654" y1="500" x2="654" y2="486" stroke="#6be8a4" stroke-opacity="0.90" stroke-width="1.5"/>
 <line x1="945" y1="500" x2="931" y2="500" stroke="#6be8a4" stroke-opacity="0.90" stroke-width="1.5"/>
 <line x1="945" y1="500" x2="945" y2="486" stroke="#6be8a4" stroke-opacity="0.90" stroke-width="1.5"/>
-<text x="668" y="202" font-size="24" fill="#d8f0f0">Bloom-Line</text>
+<text x="668" y="202" font-size="24" fill="#d8f0f0">Context Orbit</text>
 <text x="668" y="218" font-size="15" fill="#b3d2d2">Capacity and pressure</text>
 <text x="668" y="486" font-size="14" letter-spacing="0.06em" fill="#93bdc0">scheme · Gullet</text>
 <g transform="translate(654 170)">
@@ -1081,8 +1081,8 @@
 <line x1="969" y1="500" x2="969" y2="486" stroke="#ffad3b" stroke-opacity="0.90" stroke-width="1.5"/>
 <line x1="1260" y1="500" x2="1246" y2="500" stroke="#ffad3b" stroke-opacity="0.90" stroke-width="1.5"/>
 <line x1="1260" y1="500" x2="1260" y2="486" stroke="#ffad3b" stroke-opacity="0.90" stroke-width="1.5"/>
-<text x="983" y="202" font-size="24" fill="#d8f0f0">Cyber-Pass</text>
-<text x="983" y="218" font-size="15" fill="#b3d2d2">Requests and the economy</text>
+<text x="983" y="202" font-size="24" fill="#d8f0f0">Token Foundry</text>
+<text x="983" y="218" font-size="15" fill="#b3d2d2">Requests and the queue</text>
 <text x="983" y="486" font-size="14" letter-spacing="0.06em" fill="#93bdc0">scheme · Sounding</text>
 <g transform="translate(969 170)">
 <rect x="12" y="58" width="267" height="180" fill="#ffd99f" fill-opacity="0.03" stroke="#ffd99f" stroke-opacity="0.22" stroke-width="1"/>
@@ -1147,7 +1147,7 @@
 <line x1="1284" y1="500" x2="1284" y2="486" stroke="#7db8c4" stroke-opacity="0.90" stroke-width="1.5"/>
 <line x1="1575" y1="500" x2="1561" y2="500" stroke="#7db8c4" stroke-opacity="0.90" stroke-width="1.5"/>
 <line x1="1575" y1="500" x2="1575" y2="486" stroke="#7db8c4" stroke-opacity="0.90" stroke-width="1.5"/>
-<text x="1298" y="202" font-size="24" fill="#d8f0f0">Deepsignal</text>
+<text x="1298" y="202" font-size="24" fill="#d8f0f0">Logit Spectrum</text>
 <text x="1298" y="218" font-size="15" fill="#b3d2d2">Detection and reasoning</text>
 <text x="1298" y="486" font-size="14" letter-spacing="0.06em" fill="#93bdc0">scheme · Hex-Lab</text>
 <g transform="translate(1284 170)">
